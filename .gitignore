@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+
+# Local runtime/board state — never commit (board DB leak / build hazard).
+/board.db
+/*.db
+data/
+
+# Playwright's downloaded browsers are runtime state, not source.
+.playwright/
