@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "profile": "slow-4g",
+  "perAsset": {
+    "model": 262144,
+    "texture": 131072,
+    "audio": 65536
+  },
+  "totalBytes": 524288,
+  "coldStartMs": {
+    "p50": 1500,
+    "p95": 2500
+  }
+}

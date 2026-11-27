@@ -1,0 +1,44 @@
+$ bun src/assets/cli.ts build
+prune: Removed types... Accessor (4)
+prune: Removed types... Accessor (2)
+Total slices: 8
+Slice: 0, alpha: 0, orig width/height: 128x128, width/height: 128x128, first_block: 0, image_index: 0, mip_level: 0, iframe: 0
+Slice: 1, alpha: 0, orig width/height: 64x64, width/height: 64x64, first_block: 1024, image_index: 0, mip_level: 1, iframe: 0
+Slice: 2, alpha: 0, orig width/height: 32x32, width/height: 32x32, first_block: 1280, image_index: 0, mip_level: 2, iframe: 0
+Slice: 3, alpha: 0, orig width/height: 16x16, width/height: 16x16, first_block: 1344, image_index: 0, mip_level: 3, iframe: 0
+Slice: 4, alpha: 0, orig width/height: 8x8, width/height: 8x8, first_block: 1360, image_index: 0, mip_level: 4, iframe: 0
+Slice: 5, alpha: 0, orig width/height: 4x4, width/height: 4x4, first_block: 1364, image_index: 0, mip_level: 5, iframe: 0
+Slice: 6, alpha: 0, orig width/height: 2x2, width/height: 4x4, first_block: 1365, image_index: 0, mip_level: 6, iframe: 0
+Slice: 7, alpha: 0, orig width/height: 1x1, width/height: 4x4, first_block: 1366, image_index: 0, mip_level: 7, iframe: 0
+Mode: ETC1S Quality (0-255): 128, Comp Level (Effort, 0-6): 2
+basis_compressor::process: Success
+Total slices: 8
+Slice: 0, alpha: 0, orig width/height: 128x128, width/height: 128x128, first_block: 0, image_index: 0, mip_level: 0, iframe: 0
+Slice: 1, alpha: 0, orig width/height: 64x64, width/height: 64x64, first_block: 1024, image_index: 0, mip_level: 1, iframe: 0
+Slice: 2, alpha: 0, orig width/height: 32x32, width/height: 32x32, first_block: 1280, image_index: 0, mip_level: 2, iframe: 0
+Slice: 3, alpha: 0, orig width/height: 16x16, width/height: 16x16, first_block: 1344, image_index: 0, mip_level: 3, iframe: 0
+Slice: 4, alpha: 0, orig width/height: 8x8, width/height: 8x8, first_block: 1360, image_index: 0, mip_level: 4, iframe: 0
+Slice: 5, alpha: 0, orig width/height: 4x4, width/height: 4x4, first_block: 1364, image_index: 0, mip_level: 5, iframe: 0
+Slice: 6, alpha: 0, orig width/height: 2x2, width/height: 4x4, first_block: 1365, image_index: 0, mip_level: 6, iframe: 0
+Slice: 7, alpha: 0, orig width/height: 1x1, width/height: 4x4, first_block: 1366, image_index: 0, mip_level: 7, iframe: 0
+Mode: ETC1S Quality (0-255): 150, Comp Level (Effort, 0-6): 2
+basis_compressor::process: Success
+Asset budget report — APEX-6
+profile=slow-4g geometry=meshopt generatedAt=2026-11-27T04:33:52.510Z
+
+ASSET BUDGET: PASS
+  ok  ambient-loop                   8044 /      65536 B (audio)
+  ok  gate-arch                      4416 /     262144 B (model)
+  ok  tarmac                         1497 /     131072 B (texture)
+  total      13957 /     524288 B
+
+Content-addressed assets:
+  /assets/audio/ambient-loop.385e0597.wav  (8044 B, sha256:385e0597)
+  /assets/models/gate-arch.f7717c9f.glb  (4416 B, sha256:f7717c9f)
+  /assets/textures/tarmac.4d8ea45f.ktx2  (1497 B, sha256:4d8ea45f)
+
+Cold-start load [slow-4g] trials=200 seed=1: p50=521.3ms (budget 1500ms), p95=530.7ms (budget 2500ms) → PASS
+
+OVERALL: PASS
+
+evidence: /root/sarawedi-worktrees/wt/APEX-6/docs/evidence/APEX-6-budget-report.txt
