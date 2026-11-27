@@ -1,0 +1,45 @@
+# APEX-7 Player Playtest Verdict
+
+Seat: @player. Method: played the **built** game (`?race=<stage>`) in headless
+Chromium (WebGL2/SwiftShader) and sampled per-car telemetry every 100 ms through
+`AiRaceScene.snapshot()`, plus a filmstrip of frames. Raw data:
+`docs/evidence/APEX-7-playtest.json`.
+
+## What I did
+
+- Watched a full four-car AI race on `alpine-forest` and `canyon-sprint`.
+- Measured, from the live rendering loop: how many cars are on screen, whether any
+  left the road, the closest two cars ever got, and speed on corners vs straights.
+- Captured frames at ~1 s, 8 s, 16 s and 24 s (`APEX-7-playtest-<stage>-t<sec>.png`).
+
+## Result
+
+| Stage | Cars on screen (mean) | Off-road | Closest gap | Corner vs straight speed | All finish |
+| --- | --- | --- | --- | --- | --- |
+| alpine-forest | 4.0 / 4 | 0 | 2.26 m | 15.6 vs 20.0 m/s | yes |
+| canyon-sprint | 3.85 / 4 | 0 | 2.26 m | 13.9 vs 16.0 m/s | yes |
+
+- **Corner braking is natural.** Cars clearly slow before the tight sections and
+  build speed on the straights on both stages; the difference is visible in the
+  frames and in the numbers.
+- **You can watch the race.** The spectator camera frames the pack, so multiple
+  cars (usually all four) stay in shot instead of only the leader.
+- **They don't drive through each other.** The closest approach over a whole race
+  is ~2.26 m, comfortably more than a car width (1.8 m).
+- **They stay on the road.** Zero frames with a car beyond the ribbon edge.
+
+## Defect found and fixed during playtest
+
+The first playtest run failed: on `alpine-forest` two cars closed to **1.49 m**
+at the finish. Cause: the *visible scene* stopped finished cars in place instead
+of parking them, so finishers queued on the line and the next car drove into them
+(the headless simulator already avoided this). Fixed by sharing the simulator's
+parking helper (`parkOffLineCar`, now with distinct lateral slots) with the scene,
+and by framing only the racing cars in the camera. Re-run is clean (gap 2.26 m).
+
+## Verdict
+
+**PASS — the race is watchable and credible.** All acceptance criteria hold from
+the player's seat: multiple cars complete the stage on-surface, slow for corners,
+accelerate on straights, avoid contact, finish close, and the experience reads as
+a race.

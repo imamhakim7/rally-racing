@@ -163,8 +163,9 @@ function simulateRace(circuit: StageCircuit, opts?: RaceOptions): RaceResult;
   Then every car's finish time lies inside `[lowFactor·ref, highFactor·ref]`.
 - **AC5 Determinism** — Given the same `(circuit, cars, seed, dt)`, When the race is simulated
   twice, Then the finish times and trajectories are exactly equal; a different seed may differ.
-- **AC6 Visible race** — Given the built app, When the AI race scene runs in headless Chromium,
-  Then four cars are rendered on the road and a screenshot is captured as evidence.
+- **AC6 Visible race** — Given the built app (`?race=<stage>`), When the AI race
+  scene runs in headless Chromium, Then a spectator camera keeps the pack in shot,
+  four cars are rendered on the road, and a screenshot is captured as evidence.
 
 ## How to test
 
@@ -186,6 +187,9 @@ function simulateRace(circuit: StageCircuit, opts?: RaceOptions): RaceResult;
   (finish times, min separation, off-surface count, reference window); `ALL OK: true`.
 - `docs/evidence/APEX-7-race-alpine-forest.png` / `APEX-7-race-canyon-sprint.png` —
   1280×720 WebGL2 visible four-car races.
+- `docs/evidence/APEX-7-playtest.json` + `APEX-7-playtest-<stage>-t<sec>.png` —
+  player playtest of the built race (cars on screen, on-road, gaps, corner braking).
+- `docs/evidence/APEX-7-player-verdict.txt` — player acceptance verdict.
 - `docs/evidence/APEX-7-screenshot.txt` — headless capture run output (`ok: true`).
 - `docs/evidence/APEX-7-security.txt` — security review notes.
 - `docs/evidence/APEX-7-review.txt` — code review notes.

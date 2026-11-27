@@ -10,7 +10,7 @@ export {
   type DriverTuning,
 } from "./driver";
 export { physicsSurfaceAt, type PhysicsSurface } from "./surface";
-export { simulateRace, createRaceField, type RaceField } from "./race";
+export { simulateRace, createRaceField, parkOffLineCar, type RaceField } from "./race";
 export { mulberry32 } from "./rng";
 export type {
   CarResult,

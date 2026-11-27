@@ -5,9 +5,9 @@ $ vitest run
 
 
  Test Files  26 passed (26)
-      Tests  142 passed (142)
-   Start at  19:12:57
-   Duration  1.03s (tests 67%, import 18%, transform 11%, worker 3%)
+      Tests  143 passed (143)
+   Start at  19:20:17
+   Duration  1.05s (tests 69%, import 19%, transform 8%, worker 4%)
 
 exit=0
 
@@ -22,11 +22,11 @@ transforming...
 rendering chunks...
 computing gzip size...
 dist/index.html                  1.54 kB │ gzip:   0.70 kB
-dist/assets/index-Y6nAxjzR.js  569.25 kB │ gzip: 147.57 kB │ map: 3,045.72 kB
+dist/assets/index-Cqx2i0NQ.js  570.37 kB │ gzip: 147.99 kB │ map: 3,051.37 kB
 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 1.01s
+✓ built in 872ms
 exit=0

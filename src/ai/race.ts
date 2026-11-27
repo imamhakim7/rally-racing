@@ -36,13 +36,15 @@ interface GridSlot {
 }
 
 /** Move a finished car off the racing line so it cannot block later finishers. */
-function parkOffLine(
+export function parkOffLineCar(
   driver: CpuDriver,
   line: import("./types").RacingLine,
   halfWidth: number,
+  slot = 0,
 ): void {
   const end = line.points[line.points.length - 1]!;
-  const lateral = halfWidth + 2.5;
+  // Distinct lateral slots so two finishers never park on the same point.
+  const lateral = halfWidth + 3 + slot * 2.8;
   driver.vehicle.setState({
     x: end.position.x + end.normal.x * lateral,
     z: end.position.z + end.normal.z * lateral,
@@ -152,7 +154,7 @@ export function simulateRace(circuit: StageCircuit, options: RaceOptions = {}): 
       const command = driver.control(line, physicsSurfaceAt(circuit, t), drivers);
       if (driver.distance >= line.length - FINISH_TOLERANCE) {
         driver.markFinished(time);
-        parkOffLine(driver, line, halfWidth);
+        parkOffLineCar(driver, line, halfWidth, i);
         parked[i] = true;
         return { throttle: 0, brake: 0, steer: 0, handbrake: false };
       }

@@ -11,7 +11,7 @@ import type { SceneHandle } from "../engine/scene";
 import { clamp } from "../physics/util";
 import { buildStageWorld, disposeStageWorld } from "../stage/world";
 import type { StageCircuit, StageWorld } from "../stage/types";
-import { createRaceField } from "../ai/race";
+import { createRaceField, parkOffLineCar } from "../ai/race";
 import type { CpuDriver } from "../ai/driver";
 import { physicsSurfaceAt } from "../ai/surface";
 import { buildCarMesh } from "./carMesh";
@@ -19,6 +19,31 @@ import { buildCarMesh } from "./carMesh";
 export interface AiRaceSceneOptions {
   /** Deterministic skill seed (default 7). */
   seed?: number;
+}
+
+/** Per-car telemetry sample for playtest/QA tooling. */
+export interface RaceCarSample {
+  id: string;
+  x: number;
+  z: number;
+  yaw: number;
+  speed: number;
+  /** Offset from the road centreline (m); `|offset| <= roadHalfWidth` = on road. */
+  centerOffset: number;
+  /** Signed curvature at the car's line point (1/m). */
+  curvature: number;
+  progress: number;
+  finished: boolean;
+}
+
+/** A frame of player-facing telemetry from the visible race. */
+export interface RaceSnapshot {
+  time: number;
+  roadHalfWidth: number;
+  leaderId: string;
+  /** How many cars are inside the camera frustum this frame — are they visible? */
+  onScreen: number;
+  cars: RaceCarSample[];
 }
 
 export interface AiRaceScene extends SceneHandle {
@@ -29,6 +54,8 @@ export interface AiRaceScene extends SceneHandle {
   /** Arc-length progress of the leading car, 0..1. */
   readonly leaderProgress: number;
   readonly world: StageWorld;
+  /** Sample every car plus camera visibility (used by the playtest harness). */
+  snapshot(): RaceSnapshot;
 }
 
 const COLORS = [0xd23c3c, 0x38bdf8, 0xf2c94c, 0x5fbf7f, 0xc084fc, 0xfb923c];
@@ -76,17 +103,85 @@ export function createAiRaceScene(
     return drivers.reduce((best, d) => (d.distance > best.distance ? d : best), drivers[0]!);
   }
 
+  /** Cars still racing; falls back to all once everyone has finished. */
+  function framedDrivers(): CpuDriver[] {
+    const active = drivers.filter((d) => !d.finished);
+    return active.length > 0 ? active : drivers;
+  }
+
+  /**
+   * Spectator camera that frames the racing cars: it looks at their centroid and
+   * pulls back as they spread out, so a race is watchable (a leader-only chase
+   * loses the opponents as soon as the leader pulls away).
+   */
   function applyCamera(alpha: number): void {
-    const lead = leader();
-    const idx = drivers.indexOf(lead);
-    const prev = previous[idx]!;
-    const cur = current[idx]!;
-    const x = prev.x + (cur.x - prev.x) * alpha;
-    const z = prev.z + (cur.z - prev.z) * alpha;
-    const yaw = prev.yaw + (cur.yaw - prev.yaw) * alpha;
-    const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
-    camera.position.set(x - forward.x * 11, 5.4, z - forward.z * 11);
-    camera.lookAt(x + forward.x * 5, 1.1, z + forward.z * 5);
+    const framed = framedDrivers();
+    let cx = 0;
+    let cz = 0;
+    let forwardX = 0;
+    let forwardZ = 0;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+
+    for (const driver of framed) {
+      const i = drivers.indexOf(driver);
+      const a = previous[i]!;
+      const b = current[i]!;
+      const x = a.x + (b.x - a.x) * alpha;
+      const z = a.z + (b.z - a.z) * alpha;
+      const yaw = a.yaw + (b.yaw - a.yaw) * alpha;
+      cx += x;
+      cz += z;
+      forwardX += Math.sin(yaw);
+      forwardZ += Math.cos(yaw);
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+    const n = framed.length;
+    cx /= n;
+    cz /= n;
+
+    const len = Math.hypot(forwardX, forwardZ);
+    if (len < 1e-6) {
+      const frame = line.sampleAtDistance(leader().distance);
+      forwardX = frame.tangent.x;
+      forwardZ = frame.tangent.z;
+    } else {
+      forwardX /= len;
+      forwardZ /= len;
+    }
+
+    const spread = Math.max(maxX - minX, maxZ - minZ);
+    const distance = clamp(13 + spread * 0.8, 13, 46);
+    const height = clamp(6 + spread * 0.45, 6, 20);
+    camera.position.set(cx - forwardX * distance, height, cz - forwardZ * distance);
+    camera.lookAt(cx + forwardX * 6, 1.2, cz + forwardZ * 6);
+  }
+
+  const projection = new THREE.Vector3();
+
+  function countOnScreen(): number {
+    camera.updateMatrixWorld();
+    let count = 0;
+    for (const driver of framedDrivers()) {
+      const s = driver.vehicle.getState();
+      projection.set(s.x, 1, s.z).project(camera);
+      if (
+        projection.x >= -1 &&
+        projection.x <= 1 &&
+        projection.y >= -1 &&
+        projection.y <= 1 &&
+        projection.z >= -1 &&
+        projection.z <= 1
+      ) {
+        count += 1;
+      }
+    }
+    return count;
   }
 
   applyCamera(1);
@@ -106,17 +201,40 @@ export function createAiRaceScene(
     get leaderProgress() {
       return clamp(leader().distance / Math.max(line.length, 1), 0, 1);
     },
+    snapshot() {
+      return {
+        time: simulationTime,
+        roadHalfWidth: circuit.road.width / 2,
+        leaderId: leader().id,
+        onScreen: countOnScreen(),
+        cars: drivers.map((driver) => {
+          const s = driver.vehicle.getState();
+          return {
+            id: driver.id,
+            x: s.x,
+            z: s.z,
+            yaw: s.yaw,
+            speed: driver.speed(),
+            centerOffset: driver.centerOffset,
+            curvature: driver.curvature,
+            progress: clamp(driver.distance / Math.max(line.length, 1), 0, 1),
+            finished: driver.finished,
+          };
+        }),
+      };
+    },
     update(dt) {
       if (disposed) return;
       const step = dt > 0 && Number.isFinite(dt) ? dt : DT;
       simulationTime += step;
 
-      const inputs = drivers.map((driver) => {
+      const inputs = drivers.map((driver, i) => {
         if (driver.finished) return { throttle: 0, brake: 0.4, steer: 0, handbrake: false };
         const t = clamp(driver.distance / Math.max(line.length, 1), 0, 1);
         const command = driver.control(line, physicsSurfaceAt(circuit, t), drivers);
         if (driver.distance >= line.length - 0.5) {
           driver.markFinished(simulationTime);
+          parkOffLineCar(driver, line, circuit.road.width / 2, i);
           return { throttle: 0, brake: 0.4, steer: 0, handbrake: false };
         }
         return command;
