@@ -50,6 +50,12 @@ const MIME = {
 const server = createServer(async (req, res) => {
   try {
     const urlPath = decodeURIComponent((req.url ?? "/").split("?")[0]);
+    // Browsers request /favicon.ico unprompted; answer it so a 404 console error
+    // cannot mask (or fail) the gate. Real missing assets still 404 below.
+    if (urlPath === "/favicon.ico") {
+      res.writeHead(204).end();
+      return;
+    }
     let filePath = normalize(join(distRoot, urlPath === "/" ? "index.html" : urlPath));
     if (filePath !== distRoot && !filePath.startsWith(distRoot + sep)) {
       res.writeHead(403).end("forbidden");

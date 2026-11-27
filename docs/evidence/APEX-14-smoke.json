@@ -1,13 +1,13 @@
 {
-  "ok": false,
-  "generatedAt": "2026-11-27T23:37:37.029Z",
-  "origin": "http://127.0.0.1:35107",
+  "ok": true,
+  "generatedAt": "2026-11-27T23:40:16.328Z",
+  "origin": "http://127.0.0.1:44475",
   "hasDisplay": false,
   "engines": [
     {
       "engine": "chromium",
-      "outcome": "unknown",
-      "ok": false,
+      "outcome": "rendered",
+      "ok": true,
       "state": {
         "webgl2": true,
         "bodySupport": "full",
@@ -15,9 +15,9 @@
         "fallback": false,
         "fallbackMissing": null,
         "fallbackText": null,
-        "appRunning": false,
-        "level": null,
-        "preset": null
+        "appRunning": true,
+        "level": "full",
+        "preset": "high"
       },
       "problems": []
     }
@@ -40,16 +40,16 @@
     "problems": []
   },
   "wiring": {
-    "ok": false,
+    "ok": true,
     "raceId": "alpine-forest",
     "stage": {
-      "support": null,
-      "quality": null,
-      "scene": false,
-      "app": false,
-      "race": false,
-      "hud": false,
-      "minimap": false,
+      "support": "full",
+      "quality": "high",
+      "scene": true,
+      "app": true,
+      "race": true,
+      "hud": true,
+      "minimap": true,
       "stageOptions": 6,
       "firstStage": "alpine-forest"
     },
@@ -59,8 +59,6 @@
       "app": true,
       "stageScene": false
     },
-    "problems": [
-      "stage wiring incomplete: {\"support\":null,\"quality\":null,\"scene\":false,\"app\":false,\"race\":false,\"hud\":false,\"minimap\":false,\"stageOptions\":6,\"firstStage\":\"alpine-forest\"}"
-    ]
+    "problems": []
   }
 }
