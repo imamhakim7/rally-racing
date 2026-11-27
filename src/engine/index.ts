@@ -14,6 +14,8 @@ export interface CreateEngineOptions {
   now?: EngineAppOptions["now"];
   requestFrame?: EngineAppOptions["requestFrame"];
   cancelFrame?: EngineAppOptions["cancelFrame"];
+  onUpdate?: EngineAppOptions["onUpdate"];
+  onRender?: EngineAppOptions["onRender"];
   /** Escape hatch for tests: inject a fake renderer/scene. */
   rendererHandle?: RendererHandle;
   sceneHandle?: EngineAppOptions["sceneHandle"];
@@ -37,5 +39,7 @@ export function createEngine(
     now: options.now,
     requestFrame: options.requestFrame,
     cancelFrame: options.cancelFrame,
+    onUpdate: options.onUpdate,
+    onRender: options.onRender,
   });
 }

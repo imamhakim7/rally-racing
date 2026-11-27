@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "ignoredDuringCountdown": true,
+  "position": "P1 · 0:06.217",
+  "splitSum": 1.217,
+  "penalty": 5,
+  "total": 6.217,
+  "totalMatchesSplits": true,
+  "restartedElapsed": "0:06.217",
+  "backAtSelect": true,
+  "problems": []
+}

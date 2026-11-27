@@ -1,0 +1,42 @@
+# APEX-3 integration evidence — rebased onto current main — 2026-11-27T19:03:57Z
+HEAD: aeff0913b39fcc172c90e2f30ffb7446df0d69c7
+origin/main: 01ad0285d7b2a01e55dbb79afc9a4c9e209b737d
+
+## origin/main is an ancestor of HEAD (branch sits on current main)
+OK
+
+## merge-tree (clean == merges without conflicts)
+5045f9e2c6180c8de70291dadd3d58bb0c330323
+merge-tree exit=0
+
+## files changed vs main (APEX-3 delta only)
+ tests/results.test.ts                 |  65 +++++++
+ tests/session.test.ts                 | 157 ++++++++++++++++
+ 27 files changed, 2040 insertions(+), 14 deletions(-)
+
+## bun run typecheck
+$ tsc --noEmit
+## bun run test
+ Test Files  25 passed (25)
+      Tests  154 passed (154)
+   Start at  19:03:58
+   Duration  869ms (tests 62%, import 23%, transform 10%, worker 4%)
+
+## bun run build
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 977ms
+
+## race e2e (scripts/screenshot-race.mjs)
+{
+  "ok": true,
+  "ignoredDuringCountdown": true,
+  "position": "P1 · 0:06.200",
+  "splitSum": 1.2,
+  "penalty": 5,
+  "total": 6.2,
+  "totalMatchesSplits": true,
+  "restartedElapsed": "0:06.200",
+  "backAtSelect": true,
+  "problems": []
+}
+race exit=0

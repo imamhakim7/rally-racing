@@ -1,0 +1,40 @@
+# APEX-3 QA re-run verification — 2026-11-27T04:01:21Z
+commit: 325824dda59857db2529bcc39d11b051371db948  branch: feat/APEX-3-stage-race-loop-countdown-checkpoints
+
+## bun install --frozen-lockfile
+bun install v1.4.4 (38afee6c8)
+
+Checked 43 installs across 95 packages (no changes) [2.00ms]
+
+## bun run typecheck
+$ tsc --noEmit
+typecheck: OK
+
+## bun run test
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-3
+
+
+ Test Files  6 passed (6)
+      Tests  52 passed (52)
+   Start at  04:01:21
+   Duration  110ms (import 52%, tests 22%, transform 15%, worker 10%)
+
+
+## bun run build
+$ tsc --noEmit && vite build
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.65 kB │ gzip:   0.38 kB
+dist/assets/index-BKmHs_V6.js  545.90 kB │ gzip: 138.46 kB │ map: 2,923.44 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.10s
+build: OK
