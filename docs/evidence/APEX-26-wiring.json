@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "raceId": "alpine-forest",
+  "stage": {
+    "support": "full",
+    "quality": "high",
+    "scene": true,
+    "app": true,
+    "race": true,
+    "hud": true,
+    "minimap": true,
+    "stageOptions": 6,
+    "firstStage": "alpine-forest"
+  },
+  "race": {
+    "race": true,
+    "scene": true,
+    "app": true,
+    "stageScene": false
+  },
+  "problems": []
+}

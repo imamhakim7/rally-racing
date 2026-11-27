@@ -16,8 +16,13 @@
 // Without a display, headless Firefox is expected to take the fallback branch
 // (its WebGL2 is disabled), which is itself the behaviour under test.
 //
+// #APEX-26: this gate also boots the real bundle and asserts the entry-point
+// wiring that unit tests never import — the stage select + HUD telemetry/minimap
+// (#8) and the `?race=<stageId>` CPU scene — so a rebase that silently drops a
+// side of src/main.ts fails CI instead of shipping.
+//
 // Output: docs/evidence/APEX-14-smoke.json, docs/evidence/APEX-14-smoke-*.png,
-//         docs/evidence/APEX-14-fallback.png
+//         docs/evidence/APEX-14-fallback.png, docs/evidence/APEX-26-wiring.json
 import { createServer } from "node:http";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { extname, join, resolve, normalize, sep } from "node:path";
@@ -27,6 +32,7 @@ const distRoot = resolve(process.cwd(), "dist");
 const outDir = resolve(process.cwd(), "docs/evidence");
 const resultFile = join(outDir, "APEX-14-smoke.json");
 const fallbackFile = join(outDir, "APEX-14-fallback.png");
+const wiringFile = join(outDir, "APEX-26-wiring.json");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -44,6 +50,12 @@ const MIME = {
 const server = createServer(async (req, res) => {
   try {
     const urlPath = decodeURIComponent((req.url ?? "/").split("?")[0]);
+    // Browsers request /favicon.ico unprompted; answer it so a 404 console error
+    // cannot mask (or fail) the gate. Real missing assets still 404 below.
+    if (urlPath === "/favicon.ico") {
+      res.writeHead(204).end();
+      return;
+    }
     let filePath = normalize(join(distRoot, urlPath === "/" ? "index.html" : urlPath));
     if (filePath !== distRoot && !filePath.startsWith(distRoot + sep)) {
       res.writeHead(403).end("forbidden");
@@ -82,7 +94,10 @@ const FIREFOX_PREFS = {
 };
 
 function launchOptions(name) {
-  if (name === "chromium") return { headless: true, args: CHROMIUM_ARGS };
+  // CHROME_BIN lets a local/CI environment reuse an already-installed Chromium
+  // instead of Playwright's pinned download (handy offline).
+  const chromiumPath = process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : {};
+  if (name === "chromium") return { headless: true, args: CHROMIUM_ARGS, ...chromiumPath };
   if (name === "firefox") {
     return {
       headless: !hasDisplay,
@@ -92,6 +107,20 @@ function launchOptions(name) {
   }
   return { headless: true };
 }
+
+// SMOKE_ENGINES=chromium keeps a quick local run to one engine; CI runs all.
+const ALL_ENGINES = [
+  ["chromium", chromium],
+  ["firefox", firefox],
+  ["webkit", webkit],
+];
+const requestedEngines = (process.env.SMOKE_ENGINES ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const engines = requestedEngines.length
+  ? ALL_ENGINES.filter(([name]) => requestedEngines.includes(name))
+  : ALL_ENGINES;
 
 async function bootEngine(page, { forceUnsupported = false } = {}) {
   const url = forceUnsupported ? `${origin}/?forceUnsupported=1` : `${origin}/`;
@@ -133,6 +162,73 @@ async function bootEngine(page, { forceUnsupported = false } = {}) {
   return { state, outcome };
 }
 
+/**
+ * #APEX-26: the boot-wiring gate. A rebase once resolved src/main.ts with the
+ * branch side, silently reverting the HUD telemetry/minimap (#8) and the
+ * capability/support-screen wiring (#9/#APEX-14). typecheck, unit tests and the
+ * build stayed green because no unit test imports the entry point. This boots
+ * the real bundle and asserts both scenes are layered on the shared engine.
+ */
+async function checkWiring() {
+  const browser = await chromium.launch(launchOptions("chromium"));
+  const problems = [];
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    page.on("pageerror", (error) => problems.push(`pageerror: ${error.message}`));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") problems.push(`console: ${msg.text()}`);
+    });
+
+    await page.goto(`${origin}/`, { waitUntil: "load" });
+    await page
+      .waitForFunction(() => Boolean(window.apexStage?.race), { timeout: 15_000 })
+      .catch(() => {});
+    const stage = await page.evaluate(() => {
+      const api = window.apexStage;
+      const select = document.querySelector("#stage-select select");
+      return {
+        support: api?.support?.level ?? null,
+        quality: api?.quality?.id ?? null,
+        scene: Boolean(api?.scene),
+        app: Boolean(api?.app),
+        race: Boolean(api?.race),
+        hud: Boolean(api?.race?.hud),
+        minimap: typeof api?.race?.hud?.setMinimap === "function",
+        stageOptions: select ? select.options.length : 0,
+        firstStage: select?.options?.[0]?.value ?? null,
+      };
+    });
+    const stageOk =
+      Boolean(stage.support) &&
+      stage.scene &&
+      stage.app &&
+      stage.race &&
+      stage.hud &&
+      stage.minimap &&
+      stage.stageOptions >= 6;
+    if (!stageOk) problems.push(`stage wiring incomplete: ${JSON.stringify(stage)}`);
+
+    const raceId = stage.firstStage ?? "alpine-forest";
+    await page.goto(`${origin}/?race=${encodeURIComponent(raceId)}`, { waitUntil: "load" });
+    await page.waitForFunction(() => Boolean(window.apexRace), { timeout: 15_000 }).catch(() => {});
+    await page.waitForTimeout(500);
+    const race = await page.evaluate(() => ({
+      race: Boolean(window.apexRace),
+      scene: Boolean(window.apexRace?.scene),
+      app: Boolean(window.apexRace?.app),
+      stageScene: Boolean(window.apexStage),
+    }));
+    const raceOk = race.race && race.scene && race.app && !race.stageScene;
+    if (!raceOk) problems.push(`?race= wiring incomplete: ${JSON.stringify(race)}`);
+
+    const report = { ok: stageOk && raceOk && problems.length === 0, raceId, stage, race, problems };
+    await writeFile(wiringFile, `${JSON.stringify(report, null, 2)}\n`);
+    return report;
+  } finally {
+    await browser.close();
+  }
+}
+
 async function runEngine(name, type) {
   const browser = await type.launch(launchOptions(name));
   const problems = [];
@@ -163,11 +259,7 @@ await mkdir(outDir, { recursive: true });
 
 const results = [];
 try {
-  for (const [name, type] of [
-    ["chromium", chromium],
-    ["firefox", firefox],
-    ["webkit", webkit],
-  ]) {
+  for (const [name, type] of engines) {
     try {
       results.push(await runEngine(name, type));
     } catch (error) {
@@ -185,7 +277,7 @@ try {
   // an unsupported browser sees, rendered in Chromium.
   let fallbackEvidence = { ok: false, path: fallbackFile, problems: [] };
   {
-    const browser = await chromium.launch({ headless: true, args: CHROMIUM_ARGS });
+    const browser = await chromium.launch(launchOptions("chromium"));
     try {
       const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
       const problems = [];
@@ -204,7 +296,9 @@ try {
     }
   }
 
-  const ok = results.every((r) => r.ok) && fallbackEvidence.ok;
+  const wiring = await checkWiring();
+
+  const ok = results.every((r) => r.ok) && fallbackEvidence.ok && wiring.ok;
   const report = {
     ok,
     generatedAt: new Date().toISOString(),
@@ -212,6 +306,7 @@ try {
     hasDisplay,
     engines: results,
     forcedUnsupported: fallbackEvidence,
+    wiring,
   };
   await mkdir(outDir, { recursive: true });
   await writeFile(resultFile, `${JSON.stringify(report, null, 2)}\n`);

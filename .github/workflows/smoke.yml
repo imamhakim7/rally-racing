@@ -1,0 +1,55 @@
+# #APEX-26: the browser smoke gate.
+#
+# Unit tests never import `src/main.ts`, so the entry-point wiring — the WebGL2
+# capability gate, the stage HUD telemetry/minimap, and the `?race=<stageId>`
+# CPU scene — is only observable by booting the built bundle. A rebase once
+# dropped half of it and every other check stayed green. This job boots the
+# bundle on every push/PR and fails when a seam disappears.
+name: smoke
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  browsers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.65.1
+
+      - name: Install browsers and a display
+        run: |
+          bunx playwright install --with-deps chromium firefox webkit
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Build
+        run: bun run build
+
+      - name: Browser smoke (support matrix + boot wiring)
+        run: xvfb-run -a bun run smoke:browsers
+
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-smoke-evidence
+          path: |
+            docs/evidence/APEX-14-smoke*
+            docs/evidence/APEX-14-fallback.png
+            docs/evidence/APEX-26-wiring.json
