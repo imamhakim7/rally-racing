@@ -1,0 +1,116 @@
+# APEX-2 verification evidence (2026-11-27T03:58:17Z)
+
+## tsc --noEmit
+OK: no type errors
+
+## vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-2
+
+ ✓ tests/vehicle.test.ts > Vehicle — longitudinal handling > accelerates from rest under throttle 2ms
+ ✓ tests/vehicle.test.ts > Vehicle — longitudinal handling > brakes to a stop much faster than it coasts 1ms
+ ✓ tests/vehicle.test.ts > Vehicle — longitudinal handling > reverses when the brake is held from standstill 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — longitudinal handling > does not creep when left alone at rest 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — speed-sensitive steering > reduces the commanded steer angle as speed rises 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — speed-sensitive steering > applies a smaller road-wheel angle at high speed 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — speed-sensitive steering > turns the heading in the commanded direction 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — handbrake drift > initiates a drift that recovers when the handbrake is released 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — surface-dependent grip > turns less (a wider line) on gravel than on tarmac 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — surface-dependent grip > slides wider — a larger front slip angle — on gravel 0ms
+ ✓ tests/vehicle.test.ts > Vehicle — surface-dependent grip > takes longer to reach the same heading on gravel 1ms
+ ✓ tests/vehicle.test.ts > Vehicle — surface-dependent grip > brakes over a longer distance on gravel 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > advances exactly N fixed steps for a given elapsed time (AC1) 2ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > always steps the simulation by exactly fixedDelta 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > accumulates leftover time across ticks and interpolates in [0,1) (AC2) 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > exposes a fractional interpolation factor for a partial frame 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > clamps a long frame to maxDelta to avoid a spiral of death (AC3) 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > ignores non-positive or non-finite elapsed time without NaN 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > schedules and cancels frames through the injected clock 1ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > stops ticking once disposed 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > does not arm another frame when stop() runs inside update() 0ms
+ ✓ tests/loop.test.ts > FixedTimestepLoop > restart after a stop-in-update keeps exactly one frame chain 0ms
+ ✓ tests/pacejka.test.ts > simplified Pacejka tyre curve > is zero at zero slip and odd around the origin 7ms
+ ✓ tests/pacejka.test.ts > simplified Pacejka tyre curve > never exceeds the peak force 3ms
+ ✓ tests/pacejka.test.ts > simplified Pacejka tyre curve > reaches its peak at pacejkaPeakSlip 0ms
+ ✓ tests/pacejka.test.ts > simplified Pacejka tyre curve > builds force monotonically up to the peak 0ms
+ ✓ tests/pacejka.test.ts > simplified Pacejka tyre curve > is inert for non-finite input 0ms
+ ✓ tests/framerate.test.ts > frame-rate independence > runs the same number of fixed steps at 30/60/144 fps 7ms
+ ✓ tests/framerate.test.ts > frame-rate independence > records the same trajectory at 30/60/144 fps 6ms
+ ✓ tests/framerate.test.ts > frame-rate independence > produces a curved, non-trivial path to compare 0ms
+ ✓ tests/app.test.ts > EngineApp > drives the scene and renderer for exactly N fixed steps (AC1/AC2) 4ms
+ ✓ tests/app.test.ts > EngineApp > disposes the loop, scene and renderer exactly once (AC4) 1ms
+ ✓ tests/app.test.ts > EngineApp > starts and stops scheduling through the injected frame clock (AC4) 1ms
+ ✓ tests/app.test.ts > EngineApp > guards resize against a zero-sized canvas 0ms
+ ✓ tests/scene.test.ts > createPlaceholderScene > builds a populated scene with a perspective camera 5ms
+ ✓ tests/scene.test.ts > createPlaceholderScene > keeps the camera aspect in sync with resize and guards zero size 2ms
+ ✓ tests/scene.test.ts > createPlaceholderScene > interpolates the placeholder transform between updates 2ms
+ ✓ tests/scene.test.ts > createPlaceholderScene > disposes every geometry and material exactly once (AC4) 6ms
+ ✓ tests/physicsTestScene.test.ts > physics test scene > builds a drivable scene with the default vehicle and surface map 7ms
+ ✓ tests/physicsTestScene.test.ts > physics test scene > steps the vehicle and reports telemetry through the callback 2ms
+ ✓ tests/physicsTestScene.test.ts > physics test scene > samples the surface under the car 1ms
+ ✓ tests/physicsTestScene.test.ts > physics test scene > honours setInput when no input source is wired 5ms
+ ✓ tests/physicsTestScene.test.ts > physics test scene > resizes and disposes idempotently 3ms
+ ✓ tests/surface.test.ts > surface definitions > defines every surface with matching id/label 2ms
+ ✓ tests/surface.test.ts > surface definitions > orders grip tarmac > gravel > mud > ice, measurably 1ms
+ ✓ tests/surface.test.ts > surface definitions > resolves a point to its zone or the fallback 0ms
+ ✓ tests/surface.test.ts > surface definitions > lays the lane map out tarmac → gravel → mud → ice along +X 1ms
+ ✓ tests/input.test.ts > keyboard input > maps WASD/arrows/space to a vehicle command 2ms
+ ✓ tests/input.test.ts > keyboard input > tracks keydown/keyup through an injected target 0ms
+ ✓ tests/debug.test.ts > debug HUD > converts telemetry to degrees and carries the surface label 2ms
+ ✓ tests/debug.test.ts > debug HUD > formats speed, slip and surface into readable lines 0ms
+ ✓ tests/debug.test.ts > debug overlay > writes telemetry text and surface/drift attributes to the element 0ms
+ ✓ tests/debug.test.ts > debug overlay > clears the element on dispose 0ms
+
+ Test Files  10 passed (10)
+      Tests  53 passed (53)
+   Start at  03:58:18
+   Duration  143ms (import 46%, tests 32%, transform 12%, worker 10%, environment 1%)
+
+
+## vite build
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 895ms
+
+## headless scene screenshot (Chromium SwiftShader WebGL2)
+{
+  "ok": true,
+  "outFile": "/root/sarawedi-worktrees/wt/APEX-2/docs/evidence/APEX-2-scene.png",
+  "driftFile": "/root/sarawedi-worktrees/wt/APEX-2/docs/evidence/APEX-2-drift.png",
+  "diagnostic": {
+    "initial": {
+      "hasCanvas": true,
+      "width": 1280,
+      "height": 720,
+      "webgl2": true,
+      "renderer": "WebKit WebGL",
+      "overlay": "Speed    0 km/h\nFwd/Lat  +0.0 / +0.0 m/s\nSlip     +0.0°  (F +0.0° / R +0.0°)\nSteer    +0.0°   Yaw +0°/s\nSurface  Tarmac",
+      "surface": "tarmac",
+      "drifting": "false"
+    },
+    "driving": {
+      "hasCanvas": true,
+      "width": 1280,
+      "height": 720,
+      "webgl2": true,
+      "renderer": "WebKit WebGL",
+      "overlay": "Speed    47 km/h\nFwd/Lat  +13.1 / -0.4 m/s\nSlip     -1.9°  (F -19.8° / R -4.0°)\nSteer    +19.9°   Yaw +20°/s\nSurface  Gravel",
+      "surface": "gravel",
+      "drifting": "false"
+    },
+    "drift": {
+      "hasCanvas": true,
+      "width": 1280,
+      "height": 720,
+      "webgl2": true,
+      "renderer": "WebKit WebGL",
+      "overlay": "Speed    47 km/h\nFwd/Lat  +11.8 / -5.5 m/s\nSlip     -24.8°  (F -41.3° / R -27.3°)\nSteer    +19.8°   Yaw +33°/s\nSurface  Mud  • DRIFT",
+      "surface": "mud",
+      "drifting": "true"
+    }
+  },
+  "problems": []
+}
