@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:33359",
+  "firstFile": "/root/sarawedi-worktrees/wt/APEX-4/docs/evidence/APEX-4-stage-alpine-forest.png",
+  "secondFile": "/root/sarawedi-worktrees/wt/APEX-4/docs/evidence/APEX-4-stage-canyon-sprint.png",
+  "before": {
+    "hasCanvas": true,
+    "webgl2": true,
+    "renderer": "WebKit WebGL",
+    "stageCount": 6,
+    "stages": [
+      "alpine-forest",
+      "canyon-sprint",
+      "coastal-cliffs",
+      "desert-dunes",
+      "mountain-pass",
+      "valley-rally"
+    ],
+    "current": "alpine-forest",
+    "gateCount": 5
+  },
+  "after": {
+    "current": "canyon-sprint",
+    "gateCount": 5,
+    "roadVertices": 314
+  },
+  "problems": []
+}

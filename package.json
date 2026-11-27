@@ -5,7 +5,10 @@
   "type": "module",
   "description": "Apex Rally — browser rally game built on three.js, with a glTF/KTX2 asset pipeline",
   "scripts": {
+    "gen:stages": "bun scripts/generate-stage-index.ts",
+    "predev": "bun run gen:stages",
     "dev": "vite",
+    "prebuild": "bun run gen:stages",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit",
@@ -14,7 +17,10 @@
     "screenshot": "bun run build && bun scripts/screenshot.mjs",
     "assets:sample": "bun src/assets/sample.ts",
     "assets:build": "bun src/assets/cli.ts build",
-    "assets:check": "bun src/assets/cli.ts check"
+    "assets:check": "bun src/assets/cli.ts check",
+    "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
+    "validate:stage": "bun scripts/validate-stage.ts",
+    "check:normals": "bun scripts/check-normals.ts"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",

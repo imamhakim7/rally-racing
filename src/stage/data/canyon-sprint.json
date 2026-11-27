@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "canyon-sprint",
+  "name": "Canyon Sprint",
+  "biome": "canyon",
+  "difficulty": 4,
+  "start": { "position": [0, 0, 0], "headingDeg": 38 },
+  "finish": { "t": 1.0, "gate": { "width": 11, "height": 6 } },
+  "spline": {
+    "closed": false,
+    "tension": 0.55,
+    "points": [
+      { "x": 0, "y": 0, "z": 0 },
+      { "x": 35, "y": 5, "z": 45 },
+      { "x": 45, "y": 12, "z": 100 },
+      { "x": 30, "y": 18, "z": 150 },
+      { "x": 0, "y": 20, "z": 190 },
+      { "x": -40, "y": 16, "z": 200 },
+      { "x": -80, "y": 10, "z": 170 }
+    ]
+  },
+  "road": { "width": 8, "sampleStep": 2, "surface": "gravel", "bankingDeg": 4 },
+  "checkpoints": [
+    { "id": "cp-mouth", "name": "Canyon Mouth", "t": 0.25, "width": 10, "height": 6 },
+    { "id": "cp-narrows", "name": "The Narrows", "t": 0.5, "width": 10, "height": 6 },
+    { "id": "cp-overhang", "name": "Overhang", "t": 0.7, "width": 10, "height": 6 },
+    { "id": "cp-riverbed", "name": "Riverbed", "t": 0.9, "width": 11, "height": 6 }
+  ],
+  "surfaces": [
+    { "id": "sz-bench", "surface": "gravel", "from": 0.0, "to": 0.3, "grip": 0.68 },
+    { "id": "sz-sand", "surface": "sand", "from": 0.3, "to": 0.65, "grip": 0.6 },
+    { "id": "sz-exit", "surface": "gravel", "from": 0.65, "to": 1.0, "grip": 0.68 }
+  ],
+  "minimap": { "color": "#d98c4a", "path": "auto" }
+}
