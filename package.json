@@ -19,6 +19,7 @@
     "assets:build": "bun src/assets/cli.ts build",
     "assets:check": "bun src/assets/cli.ts check",
     "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
+    "screenshot:race": "bun run build && bun scripts/screenshot-race.mjs",
     "validate:stage": "bun scripts/validate-stage.ts",
     "check:normals": "bun scripts/check-normals.ts"
   },

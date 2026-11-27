@@ -1,0 +1,85 @@
+# APEX-3 security gate — stage race loop (countdown, checkpoints, finish, results)
+# breaker: seat-security (persona: security) — 2026-11-27
+# artifact: branch feat/APEX-3-stage-race-loop-countdown-checkpoints @ 6b1378b
+# base: origin/main 01ad028 (ancestor of HEAD, merge-tree clean)
+
+## VERDICT: PASS — 0 Critical / 0 High / 0 Medium findings.
+Residual risk (Low/informational only) stated at the bottom. No linked bug opened.
+
+## 1. Change surface (trust-relevant)
+Client-side TypeScript only. New: src/race/{types,stage,race,results,session,hud,index}.ts,
+scripts/screenshot-race.mjs, docs/*, README, one package.json script. Modified: the engine
+composition hooks (src/engine/app.ts,index.ts) and src/main.ts. No server, no API, no auth,
+no persistence (all explicit non-goals in the openspec).
+
+## 2. Trust boundaries (STRIDE)
+TB1 Browser DOM  <-> race HUD.       TB2 developer-authored stage data -> state machine.
+TB3 Keyboard events -> gate crossings. TB4 dev-only static file server (e2e). TB5 deps/build.
+- Spoofing: n/a — no identity, no authn/authz, no network, single local player.
+- Tampering: stage data and gate events are injected by trusted game code. The controller is
+  client-authoritative and a player can edit their own score in devtools, but there is no
+  server, no comparison across players and no persistence, so this is not a security boundary
+  yet (residual risk R1). defineStage() rejects malformed/duplicate/non-dense stages.
+- Repudiation: n/a — no server-side action to audit.
+- Information disclosure: no PII, no secrets, no network calls. HUD renders every dynamic
+  value through Node.textContent (never innerHTML), grepped clean below.
+- Denial of service: update(dt) sanitises input (rejects non-finite/<=0, clamps to maxDelta),
+  so NaN/Infinity or a huge stalled-tab delta cannot poison the clock; keyword handler ignores
+  auto-repeat; all loops are bounded by checkpoint count.
+- Elevation of privilege: n/a — no auth surface.
+
+## 3. OWASP Top 10 (2021)
+A01 Broken Access Control      n/a (no endpoints/objects) — n/a
+A02 Cryptographic Failures     n/a (no crypto, no secrets) — n/a
+A03 Injection                  PASS — no SQL/shell; DOM via textContent only; the sole
+                               template literals interpolate validated numbers.
+A04 Insecure Design            PASS with documented residual (client-authoritative, R1).
+A05 Security Misconfiguration  PASS — e2e server binds 127.0.0.1:0 (ephemeral, loopback only)
+                               and normalises+prefix-checks paths to block traversal; catches
+                               bad decode -> 404. `--no-sandbox` is dev/test-only, pre-existing
+                               across all screenshot scripts (R3). build sourcemap:true is
+                               pre-existing APEX-1 config, not introduced here (R2).
+A06 Vulnerable Components      PASS — `bun audit`: "No vulnerabilities found (checked 144
+                               packages)". No runtime CDN imports in the race code.
+A07 Auth Failures              n/a
+A08 Data Integrity Failures    PASS — bun.lock present; evidence uses --frozen-lockfile; deps
+                               version-pinned; no dynamic remote code.
+A09 Logging Failures           PASS — no logging of sensitive data; screenshot script logs only
+                               timings/positions.
+A10 SSRF                       n/a — no server-side fetches.
+LLM Top 10                     n/a — no AI/LLM feature in this change.
+
+## 4. Evidence commands + output
+$ grep -rn "innerHTML|outerHTML|insertAdjacentHTML|document.write|eval\(|new Function" \
+      src/race src/engine src/main.ts scripts/screenshot-race.mjs
+  -> none
+$ grep -rn "fetch|XMLHttpRequest|localStorage|sessionStorage|document.cookie|WebSocket" src/race
+  -> none
+$ grep -rniE "password|secret|token|api[_-]?key|authorization|bearer|private[_-]?key" \
+      src/race src/main.ts scripts/screenshot-race.mjs
+  -> none
+$ git ls-files | grep -iE "\.env$|\.env\.|\.pem$|\.key$|id_rsa|\.db$|credential|secret"
+  -> none tracked
+$ bun audit
+  bun audit v1.4.4
+  No vulnerabilities found (checked 144 packages) [3.09s]
+$ grep -rn "no-sandbox" scripts/   -> screenshot.mjs, screenshot-stage.mjs, screenshot-race.mjs
+  (pre-existing dev/test harness pattern)
+
+## 5. Input validation (reviewed)
+- defineStage: id/finishId present; >=1 checkpoint; unique ids; dense ascending index;
+  finish-id collision rejected; countdown/penalty/maxPenalties >= 0; opponent time finite >= 0.
+- RaceController: maxDelta > 0 enforced in ctor; sanitizeDelta guards the per-step clock.
+- crossGate: unknown gate ignored; already-crossed ignored; ordering enforced.
+- results.formatTime: clamps negative/NaN/Infinity to 0 (no format-string surprise).
+
+## 6. Residual risk (accepted, non-blocking)
+R1 (Low) Race results are client-authoritative with no server validation. Acceptable while
+   single-player and unpersisted; if competitive/networked results are added, totals MUST be
+   validated server-side. Not in this ticket's scope.
+R2 (Low) Production bundle ships sourcemaps (vite build.sourcemap=true, pre-existing APEX-1
+   config). Exposes source, not secrets. Consider disabling for production in a follow-up.
+R3 (Low) Playwright launches Chromium with --no-sandbox in the dev/test harness (pre-existing
+   across all screenshot scripts); the served content is the locally-built dist/ only.
+R4 (Info) The engine renders the HUD once per fixed step and again on onRender (redundant work);
+   cosmetic, no security impact.

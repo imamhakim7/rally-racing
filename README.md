@@ -259,3 +259,60 @@ first.
   normals (regression guard for the flat-stage normal defect).
 - `bun scripts/screenshot-stage.mjs` — renders two stages through the real stage select in
   headless Chromium and writes `docs/evidence/APEX-4-stage-*.png`.
+
+## Stage race loop
+
+A stage is a countdown, a timed run through **ordered** checkpoints and a finish, giving a
+result to compare against CPU opponents. `RaceController` owns every piece of race state;
+the engine's fixed-timestep loop drives it through `update(dt)` and the world reports gate
+crossings through `crossGate(id)`, so timing is deterministic and frame-rate independent.
+
+```
+stage_select --startStage--> countdown --countdownSeconds--> racing
+racing --crossGate(all checkpoints + finish)--> finished
+racing --missed > maxPenalties--> invalidated
+finished|invalidated --restart--> countdown
+finished|invalidated|racing|countdown --quit--> stage_select
+```
+
+### Module structure (`src/race/`)
+
+| Module | Responsibility |
+| --- | --- |
+| `src/race/types.ts` | Domain types: `RacePhase`, `StageDefinition`, `CheckpointDef`, `Split`, `RaceResult`, `Standing`. |
+| `src/race/stage.ts` | `defineStage` + `createDemoStage` — gate order, countdown, penalty rules and opponent times. |
+| `src/race/race.ts` | `RaceController` — the `stage_select → countdown → racing → finished` state machine: timer, ordered checkpoints, penalties, splits. |
+| `src/race/results.ts` | `sumSplits`, `rankStandings`, `formatTime` — split summation, position and time formatting. |
+| `src/race/hud.ts` | `RaceHud` — DOM overlay for stage select, countdown, live timer and the results table. |
+| `src/race/session.ts` | `StageSession` — binds one `RaceController` to the engine clock and gate events. |
+| `src/race/index.ts` | `bootRace()` — composes session + HUD with keyboard gate crossings. |
+
+### Rules
+
+- **Countdown gates input.** `crossGate` is ignored unless `phase === "racing"`, and the
+  timer starts at 0 the instant the countdown ends.
+- **Checkpoints are ordered.** Crossing a later gate implies the ones in between were
+  missed: each costs `penaltySeconds`; more than `maxPenalties` invalidates the run.
+- **Finish stops the timer** and ranks the total against fixed opponent times for position.
+- **`result.totalTime === sum(splits.delta) + penaltySeconds`** — the results table shows
+  the per-gate split and cumulative time so the identity is visible.
+- **Restart / quit reset every field**; no page reload is needed.
+
+Since in-world gate detection is not part of this ticket (see `docs/openspecs/APEX-3.md`
+non-goals), the HUD hosts a keyboard harness to simulate driving through gates: `1..9`
+cross checkpoint N, `F` crosses the finish (both only while racing), `R` restarts and `Q`
+quits to stage select.
+
+### Verification
+
+- `tests/race.test.ts` — one `describe` per acceptance criterion: countdown gating, ordered
+  checkpoints, misses → penalty/invalidation, finish position/total, total = Σsplits, and
+  restart/quit reset.
+- `tests/results.test.ts` — split summation, ranking (incl. ties) and time formatting.
+- `tests/session.test.ts` — engine `tick()` drives the race clock; restart/quit reset; the
+  `onUpdate`/`onRender` hooks fire once per step/frame.
+- `bun scripts/screenshot-race.mjs` — drives a full stage in headless Chromium and captures
+  `docs/evidence/APEX-3-{stage-select,countdown,results,restart}.png`, asserting the
+  countdown gates input, the skip adds a penalty, total = Σsplits + penalty, and restart /
+  quit return to stage select.
+

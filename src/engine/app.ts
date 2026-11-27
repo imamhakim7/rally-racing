@@ -19,6 +19,14 @@ export interface EngineAppOptions {
   now?: () => number;
   requestFrame?: LoopOptions["requestFrame"];
   cancelFrame?: LoopOptions["cancelFrame"];
+  /**
+   * Called once per fixed simulation step, after the scene update, with `dt`
+   * equal to the fixed delta. Lets non-scene systems (e.g. the race loop) share
+   * the same deterministic clock. Defaults to a no-op.
+   */
+  onUpdate?: (dt: number) => void;
+  /** Called once per rendered frame, after interpolation. Defaults to a no-op. */
+  onRender?: (alpha: number) => void;
 }
 
 export class EngineApp {
@@ -35,10 +43,14 @@ export class EngineApp {
     this.sceneHandle = options.sceneHandle;
     this.loop = new FixedTimestepLoop(
       {
-        update: (dt) => this.sceneHandle.update(dt),
+        update: (dt) => {
+          this.sceneHandle.update(dt);
+          options.onUpdate?.(dt);
+        },
         render: (alpha) => {
           this.sceneHandle.interpolate(alpha);
           this.renderer.render(this.sceneHandle.scene, this.sceneHandle.camera);
+          options.onRender?.(alpha);
         },
       },
       {

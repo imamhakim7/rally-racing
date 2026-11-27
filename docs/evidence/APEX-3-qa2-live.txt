@@ -1,0 +1,14 @@
+# APEX-3 QA live e2e (shipped scripts/screenshot-race.mjs) — 2026-11-27T04:01:32Z
+
+{
+  "ok": true,
+  "ignoredDuringCountdown": true,
+  "position": "P1 · 0:06.183",
+  "splitSum": 1.1829999999999998,
+  "penalty": 5,
+  "total": 6.183,
+  "totalMatchesSplits": true,
+  "restartedElapsed": "0:06.183",
+  "backAtSelect": true,
+  "problems": []
+}

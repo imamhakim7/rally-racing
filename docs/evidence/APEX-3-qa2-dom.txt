@@ -1,0 +1,25 @@
+# APEX-3 QA DOM e2e probe (21 checks) — 2026-11-27T04:02:08Z
+
+PASS stage_select panel visible
+PASS exactly one HUD overlay
+PASS canvas aria-label present
+PASS countdown panel visible
+PASS live timer hidden in countdown
+PASS countdown shows 1-3
+PASS countdown gates gate keys
+PASS timer increments while racing
+PASS missed-checkpoint penalty shown live
+PASS results headers Gate/Split/Time
+PASS results show position :: P1 · 0:06.383
+PASS finish split present
+PASS penalties row present
+PASS player standing marked
+PASS total == sum(splits)+penalty :: 6.383 vs 1.383+5
+PASS restart -> countdown
+PASS results hidden after restart
+PASS timer resets near 0 after restart
+PASS quit -> stage_select
+PASS no page reload
+PASS single HUD after restart/quit
+
+SUMMARY: 21 passed, 0 failed, 0 console errors
