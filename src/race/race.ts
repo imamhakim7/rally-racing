@@ -1,4 +1,10 @@
-import { playerPosition, rankStandings, sumSplits } from "./results";
+import {
+  playerPosition,
+  positionForTime,
+  rankStandings,
+  referenceTimeAt,
+  sumSplits,
+} from "./results";
 import type {
   CheckpointDef,
   RacePhase,
@@ -20,6 +26,11 @@ const STEP_EPSILON = 1e-9;
 function sanitizeDelta(dt: number, maxDelta: number): number {
   if (!Number.isFinite(dt) || dt <= 0) return 0;
   return Math.min(dt, maxDelta);
+}
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(1, Math.max(0, value));
 }
 
 /**
@@ -92,6 +103,50 @@ export class RaceController {
 
   get result(): RaceResult | null {
     return this._result;
+  }
+
+  /** The most recent split recorded, or `null` before the first gate. */
+  get lastSplit(): Split | null {
+    return this._splits[this._splits.length - 1] ?? null;
+  }
+
+  /**
+   * Fraction of the route completed, in [0,1], for the HUD's progress dot.
+   *
+   * Uses the reference pace when the stage declares it (race-time fraction at
+   * the last gate over the target total), otherwise the gate-index fraction.
+   * `1` at the finish, `0` before the first split.
+   */
+  get progressRatio(): number {
+    if (this._phase === "finished") return 1;
+    if (!this._stage) return 0;
+    const last = this.lastSplit;
+    if (!last) return 0;
+
+    const reference = this._stage.referenceSplits;
+    const target = referenceTimeAt(reference, this._stage.finishId);
+    const reached = referenceTimeAt(reference, last.checkpointId);
+    if (target !== null && reached !== null && target > 0) {
+      return clamp01(reached / target);
+    }
+
+    const gateCount = this._stage.checkpoints.length + 1;
+    return clamp01((last.index + 1) / gateCount);
+  }
+
+  /**
+   * Live (projected) finish position while racing: the player's current pace
+   * extrapolated to the line and ranked against fixed opponent times. `null`
+   * until the first split, so the HUD never claims a position on the start
+   * line. Not a substitute for `result.position` once finished.
+   */
+  get projectedPosition(): number | null {
+    if (!this._stage || this._phase !== "racing") return null;
+    if (!this.lastSplit) return null;
+    const ratio = this.progressRatio;
+    if (!(ratio > 0)) return null;
+    const projectedFinish = this._elapsed / ratio;
+    return positionForTime(projectedFinish, this._stage.opponents);
   }
 
   /**

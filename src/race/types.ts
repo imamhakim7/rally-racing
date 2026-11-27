@@ -30,6 +30,18 @@ export interface OpponentDef {
   time: number;
 }
 
+/**
+ * A target ("reference") cumulative time at one gate, used by the HUD to show
+ * whether the player is ahead of or behind pace. `time` is race time at the
+ * point the gate is crossed, so the finish entry is the target total.
+ */
+export interface ReferenceSplit {
+  /** Gate id: a checkpoint id, or the stage `finishId`. */
+  checkpointId: string;
+  /** Cumulative target race time in seconds. */
+  time: number;
+}
+
 /** The immutable definition of a stage: gates, timing and penalty rules. */
 export interface StageDefinition {
   id: string;
@@ -46,6 +58,12 @@ export interface StageDefinition {
   maxPenalties: number;
   /** CPU times the player's total is ranked against. */
   opponents: OpponentDef[];
+  /**
+   * Optional target pace per gate (cumulative seconds). When present the HUD
+   * shows green/red split deltas and projects the live position against it;
+   * when absent the HUD falls back to gate-index progress.
+   */
+  referenceSplits?: ReferenceSplit[];
 }
 
 /** A timing split recorded at a checkpoint or at the finish. */

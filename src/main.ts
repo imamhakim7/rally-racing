@@ -5,7 +5,7 @@ import {
   mountStageSelect,
   type StageSceneHandle,
 } from "./stage";
-import { bootRace } from "./race";
+import { bootRace, createTelemetryHarness } from "./race";
 
 /**
  * Browser entry point. Boots the engine with the stage scene and wires the
@@ -32,13 +32,28 @@ const sceneHandle: StageSceneHandle = createStageScene(library);
 
 // Stage race loop: countdown -> ordered checkpoints -> finish -> results. Gate
 // crossings are injected via the HUD's keyboard harness until in-world gate
-// detection lands; the race clock rides the engine's fixed step.
-const race = bootRace();
+// detection lands; the race clock rides the engine's fixed step. Speed comes
+// from a keyboard-driven vehicle harness (same interim pattern) and the
+// minimap from the resolved stage world.
+const telemetry = createTelemetryHarness();
+const race = bootRace({ telemetry, minimap: sceneHandle.world.minimap });
+
+// Keep the minimap in sync when the stage select swaps the circuit.
+let minimapCircuitId = sceneHandle.current.id;
+const syncMinimap = (): void => {
+  if (sceneHandle.current.id !== minimapCircuitId) {
+    minimapCircuitId = sceneHandle.current.id;
+    race.hud.setMinimap(sceneHandle.world.minimap);
+  }
+};
 
 const app: EngineApp = createEngine(canvas, {
   sceneHandle,
   onUpdate: (dt) => race.update(dt),
-  onRender: () => race.render(),
+  onRender: () => {
+    syncMinimap();
+    race.render();
+  },
 });
 app.start();
 

@@ -41,6 +41,21 @@ export function defineStage(stage: StageDefinition): StageDefinition {
     }
   }
 
+  const knownGates = new Set<string>([...seen, finishId]);
+  let previousReference = Number.NEGATIVE_INFINITY;
+  for (const reference of stage.referenceSplits ?? []) {
+    if (!knownGates.has(reference.checkpointId)) {
+      throw new Error(`referenceSplits references unknown gate "${reference.checkpointId}"`);
+    }
+    if (!Number.isFinite(reference.time) || reference.time < 0) {
+      throw new Error(`reference split "${reference.checkpointId}" needs a finite time >= 0`);
+    }
+    if (reference.time < previousReference) {
+      throw new Error("referenceSplits times must be non-decreasing (cumulative)");
+    }
+    previousReference = reference.time;
+  }
+
   return stage;
 }
 
@@ -66,6 +81,12 @@ export function createDemoStage(): StageDefinition {
       { name: "Vega", time: 42.5 },
       { name: "Kovač", time: 47.9 },
       { name: "Rustad", time: 55.2 },
+    ],
+    referenceSplits: [
+      { checkpointId: "cp-1", time: 12 },
+      { checkpointId: "cp-2", time: 24 },
+      { checkpointId: "cp-3", time: 34 },
+      { checkpointId: "finish", time: 44 },
     ],
   });
 }
