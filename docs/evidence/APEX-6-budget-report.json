@@ -1,0 +1,67 @@
+{
+  "ticket": "APEX-6",
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-27T04:33:52.510Z",
+  "profile": "slow-4g",
+  "geometry": "meshopt",
+  "ok": true,
+  "totals": {
+    "bytes": 13957,
+    "count": 3,
+    "byKind": {
+      "audio": 8044,
+      "model": 4416,
+      "texture": 1497
+    },
+    "limitBytes": 524288
+  },
+  "budgets": {
+    "perAsset": {
+      "model": 262144,
+      "texture": 131072,
+      "audio": 65536
+    },
+    "totalBytes": 524288,
+    "coldStartMs": {
+      "p50": 1500,
+      "p95": 2500
+    }
+  },
+  "assets": [
+    {
+      "logicalName": "ambient-loop",
+      "kind": "audio",
+      "url": "/assets/audio/ambient-loop.385e0597.wav",
+      "hash": "385e0597",
+      "bytes": 8044
+    },
+    {
+      "logicalName": "gate-arch",
+      "kind": "model",
+      "url": "/assets/models/gate-arch.f7717c9f.glb",
+      "hash": "f7717c9f",
+      "bytes": 4416
+    },
+    {
+      "logicalName": "tarmac",
+      "kind": "texture",
+      "url": "/assets/textures/tarmac.4d8ea45f.ktx2",
+      "hash": "4d8ea45f",
+      "bytes": 1497
+    }
+  ],
+  "load": {
+    "profile": "slow-4g",
+    "trials": 200,
+    "seed": 1,
+    "totalBytes": 13957,
+    "p50Ms": 521.314678646382,
+    "p95Ms": 530.7166408419423,
+    "minMs": 510.7065714964024,
+    "maxMs": 532.0208049223843,
+    "budgetP50Ms": 1500,
+    "budgetP95Ms": 2500,
+    "ok": true
+  },
+  "violations": []
+}

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Apex Rally — browser rally game built on three.js",
+  "description": "Apex Rally — browser rally game built on three.js, with a glTF/KTX2 asset pipeline",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -11,12 +11,23 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "screenshot": "bun run build && bun scripts/screenshot.mjs"
+    "screenshot": "bun run build && bun scripts/screenshot.mjs",
+    "assets:sample": "bun src/assets/sample.ts",
+    "assets:build": "bun src/assets/cli.ts build",
+    "assets:check": "bun src/assets/cli.ts check"
   },
   "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "draco3d": "1.5.9",
+    "ktx2-encoder": "0.6.0",
+    "meshoptimizer": "1.3.0",
+    "sharp": "0.35.5",
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@types/three": "^0.187.0",
     "playwright": "1.65.1",
     "typescript": "^5.9.3",

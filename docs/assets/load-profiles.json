@@ -1,0 +1,26 @@
+{
+  "slow-4g": {
+    "name": "slow-4g",
+    "downlinkBytesPerSec": 200000,
+    "rttMs": 150,
+    "connectionSetupMs": 300,
+    "maxParallelStreams": 6,
+    "jitterPct": 0.15
+  },
+  "slow-3g": {
+    "name": "slow-3g",
+    "downlinkBytesPerSec": 50000,
+    "rttMs": 400,
+    "connectionSetupMs": 600,
+    "maxParallelStreams": 6,
+    "jitterPct": 0.15
+  },
+  "wifi": {
+    "name": "wifi",
+    "downlinkBytesPerSec": 1875000,
+    "rttMs": 20,
+    "connectionSetupMs": 60,
+    "maxParallelStreams": 6,
+    "jitterPct": 0.1
+  }
+}

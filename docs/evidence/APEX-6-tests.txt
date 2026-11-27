@@ -1,0 +1,10 @@
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-6
+
+
+ Test Files  16 passed (16)
+      Tests  84 passed (84)
+   Start at  04:34:01
+   Duration  769ms (tests 69%, import 21%, transform 6%, worker 3%)
+

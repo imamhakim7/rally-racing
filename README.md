@@ -142,3 +142,36 @@ frame-rate independent: a run driven at 30, 60 or 144 fps traces the identical p
   formatting, key mapping, and scene build/step/surface/dispose lifecycle.
 - `bun scripts/screenshot.mjs` — drives the built app in headless Chromium and writes
   `docs/evidence/APEX-2-scene.png` (gravel) and `docs/evidence/APEX-2-drift.png` (mud).
+
+## Asset pipeline
+
+The game ships large models, textures and audio, so assets go through a reproducible
+pipeline that turns source files into **compressed, hashed, budget-checked runtime
+bundles**. (Epic `2026-Q4-APEX-RALLY-APEX-02`, ticket **#APEX-6**.)
+
+- **glTF** geometry with **meshopt** (default) or **Draco** compression.
+- **KTX2 / Basis** textures.
+- Content-addressed output names (`name.<sha256[:8]>.<ext>`) and long-lived
+  `Cache-Control: public, max-age=31536000, immutable` CDN headers.
+- A CI gate that **fails closed** when a per-asset or total load budget is exceeded.
+- A throttled **Slow-4G cold-start** p50/p95 simulation.
+
+```bash
+bun run assets:sample   # generate the sample-stage sources
+bun run assets:build    # source → assets/dist + manifest.json + evidence report
+bun run assets:check    # CI budget gate (exits non-zero on a violation)
+```
+
+See **[docs/assets/asset-pipeline.md](docs/assets/asset-pipeline.md)** for the full pipeline
+README — compression, the manifest contract, budgets, the throttled load model and the CI
+workflow — and [`docs/openspecs/APEX-6.md`](docs/openspecs/APEX-6.md) for the openspec.
+
+### Asset layout
+
+| Path | What |
+| --- | --- |
+| `assets/source/` | Committed sample-stage sources. |
+| `assets/dist/` | Built, content-addressed bundles (gitignored). |
+| `docs/assets/` | Budgets, load profiles and the pipeline README. |
+| `docs/evidence/` | CI budget report and verification output. |
+| `src/assets/` | The pipeline implementation. |

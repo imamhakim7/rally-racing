@@ -1,0 +1,17 @@
+Asset budget report — APEX-6
+profile=slow-4g geometry=meshopt generatedAt=2026-11-27T04:33:52.510Z
+
+ASSET BUDGET: PASS
+  ok  ambient-loop                   8044 /      65536 B (audio)
+  ok  gate-arch                      4416 /     262144 B (model)
+  ok  tarmac                         1497 /     131072 B (texture)
+  total      13957 /     524288 B
+
+Content-addressed assets:
+  /assets/audio/ambient-loop.385e0597.wav  (8044 B, sha256:385e0597)
+  /assets/models/gate-arch.f7717c9f.glb  (4416 B, sha256:f7717c9f)
+  /assets/textures/tarmac.4d8ea45f.ktx2  (1497 B, sha256:4d8ea45f)
+
+Cold-start load [slow-4g] trials=200 seed=1: p50=521.3ms (budget 1500ms), p95=530.7ms (budget 2500ms) → PASS
+
+OVERALL: PASS
