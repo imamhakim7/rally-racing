@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "alpine-forest",
+  "name": "Alpine Forest",
+  "biome": "forest",
+  "difficulty": 3,
+  "start": { "position": [0, 0, 0], "headingDeg": 34 },
+  "finish": { "t": 1.0, "gate": { "width": 12, "height": 6 } },
+  "spline": {
+    "closed": false,
+    "tension": 0.5,
+    "points": [
+      { "x": 0, "y": 0, "z": 0 },
+      { "x": 40, "y": 3, "z": 60 },
+      { "x": 90, "y": 6, "z": 110 },
+      { "x": 150, "y": 10, "z": 140 },
+      { "x": 200, "y": 14, "z": 120 },
+      { "x": 240, "y": 12, "z": 60 },
+      { "x": 260, "y": 8, "z": -10 },
+      { "x": 300, "y": 6, "z": -60 }
+    ]
+  },
+  "road": { "width": 9, "sampleStep": 2, "surface": "gravel", "bankingDeg": 0 },
+  "checkpoints": [
+    { "id": "cp-crest", "name": "Forest Crest", "t": 0.2, "width": 11, "height": 6 },
+    { "id": "cp-hairpin", "name": "Hairpin", "t": 0.45, "width": 11, "height": 6 },
+    { "id": "cp-ford", "name": "Water Ford", "t": 0.7, "width": 12, "height": 6 },
+    { "id": "cp-runout", "name": "Run-out", "t": 0.9, "width": 11, "height": 6 }
+  ],
+  "surfaces": [
+    { "id": "sz-start", "surface": "tarmac", "from": 0.0, "to": 0.12, "grip": 1.0 },
+    { "id": "sz-woods", "surface": "gravel", "from": 0.12, "to": 0.55, "grip": 0.72 },
+    { "id": "sz-ford", "surface": "water", "from": 0.55, "to": 0.6, "grip": 0.4, "depth": 0.35 },
+    { "id": "sz-crest", "surface": "gravel", "from": 0.6, "to": 1.0, "grip": 0.72 }
+  ],
+  "minimap": { "color": "#5fbf7f", "path": "auto" }
+}

@@ -1,0 +1,12 @@
+=== validate all six shipped stages ===
+OK alpine-forest — Alpine Forest (forest), 4 checkpoints, 4 surface zones, road 9m
+OK canyon-sprint — Canyon Sprint (canyon), 4 checkpoints, 3 surface zones, road 8m
+OK coastal-cliffs — Coastal Cliffs (coastal), 3 checkpoints, 2 surface zones, road 10m
+OK desert-dunes — Desert Dunes (desert), 3 checkpoints, 3 surface zones, road 11m
+OK mountain-pass — Mountain Pass (alpine), 4 checkpoints, 3 surface zones, road 8m
+OK valley-rally — Valley Rally (valley), 3 checkpoints, 3 surface zones, road 10m
+
+=== malformed stage (surfaces[0].grip = "slippy") ===
+Invalid stage '/tmp/bad.json': 1 problem
+  - surfaces[0].grip: expected a finite number, got "slippy" (type)
+exit=1

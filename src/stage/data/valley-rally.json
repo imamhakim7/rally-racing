@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "valley-rally",
+  "name": "Valley Rally",
+  "biome": "valley",
+  "difficulty": 3,
+  "start": { "position": [0, 0, 0], "headingDeg": 36 },
+  "finish": { "t": 1.0, "gate": { "width": 13, "height": 6 } },
+  "spline": {
+    "closed": false,
+    "tension": 0.5,
+    "points": [
+      { "x": 0, "y": 0, "z": 0 },
+      { "x": 50, "y": 0, "z": 70 },
+      { "x": 110, "y": 1, "z": 120 },
+      { "x": 170, "y": 0, "z": 150 },
+      { "x": 220, "y": 0, "z": 120 },
+      { "x": 250, "y": 0, "z": 60 },
+      { "x": 230, "y": 0, "z": -10 },
+      { "x": 180, "y": 0, "z": -60 }
+    ]
+  },
+  "road": { "width": 10, "sampleStep": 2, "surface": "tarmac", "bankingDeg": 0 },
+  "checkpoints": [
+    { "id": "cp-entry", "name": "Valley Entry", "t": 0.3, "width": 12, "height": 6 },
+    { "id": "cp-rapids", "name": "Rapids", "t": 0.6, "width": 12, "height": 6 },
+    { "id": "cp-exit", "name": "Valley Exit", "t": 0.85, "width": 12, "height": 6 }
+  ],
+  "surfaces": [
+    { "id": "sz-road", "surface": "tarmac", "from": 0.0, "to": 0.4, "grip": 1.0 },
+    { "id": "sz-track", "surface": "gravel", "from": 0.4, "to": 0.8, "grip": 0.72 },
+    { "id": "sz-woods", "surface": "dirt", "from": 0.8, "to": 1.0, "grip": 0.66 }
+  ],
+  "minimap": { "color": "#e0a34a", "path": "auto" }
+}

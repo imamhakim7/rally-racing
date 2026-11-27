@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "mountain-pass",
+  "name": "Mountain Pass",
+  "biome": "alpine",
+  "difficulty": 5,
+  "start": { "position": [0, 0, 0], "headingDeg": 31 },
+  "finish": { "t": 1.0, "gate": { "width": 12, "height": 6 } },
+  "spline": {
+    "closed": false,
+    "tension": 0.6,
+    "points": [
+      { "x": 0, "y": 0, "z": 0 },
+      { "x": 30, "y": 8, "z": 50 },
+      { "x": 60, "y": 20, "z": 90 },
+      { "x": 80, "y": 34, "z": 140 },
+      { "x": 60, "y": 46, "z": 190 },
+      { "x": 20, "y": 54, "z": 230 },
+      { "x": -40, "y": 48, "z": 250 },
+      { "x": -90, "y": 36, "z": 220 }
+    ]
+  },
+  "road": { "width": 8, "sampleStep": 2, "surface": "gravel", "bankingDeg": 3 },
+  "checkpoints": [
+    { "id": "cp-lower", "name": "Lower Slopes", "t": 0.2, "width": 10, "height": 6 },
+    { "id": "cp-switch", "name": "Switchback", "t": 0.4, "width": 10, "height": 6 },
+    { "id": "cp-summit", "name": "Summit", "t": 0.6, "width": 10, "height": 6 },
+    { "id": "cp-descent", "name": "Descent", "t": 0.8, "width": 10, "height": 6 }
+  ],
+  "surfaces": [
+    { "id": "sz-lower", "surface": "gravel", "from": 0.0, "to": 0.35, "grip": 0.7 },
+    { "id": "sz-snowline", "surface": "snow", "from": 0.35, "to": 0.7, "grip": 0.5, "depth": 0.05 },
+    { "id": "sz-descent", "surface": "dirt", "from": 0.7, "to": 1.0, "grip": 0.65 }
+  ],
+  "minimap": { "color": "#cfe3f2", "path": "auto" }
+}

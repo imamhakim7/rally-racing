@@ -9,9 +9,10 @@ dist/
 /assets/dist/
 
 # Local runtime/board state — never commit (board DB leak / build hazard).
+# Anchored to the repo root so authored stage data under src/stage/data/ is tracked.
 /board.db
 /*.db
-data/
+/data/
 
 # Playwright's downloaded browsers are runtime state, not source.
 .playwright/

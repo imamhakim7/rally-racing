@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "coastal-cliffs",
+  "name": "Coastal Cliffs",
+  "biome": "coastal",
+  "difficulty": 2,
+  "start": { "position": [0, 0, 0], "headingDeg": 56 },
+  "finish": { "t": 1.0, "gate": { "width": 13, "height": 6 } },
+  "spline": {
+    "closed": false,
+    "tension": 0.45,
+    "points": [
+      { "x": 0, "y": 0, "z": 0 },
+      { "x": 60, "y": 2, "z": 40 },
+      { "x": 120, "y": 5, "z": 30 },
+      { "x": 180, "y": 9, "z": -10 },
+      { "x": 230, "y": 12, "z": -80 },
+      { "x": 250, "y": 10, "z": -150 },
+      { "x": 220, "y": 6, "z": -210 }
+    ]
+  },
+  "road": { "width": 10, "sampleStep": 2, "surface": "tarmac", "bankingDeg": 2 },
+  "checkpoints": [
+    { "id": "cp-headland", "name": "Headland", "t": 0.25, "width": 12, "height": 6 },
+    { "id": "cp-seafront", "name": "Seafront", "t": 0.5, "width": 12, "height": 6 },
+    { "id": "cp-lighthouse", "name": "Lighthouse", "t": 0.75, "width": 12, "height": 6 }
+  ],
+  "surfaces": [
+    { "id": "sz-clifftop", "surface": "tarmac", "from": 0.0, "to": 0.7, "grip": 1.05 },
+    { "id": "sz-descent", "surface": "gravel", "from": 0.7, "to": 1.0, "grip": 0.8 }
+  ],
+  "minimap": { "color": "#4aa3d8", "path": "auto" }
+}

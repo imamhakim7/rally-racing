@@ -1,0 +1,113 @@
+# APEX-4 — Security gate evidence
+
+Ticket: APEX-4 (Data-driven stage circuit format & loader)
+Epic: 2026-Q4-APEX-RALLY-APEX-02
+Seat: security · verdict: PASS (no exploitable issues; 1 Low defence-in-depth note)
+Range: origin/main..HEAD (815fb50) — feature branch feat/APEX-4-data-driven-stage-circuit-format / PR #5
+
+## Scope & trust boundaries
+
+The change is a pure client-side data pipeline plus build/dev tooling. Boundaries considered:
+
+1. Stage JSON document  ->  parseStage -> validateStage(schema) -> normalise -> StageCircuit
+   -> buildStageWorld (THREE.Group) / toRaceStage().
+   Today the JSON is bundled at build time through the generated `src/stage/data/index.ts`
+   (static ESM imports). There is NO runtime fetch/import of external stage data in this
+   build, so untrusted stage JSON is not a live reachable input. This is the format's
+   intended future runtime/mod surface and the one boundary that matters long-term.
+2. Stage name / biome -> DOM <select> (select.ts), and minimap colour -> (future HUD #APEX-10).
+3. Dev-only screenshot static server (scripts/screenshot-stage.mjs) serving ./dist on 127.0.0.1.
+4. Build-time index generator (scripts/generate-stage-index.ts) reading src/stage/data/.
+5. Author CLI validator (scripts/validate-stage.ts) reading a path given by the operator.
+
+## STRIDE
+
+- Spoofing: N/A (no identity/authn surface; client-only).
+- Tampering: bundled stage data is covered by the committed generated index and the
+  `tests/stage-data-integrity.test.ts` drift guard. No runtime write path.
+- Repudiation: N/A.
+- Information disclosure: no secrets, tokens, credentials or PII in the change; stage
+  names/biomes are public game content.
+- Denial of service: unbounded allocations from stage geometry — see LOW-1 (latent).
+- Elevation of privilege: N/A.
+
+## OWASP Top 10 (2021)
+
+- A01 Broken Access Control: N/A (no server-side authz in this change).
+- A02 Cryptographic Failures: N/A (no crypto, no secrets).
+- A03 Injection: PASS. No eval/Function/innerHTML/document.write/child_process in the
+  changed code. DOM writes use `textContent`/`option.value` only (select.ts L27/36/37);
+  `option.value = entry.id` is slug-validated by the schema. Validator error values are
+  escaped with JSON.stringify (errors.ts) and only rendered to console/stderr.
+- A04 Insecure Design: LOW-1 (resource limits absent in the format).
+- A05 Security Misconfiguration: PASS. Dev server binds 127.0.0.1 on an ephemeral port and
+  is path-confined (see traversal probe).
+- A06 Vulnerable & Outdated Components: PASS. The change adds NO runtime or dev
+  dependencies (package.json adds only scripts). No new supply-chain surface.
+- A07 Identification/Auth Failures: N/A.
+- A08 Software & Data Integrity Failures: PASS. Generated index is committed and guarded by
+  a drift test; stage ids are uniqueness-checked in library.ts.
+- A09 Security Logging & Monitoring: PASS. No PII logged; errors carry field paths only.
+- A10 SSRF: N/A (only a localhost dev fetch in the screenshot script).
+
+## LLM Top 10
+
+Not applicable — no AI/LLM features in this change.
+
+## Checks run (reproducible)
+
+1. Dangerous-sink scan over src/stage + scripts (innerHTML|outerHTML|eval|new Function|
+   document.write|child_process|execSync|spawn|fetch|import( ...):
+   -> "no dangerous sinks". Only network ref is `http://127.0.0.1:<port>` in the dev script.
+
+2. Secret scan (TOKEN|SECRET|PASSWORD|api_key|Authorization|http(s)://): none.
+
+3. Dependency delta: `git diff origin/main..HEAD -- package.json` -> no dependency additions.
+
+4. Adversarial validator probes (bun):
+   - prototype pollution via __proto__/constructor keys: ACCEPTED (unknown keys ignored) but
+     Object.prototype NOT polluted -> safe (walker only reads schema keys, normalise() copies
+     known fields).
+   - NaN coordinate: REJECTED  "spline.points[1].x: expected a finite number, got NaN (type)".
+   - Infinity road width: REJECTED "road.width: expected a finite number, got Infinity (type)".
+   - HTML name `<img src=x onerror=...>`: accepted as content (rendered via textContent) -> safe.
+   - CSS injection in minimap.color: REJECTED "minimap.color: expected hex colour like #e8c547".
+
+5. Dev-server path-traversal probe over real HTTP (port of the guard in
+   scripts/screenshot-stage.mjs):
+   - /index.html                        -> 200 (expected)
+   - /assets/../package.json            -> 404, no leak
+   - /..%2f..%2fpackage.json            -> 403, no leak
+   - /%2e%2e%2f%2e%2e%2fpackage.json    -> 403, no leak
+   - /assets/..%2f..%2f..%2fpackage.json-> 403, no leak
+   - /../../../../etc/passwd            -> 404, no leak
+   - /dist-evil/secret (prefix confusion)-> 404, no leak
+   Guard: normalize(join(distRoot, decoded)) confined by
+   `filePath !== distRoot && !startsWith(distRoot + sep)` -> correct.
+
+6. Resource-amplification probe (full sampleSpline sizing):
+   - 299-byte stage { 2 spline points, 200 km span, road.sampleStep 0.25 (schema minimum) }
+   - accepted by the validator -> 800,001 cross-sections -> ~67 MB road geometry
+   - amplification ~235,000x from the input file.
+
+## Findings
+
+LOW-1 (defence-in-depth, NOT blocking) — unbounded stage allocations.
+`StageSchema` array fields define `minItems` but no `maxItems`, and numeric fields
+(currently only some) have no upper bound; spline point coordinates have no magnitude bound.
+A small JSON document can therefore request an arbitrarily large mesh (200 km @ 0.25 m ->
+~67 MB; scaling the span/step further is bounded only by the authored values). Reachability
+today is nil: stage data is bundled and trusted, parsed at build time, with no runtime
+external input. Residual risk materialises only if/when a later ticket loads stage JSON from
+a remote, user or mod source. Recommended (follow-up, not a blocker for #APEX-4): add
+`maxItems` to `spline.points`/`checkpoints`/`surfaces`/`minimap.points`, clamp coordinate
+magnitude and/or clamp the computed sample count in `sampleSpline`. Reference #APEX-4.
+
+No Critical/High/Medium findings. No secrets, no new dependencies, no exploitable injection,
+no authn/authz surface, no PII.
+
+## Decision
+
+PASS — security gate cleared. The single Low finding is latent and recorded as residual risk
+with a follow-up recommendation; it does not block #APEX-4 because no untrusted stage input
+path exists in this build.

@@ -1,0 +1,8 @@
+$ bun scripts/check-normals.ts
+alpine-forest    verts 478   zeroNormals 0    nonUnit 0 minUp 0.996 OK
+canyon-sprint    verts 314   zeroNormals 0    nonUnit 0 minUp 0.989 OK
+coastal-cliffs   verts 436   zeroNormals 0    nonUnit 0 minUp 0.997 OK
+desert-dunes     verts 570   zeroNormals 0    nonUnit 0 minUp 0.995 OK
+mountain-pass    verts 408   zeroNormals 0    nonUnit 0 minUp 0.965 OK
+valley-rally     verts 508   zeroNormals 0    nonUnit 0 minUp 1.000 OK
+road normals OK for 6 stage(s)

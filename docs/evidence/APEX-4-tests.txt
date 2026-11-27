@@ -1,0 +1,11 @@
+$ bun run test
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-4
+
+
+ Test Files  22 passed (22)
+      Tests  120 passed (120)
+   Start at  04:53:44
+   Duration  752ms (tests 63%, import 22%, transform 11%, worker 4%)
+
