@@ -1,0 +1,24 @@
+{
+  "ok": false,
+  "raceId": "alpine-forest",
+  "stage": {
+    "support": null,
+    "quality": null,
+    "scene": false,
+    "app": false,
+    "race": false,
+    "hud": false,
+    "minimap": false,
+    "stageOptions": 6,
+    "firstStage": "alpine-forest"
+  },
+  "race": {
+    "race": true,
+    "scene": true,
+    "app": true,
+    "stageScene": false
+  },
+  "problems": [
+    "stage wiring incomplete: {\"support\":null,\"quality\":null,\"scene\":false,\"app\":false,\"race\":false,\"hud\":false,\"minimap\":false,\"stageOptions\":6,\"firstStage\":\"alpine-forest\"}"
+  ]
+}

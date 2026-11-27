@@ -1,13 +1,13 @@
 {
-  "ok": true,
-  "generatedAt": "2026-11-27T20:19:48.738Z",
-  "origin": "http://127.0.0.1:41259",
-  "hasDisplay": true,
+  "ok": false,
+  "generatedAt": "2026-11-27T23:37:37.029Z",
+  "origin": "http://127.0.0.1:35107",
+  "hasDisplay": false,
   "engines": [
     {
       "engine": "chromium",
-      "outcome": "rendered",
-      "ok": true,
+      "outcome": "unknown",
+      "ok": false,
       "state": {
         "webgl2": true,
         "bodySupport": "full",
@@ -15,43 +15,9 @@
         "fallback": false,
         "fallbackMissing": null,
         "fallbackText": null,
-        "appRunning": true,
-        "level": "full",
-        "preset": "high"
-      },
-      "problems": []
-    },
-    {
-      "engine": "firefox",
-      "outcome": "rendered",
-      "ok": true,
-      "state": {
-        "webgl2": true,
-        "bodySupport": "full",
-        "canvasSupport": "full",
-        "fallback": false,
-        "fallbackMissing": null,
-        "fallbackText": null,
-        "appRunning": true,
-        "level": "full",
-        "preset": "high"
-      },
-      "problems": []
-    },
-    {
-      "engine": "webkit",
-      "outcome": "rendered",
-      "ok": true,
-      "state": {
-        "webgl2": true,
-        "bodySupport": "full",
-        "canvasSupport": "full",
-        "fallback": false,
-        "fallbackMissing": null,
-        "fallbackText": null,
-        "appRunning": true,
-        "level": "full",
-        "preset": "high"
+        "appRunning": false,
+        "level": null,
+        "preset": null
       },
       "problems": []
     }
@@ -70,7 +36,31 @@
       "level": "unsupported",
       "preset": null
     },
-    "path": "/root/sarawedi-worktrees/wt/APEX-14/docs/evidence/APEX-14-fallback.png",
+    "path": "/root/sarawedi-worktrees/wt/APEX-26/docs/evidence/APEX-14-fallback.png",
     "problems": []
+  },
+  "wiring": {
+    "ok": false,
+    "raceId": "alpine-forest",
+    "stage": {
+      "support": null,
+      "quality": null,
+      "scene": false,
+      "app": false,
+      "race": false,
+      "hud": false,
+      "minimap": false,
+      "stageOptions": 6,
+      "firstStage": "alpine-forest"
+    },
+    "race": {
+      "race": true,
+      "scene": true,
+      "app": true,
+      "stageScene": false
+    },
+    "problems": [
+      "stage wiring incomplete: {\"support\":null,\"quality\":null,\"scene\":false,\"app\":false,\"race\":false,\"hud\":false,\"minimap\":false,\"stageOptions\":6,\"firstStage\":\"alpine-forest\"}"
+    ]
   }
 }
