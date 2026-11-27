@@ -1,0 +1,133 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 568,
+        "name": "320"
+      },
+      "ok": true,
+      "problems": [],
+      "panels": [
+        {
+          "className": "apex-panel apex-live",
+          "rect": {
+            "left": 8,
+            "top": 8,
+            "right": 121.53125,
+            "bottom": 123.09375,
+            "width": 113.53125,
+            "height": 115.09375
+          }
+        },
+        {
+          "className": "apex-panel apex-minimap",
+          "rect": {
+            "left": 228.8125,
+            "top": 8,
+            "right": 312,
+            "bottom": 91.1875,
+            "width": 83.1875,
+            "height": 83.1875
+          }
+        },
+        {
+          "className": "apex-panel apex-speed",
+          "rect": {
+            "left": 261.4375,
+            "top": 505.609375,
+            "right": 312,
+            "bottom": 560,
+            "width": 50.5625,
+            "height": 54.390625
+          }
+        }
+      ],
+      "overlaps": [],
+      "occludesCentre": [],
+      "timeFont": 22,
+      "speedFont": 28,
+      "timeText": "0:00.817",
+      "speedText": "21",
+      "minimapVisible": true,
+      "srBefore": "Racing. Time 0:00.383. Position unknown. Speed 10 kilometres per hour. Next gate Hairpin.",
+      "srText": "Racing. Time 0:00.717. Position 1. Speed 19 kilometres per hour. Next gate Crest. Ahead of pace by 11.300 seconds.",
+      "srUpdated": true,
+      "aheadSplit": {
+        "text": "▼ -11.300",
+        "className": "apex-split ahead",
+        "color": "rgb(110, 231, 160)"
+      },
+      "behindSplit": {
+        "text": "▲ +0.500",
+        "className": "apex-split behind",
+        "color": "rgb(255, 143, 107)"
+      }
+    },
+    {
+      "viewport": {
+        "width": 3840,
+        "height": 2160,
+        "name": "4k"
+      },
+      "ok": true,
+      "problems": [],
+      "panels": [
+        {
+          "className": "apex-panel apex-live",
+          "rect": {
+            "left": 28,
+            "top": 28,
+            "right": 306.96875,
+            "bottom": 271.046875,
+            "width": 278.96875,
+            "height": 243.046875
+          }
+        },
+        {
+          "className": "apex-panel apex-minimap",
+          "rect": {
+            "left": 3592,
+            "top": 28,
+            "right": 3812,
+            "bottom": 248,
+            "width": 220,
+            "height": 220
+          }
+        },
+        {
+          "className": "apex-panel apex-speed",
+          "rect": {
+            "left": 3680.3125,
+            "top": 1990.40625,
+            "right": 3812,
+            "bottom": 2132,
+            "width": 131.6875,
+            "height": 141.59375
+          }
+        }
+      ],
+      "overlaps": [],
+      "occludesCentre": [],
+      "timeFont": 56,
+      "speedFont": 84,
+      "timeText": "0:00.850",
+      "speedText": "20",
+      "minimapVisible": true,
+      "srBefore": "Racing. Time 0:00.450. Position unknown. Speed 10 kilometres per hour. Next gate Hairpin.",
+      "srText": "Racing. Time 0:00.700. Position 1. Speed 17 kilometres per hour. Next gate Crest. Ahead of pace by 11.317 seconds.",
+      "srUpdated": true,
+      "aheadSplit": {
+        "text": "▼ -11.317",
+        "className": "apex-split ahead",
+        "color": "rgb(110, 231, 160)"
+      },
+      "behindSplit": {
+        "text": "▲ +0.450",
+        "className": "apex-split behind",
+        "color": "rgb(255, 143, 107)"
+      }
+    }
+  ]
+}

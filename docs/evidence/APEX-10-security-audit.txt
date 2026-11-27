@@ -1,0 +1,15 @@
+$ bun audit
+bun audit v1.4.4 (38afee6c8)
+
+No vulnerabilities found (checked 144 packages) [1.65s]
+
+$ bunx tsc --noEmit
+typecheck: clean
+
+$ bun run test
+
+ Test Files  26 passed (26)
+      Tests  182 passed (182)
+   Start at  20:13:45
+   Duration  1.17s (tests 59%, import 24%, transform 11%, worker 5%)
+

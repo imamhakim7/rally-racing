@@ -152,6 +152,7 @@ describe("RaceController — a missed checkpoint penalises or invalidates (AC3)"
         { id: "c", index: 2, name: "C" },
         { id: "d", index: 3, name: "D" },
       ],
+      referenceSplits: undefined, // reference ids no longer match the new checkpoints
     });
     const controller = new RaceController();
     controller.startStage(strict);
@@ -328,5 +329,85 @@ describe("RaceController — clock hygiene", () => {
     expect(controller.countdownRemaining).toBeGreaterThanOrEqual(0);
     controller.update(1e-12);
     expect(controller.countdownRemaining).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("RaceController — HUD projections (AC1)", () => {
+  it("has no last split, progress or position before the first gate", () => {
+    const controller = new RaceController();
+    controller.startStage(demo());
+    advance(controller, 3);
+    expect(controller.lastSplit).toBeNull();
+    expect(controller.progressRatio).toBe(0);
+    expect(controller.projectedPosition).toBeNull();
+  });
+
+  it("advances progress and records the last split as gates are crossed", () => {
+    const controller = new RaceController();
+    controller.startStage(demo());
+    advance(controller, 3);
+    advance(controller, 12); // exactly the cp-1 reference
+    controller.crossGate("cp-1");
+
+    expect(controller.lastSplit?.checkpointId).toBe("cp-1");
+    expect(controller.progressRatio).toBeCloseTo(12 / 44, 6);
+    // At reference pace the projected 44s finish sits behind Vega (42.5s) but
+    // ahead of Kovač (47.9s) -> P2.
+    expect(controller.projectedPosition).toBe(2);
+  });
+
+  it("projects a worse position when pace collapses behind the reference", () => {
+    const controller = new RaceController();
+    controller.startStage(demo());
+    advance(controller, 3);
+    advance(controller, 60);
+    controller.crossGate("cp-1"); // ~5x the reference pace for this sector
+    expect(controller.projectedPosition).toBeGreaterThan(1);
+  });
+
+  it("reports progress 1 at the finish", () => {
+    const controller = new RaceController();
+    controller.startStage(demo());
+    advance(controller, 3);
+    runClean(controller);
+    expect(controller.phase).toBe("finished");
+    expect(controller.progressRatio).toBe(1);
+    expect(controller.projectedPosition).toBeNull(); // only meaningful while racing
+  });
+});
+
+describe("defineStage — reference pace validation", () => {
+  it("accepts a valid non-decreasing reference", () => {
+    expect(() => demo()).not.toThrow();
+  });
+
+  it("rejects a reference to an unknown gate", () => {
+    expect(() =>
+      defineStage({
+        ...demo(),
+        referenceSplits: [{ checkpointId: "nope", time: 5 }],
+      }),
+    ).toThrow(/unknown gate/i);
+  });
+
+  it("rejects a decreasing cumulative reference", () => {
+    expect(() =>
+      defineStage({
+        ...demo(),
+        referenceSplits: [
+          { checkpointId: "cp-1", time: 12 },
+          { checkpointId: "cp-2", time: 8 },
+        ],
+      }),
+    ).toThrow(/non-decreasing/i);
+  });
+
+  it("rejects a non-finite reference time", () => {
+    expect(() =>
+      defineStage({
+        ...demo(),
+        referenceSplits: [{ checkpointId: "cp-1", time: Number.NaN }],
+      }),
+    ).toThrow(/finite/i);
   });
 });

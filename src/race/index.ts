@@ -1,21 +1,42 @@
 export { RaceController, type RaceControllerOptions } from "./race";
 export { StageSession, type RaceListener } from "./session";
-export { RaceHud, type RaceHudHandlers } from "./hud";
+export { RaceHud, type RaceHudHandlers, type HudMinimap } from "./hud";
+export {
+  buildHudState,
+  minimapDot,
+  type HudState,
+  type HudSplit,
+  type HudTelemetry,
+  type SplitDirection,
+} from "./hud-model";
+export { createTelemetryHarness, type TelemetryFeed, type TelemetryHarnessOptions } from "./telemetry";
 export { createDemoStage, defineStage } from "./stage";
-export { formatTime, playerPosition, rankStandings, sumSplits } from "./results";
+export {
+  formatDelta,
+  formatSpeed,
+  formatTime,
+  playerPosition,
+  positionForTime,
+  rankStandings,
+  referenceTimeAt,
+  splitDelta,
+  sumSplits,
+} from "./results";
 export type {
   CheckpointDef,
   OpponentDef,
   RacePhase,
   RaceResult,
+  ReferenceSplit,
   Split,
   StageDefinition,
   Standing,
 } from "./types";
 
-import { RaceHud, type RaceHudHandlers } from "./hud";
+import { RaceHud, type HudMinimap, type RaceHudHandlers } from "./hud";
 import { StageSession } from "./session";
 import { createDemoStage } from "./stage";
+import type { TelemetryFeed } from "./telemetry";
 import type { StageDefinition } from "./types";
 import type { RaceControllerOptions } from "./race";
 
@@ -24,6 +45,10 @@ export interface RaceBootOptions extends RaceControllerOptions {
   stage?: StageDefinition;
   /** Where to mount the HUD overlay (defaults to `document.body`). */
   hudRoot?: HTMLElement;
+  /** Speed telemetry source for the HUD (absent = speed shown as `–`). */
+  telemetry?: TelemetryFeed;
+  /** Circuit minimap path from `StageWorld` (absent = no minimap). */
+  minimap?: HudMinimap | null;
 }
 
 export interface RaceBoot {
@@ -54,6 +79,8 @@ export function bootRace(options: RaceBootOptions = {}): RaceBoot {
     onCrossGate: (gateId) => session.crossGate(gateId),
   };
   const hud = new RaceHud(handlers);
+  hud.setTelemetry(options.telemetry ? () => options.telemetry!.read() : null);
+  hud.setMinimap(options.minimap ?? null);
   if (typeof document !== "undefined") {
     hud.mount(options.hudRoot ?? document.body);
     hud.render(session.controller);
@@ -63,10 +90,14 @@ export function bootRace(options: RaceBootOptions = {}): RaceBoot {
     session,
     hud,
     update: (dt) => {
+      options.telemetry?.update(dt);
       session.update(dt);
       hud.render(session.controller);
     },
     render: () => hud.render(session.controller),
-    dispose: () => hud.dispose(),
+    dispose: () => {
+      options.telemetry?.dispose();
+      hud.dispose();
+    },
   };
 }
