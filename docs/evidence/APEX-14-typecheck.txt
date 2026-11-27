@@ -1,0 +1,3 @@
+# APEX-14 — tsc --noEmit (2026-11-27T20:19:50Z)
+$ tsc --noEmit
+exit=0

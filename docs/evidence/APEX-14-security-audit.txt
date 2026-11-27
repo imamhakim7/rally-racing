@@ -1,0 +1,85 @@
+# APEX-14 — security gate audit (independent)
+
+Ticket: APEX-14 · PR #9 · branch chore/APEX-14-browser-webgl-compatibility-matrix-and
+Reviewer: @security · scope: the PR diff vs origin/main (`040c3d9`)
+
+Verdict: PASS — no Critical/High/Medium/Low exploitable issues. Static, client-only
+capability detection + fallback UI; fail-closed boot; no new input sink, dependency,
+CDN asset or secret.
+
+## Trust boundaries
+
+1. location.search (?forceUnsupported=1) — untrusted URL.
+   code: src/main.ts:68 `get("forceUnsupported") === "1"` — strict literal match.
+   The branch calls `forcedUnsupportedAssessment()` with a CONSTANT reason and never
+   echoes any part of the query string. No injection path.
+2. WebGL driver strings (vendor/renderer) — untrusted driver input.
+   code: src/engine/capabilities.ts:120-127 capture only; grep confirms they are never
+   written to the DOM or any attribute (only kept in the GlCapabilities object).
+3. Boot exception text (String(error)) — rendered as a TEXT node via
+   supportScreen.mountSupportScreen (`summary.textContent`), never HTML.
+4. Capability labels (missing/degraded) — app constants → `data-missing` setAttribute.
+
+## Checks (commands + results)
+
+$ git diff origin/main..HEAD -- src index.html scripts package.json \
+    | grep -nE "^\+.*(innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function|dangerouslySet|javascript:|data:text/html|postMessage|localStorage|sessionStorage|document\.cookie|XMLHttpRequest)"
+=> no dangerous sinks added
+
+$ grep -nE "textContent|innerHTML|setAttribute" src/ui/supportScreen.ts
+=> only textContent + setAttribute(role/data-support/data-missing); no innerHTML
+
+$ git diff origin/main..HEAD -- package.json
+=> only a new script "smoke:browsers"; dependencies 8 / devDependencies 6 unchanged
+   (playwright was already a devDependency) — no new dependency/CVE surface
+
+$ git diff origin/main..HEAD -- index.html | grep -nE "^\+.*(https?://|src=|href=)"
+=> no external refs added (inline CSS only) — pinned-CDN-asset floor unchanged
+
+$ secrets scan over the diff (api key/secret/password/token/PRIVATE KEY)
+=> only matches are the prose in docs/evidence/APEX-14-security.md itself; no secrets
+
+## Static file server (test tooling only, scripts/smoke-browsers.mjs)
+
+Path-traversal guard replicated and fuzzed against a hostile input set:
+  /../package.json            DENY
+  /%2e%2e/package.json        DENY
+  /../dist-evil/secret        DENY   (sibling prefix attack)
+  /..%2fdist-evil/secret      DENY
+  /./../../dist-evil/x        DENY
+  /%2e%2e%2fdist-evil         DENY
+  /%                          DENY(throw, caught -> 404)
+  /index.html                 ALLOW  (within dist)
+Confined to distRoot; binds 127.0.0.1 on an ephemeral port; not shipped in the app.
+
+## OWASP Top 10 (2021)
+
+- A01 Broken Access Control — N/A (client-only, no endpoint/authorization).
+- A02 Cryptographic Failures — N/A (no crypto/secret).
+- A03 Injection — PASS: no HTML/DOM/JS sink; textContent only; strict query match.
+- A04 Insecure Design — PASS: fail-closed boot (unsupported/throwing context → screen,
+  never a thrown boot error or black canvas).
+- A05 Security Misconfiguration — PASS: no external script/style, no new server config.
+- A06 Vulnerable & Outdated Components — PASS: no dependency change.
+- A07 Identification/Authentication Failures — N/A.
+- A08 Software & Data Integrity Failures — N/A (no deserialisation, no remote fetch).
+- A09 Security Logging & Monitoring Failures — N/A (no auth/PII; window.apexStage is a
+  local diagnostics global, not transmitted).
+- A10 SSRF — N/A (no outbound requests).
+
+## LLM Top 10 — N/A (no AI/LLM feature in this change).
+
+## Informational (non-blocking, no action required)
+
+- The `?forceUnsupported=1` debug toggle is present in production builds. It only swaps
+  in a constant static message — no data, auth or authority impact. If undesired, gate
+  it to dev builds in a later ticket.
+- `window.apexStage` exposes engine handles on the same-origin global (as the existing
+  screenshot tooling already required). No secrets; XSS in the host page is the
+  pre-existing threat model, unchanged.
+
+## Residual risk
+
+Static client-only game. Residual: GPU driver-level WebGL defects (outside app control)
+and XSS in the embedding host page (unchanged, pre-existing). Neither is introduced or
+widened by this change.

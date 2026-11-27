@@ -21,7 +21,8 @@
     "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
     "screenshot:race": "bun run build && bun scripts/screenshot-race.mjs",
     "validate:stage": "bun scripts/validate-stage.ts",
-    "check:normals": "bun scripts/check-normals.ts"
+    "check:normals": "bun scripts/check-normals.ts",
+    "smoke:browsers": "bun scripts/smoke-browsers.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",

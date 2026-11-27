@@ -1,0 +1,11 @@
+# APEX-14 — vitest run (2026-11-27T20:19:48Z)
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-14
+
+
+ Test Files  29 passed (29)
+      Tests  204 passed (204)
+   Start at  20:19:48
+   Duration  1.08s (tests 57%, import 25%, transform 14%, worker 5%)
+

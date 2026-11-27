@@ -52,9 +52,54 @@
         border-radius: 6px;
         padding: 4px 8px;
       }
+      /* Graceful unsupported-browser screen (#APEX-14). Sits over the blank
+         canvas so an unsupported browser never shows an unexplained black view. */
+      #support:empty {
+        display: none;
+      }
+      .support-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 32px;
+        background: #0b0e13;
+        color: #e7eef7;
+        font: 14px/1.6 system-ui, -apple-system, sans-serif;
+      }
+      .support-screen__title {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.3;
+      }
+      .support-screen__summary {
+        margin: 0;
+        color: #b7c3d4;
+      }
+      .support-screen__label {
+        margin: 8px 0 0;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 11px;
+        opacity: 0.7;
+      }
+      .support-screen__reasons,
+      .support-screen__steps {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .support-screen__reasons li::marker {
+        color: #ff6b6b;
+      }
     </style>
   </head>
   <body>
+    <div id="support"></div>
     <div id="stage-select"></div>
     <canvas id="app" aria-label="Apex Rally viewport"></canvas>
     <script type="module" src="/src/main.ts"></script>

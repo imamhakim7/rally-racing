@@ -24,6 +24,34 @@ bun run screenshot # build + headless Chromium screenshot into docs/evidence/
 | `A` / `D` / `←` / `→` | Steer left / right (speed-sensitive) |
 | `Space` | Handbrake — flick the tail out for a drift |
 
+## Supported browsers
+
+Apex Rally requires **WebGL2**. At boot the app detects WebGL2 and the extensions the
+renderer and KTX2 assets need, chooses a quality preset from the detected capability, and
+— when the browser cannot run the game — shows an **actionable unsupported-browser screen**
+instead of a black canvas (`?forceUnsupported=1` shows it on demand for testing).
+
+| Engine | Version floor | WebGL2 | Typical preset | Fallback when unsupported |
+| --- | --- | --- | --- | --- |
+| Chromium (Chrome / Edge) | 56+ | Required | `high` (ratio 2, soft shadows) | Actionable screen (update browser, enable hardware acceleration) |
+| Firefox | 51+ | Required | `high` on a GPU, `medium`/`low` on a weak device | Actionable screen (WebGL2/GPU unavailable, e.g. headless or blocked GPU) |
+| WebKit (Safari) | 16+ (Safari 15 WebGL2 is off by default) | Required | `high` | Actionable screen (enable WebGL / update Safari) |
+| Any browser/device without WebGL2 | — | Missing | n/a | **Unsupported-browser screen** — no game loop, no thrown error |
+
+Preset selection (`src/engine/capabilities.ts`):
+
+- `high` — WebGL2 + compressed-texture support, float render targets and anisotropic
+  filtering, on a device with adequate memory/CPU.
+- `medium` — a recommended capability is missing, or the device is weak
+  (`navigator.deviceMemory <= 2` or `hardwareConcurrency <= 2`): pixel ratio 1.5, PCF
+  shadows, anisotropy 4.
+- `low` — a very weak device (`<= 1`): pixel ratio 1, no shadows, no antialias.
+
+Run the cross-engine smoke (Chromium / Firefox / WebKit) with
+`bun run build && xvfb-run -a bun run smoke:browsers`; it writes machine-readable results
+to `docs/evidence/APEX-14-smoke.json` and a fallback screenshot to
+`docs/evidence/APEX-14-fallback.png`.
+
 ## Engine bootstrap
 
 The engine is deliberately tiny and deterministic: a **fixed-timestep loop** advances the
@@ -36,11 +64,13 @@ smooth motion.
 | Module | Responsibility |
 | --- | --- |
 | `src/engine/loop.ts` | `FixedTimestepLoop` — accumulator + clamped delta, `update(dt)` at a fixed step, `render(alpha)` with interpolation. Clock and frame scheduler are injectable. |
-| `src/engine/renderer.ts` | `createRenderer(canvas)` — WebGL2 `THREE.WebGLRenderer`, pixel-ratio clamp, `setSize`, `dispose`. Implements the `RendererHandle` port. |
+| `src/engine/capabilities.ts` | `detectCapabilities(gl)` / `assessSupport(caps, hints)` / `resolveQualityPreset(assessment)` — pure WebGL2 capability detection, support verdict and quality presets. |
+| `src/engine/renderer.ts` | `createRenderer(canvas, { quality })` — WebGL2 `THREE.WebGLRenderer`, pixel-ratio clamp, `setSize`, `dispose`; `tryCreateRenderer` returns a result instead of throwing for graceful fallback. |
 | `src/engine/scene.ts` | `createPlaceholderScene()` — camera, lights, ground + grid and a placeholder "car"; `update`/`interpolate`/`resize`/`dispose` lifecycle. |
 | `src/engine/app.ts` | `EngineApp` — composition root wiring loop ↔ scene ↔ renderer, resize handling, teardown and the headless `tick()`. |
 | `src/engine/index.ts` | Barrel + `createEngine(canvas)` convenience factory. |
-| `src/main.ts` | Browser entry: grabs the `#app` canvas, starts the engine, disposes on HMR. |
+| `src/ui/supportScreen.ts` | `supportScreenContent()` + `mountSupportScreen()` — the actionable unsupported-browser screen. |
+| `src/main.ts` | Browser entry: detects capability, mounts the fallback or boots the engine with a quality preset, disposes on HMR. |
 
 ### The loop
 
@@ -86,8 +116,12 @@ render(accumulator / fixedDelta)                    // alpha in [0,1) for interp
 
 ### Design decisions
 
-- **WebGL2 only.** three.js dropped WebGL1 in r163; the renderer fails fast with a clear
-  message when no WebGL2 context is available rather than silently degrading.
+- **WebGL2 only, but never a black canvas.** three.js dropped WebGL1 in r163, so there is
+  no WebGL1 fallback path. Instead the boot detects WebGL2 and its required extensions,
+  degrades the quality preset to the detected capability, and shows an actionable
+  unsupported-browser screen when the context is missing (see
+  [Supported browsers](#supported-browsers)) — the renderer is no longer allowed to throw
+  into the boot path.
 - **Ports, not singletons.** `RendererHandle` / `SceneHandle` are interfaces so the whole
   app is exercised headlessly with fakes; only `createRenderer` touches a real GL context.
 - **Interpolation lives in the scene.** The loop only produces `alpha`; each scene lerps

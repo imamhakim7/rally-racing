@@ -1,6 +1,27 @@
 export { EngineApp, type EngineAppOptions } from "./app";
 export { FixedTimestepLoop, type LoopCallbacks, type LoopOptions } from "./loop";
-export { createRenderer, getWebGL2Context, type RendererHandle } from "./renderer";
+export {
+  createRenderer,
+  getWebGL2Context,
+  tryCreateRenderer,
+  type CreateRendererResult,
+  type RendererHandle,
+} from "./renderer";
+export {
+  assessSupport,
+  detectCapabilities,
+  forcedUnsupportedAssessment,
+  hasCompressedTextureSupport,
+  resolveQualityPreset,
+  COMPRESSED_TEXTURE_EXTENSIONS,
+  QUALITY_PRESETS,
+  type DeviceHints,
+  type GlCapabilities,
+  type QualityPreset,
+  type QualityPresetId,
+  type SupportAssessment,
+  type SupportLevel,
+} from "./capabilities";
 export { createPlaceholderScene, type SceneHandle } from "./scene";
 
 import { EngineApp, type EngineAppOptions } from "./app";
