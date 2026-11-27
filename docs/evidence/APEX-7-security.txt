@@ -1,0 +1,40 @@
+# APEX-7 Security Review
+
+Scope: CPU opponent driver AI (`src/ai/*`), visible race scene
+(`src/scenes/aiRaceScene.ts`, `src/scenes/carMesh.ts`), boot wiring
+(`src/main.ts`), tests and evidence scripts.
+
+## Attack surface
+
+| Surface | Assessment |
+| --- | --- |
+| `?race=<id>` query param (`src/main.ts`) | Used only to select a **bundled** stage id. Validated with `library.has(raceParam)`; an unknown value falls back to the stage-select scene instead of throwing during boot. No value is written into the DOM, a URL, a fetch, or a path. |
+| Stage JSON data (`physicsSurfaceAt`) | Grip scalar is clamped to `[0.05, 1.5]`; surface type maps through a fixed table (closed union) — no arbitrary property lookup from data. |
+| Seeded PRNG (`mulberry32`) | Non-cryptographic; used only for deterministic skill jitter. Not a security control. |
+| Simulation loop | Bounded by `maxSeconds` and a fixed step; no recursion, no unbounded growth. The screenshot harness waits a fixed wall-clock budget. |
+
+## Findings
+
+- **No injection sink.** The ticket adds no `innerHTML`, `eval`, `new Function`,
+  `document.write`, dynamic `import()`, `fetch`, WebSocket or storage access. The
+  only DOM reads are the canvas and `location.search`.
+- **No secrets / no new dependencies.** `package.json` is unchanged; no credentials,
+  tokens or environment reads are added.
+- **Input validation hardened.** The `?race=` selector is now fail-safe: a crafted
+  or stale value degrades to the normal stage scene rather than crashing the boot
+  (denial-of-service on self only, now removed).
+- **No authorization surface.** The code is client-side game logic; it adds no
+  endpoint, list, or derived delivery path, so the per-object authorization and
+  DM-scope rules do not apply.
+- **Data safety.** No board DB, runtime state or `data/` files are committed; the
+  report script writes only to `docs/evidence/` (build-time tooling).
+- **Streaming/SSE, cache, attribution, IAM:** not touched.
+
+## Knowledge feedback
+
+No recurring defect class was revealed; no `.opencode/skill/*`, `AGENTS.md`,
+threat-model or `docs/security/lessons.md` update is required for this ticket.
+
+## Verdict
+
+PASS — no OWASP-relevant issue introduced; one boot-robustness hardening applied.

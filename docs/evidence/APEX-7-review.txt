@@ -1,0 +1,52 @@
+# APEX-7 Code Review
+
+Reviewer: orchestrator seat (single-seat run; author and reviewer are the same
+agent, so this is a self-review with the full artifacts re-run — see
+`APEX-7-tests.txt`, `APEX-7-race-report.txt`, `APEX-7-screenshot.txt`).
+
+## Change set
+
+- `src/ai/` — `types.ts`, `racing-line.ts`, `surface.ts`, `driver.ts`, `race.ts`,
+  `rng.ts`, `index.ts`.
+- `src/scenes/aiRaceScene.ts` — visible race scene; `src/scenes/carMesh.ts` — shared
+  car mesh (also adopted by `src/scenes/physicsTestScene.ts`, removing duplication).
+- `src/main.ts` — `?race=<id>` boot path, validated and fail-safe.
+- `tests/ai-racing-line.test.ts`, `tests/ai-driver.test.ts`, `tests/ai-race.test.ts`,
+  `tests/aiRaceScene.test.ts`.
+- `scripts/ai-race-report.ts`, `scripts/screenshot-ai-race.mjs`, `docs/openspecs/APEX-7.md`.
+
+## Checklist
+
+- [x] **Spec first** — `docs/openspecs/APEX-7.md` written before implementation; it
+      binds the epic and lists acceptance criteria and evidence.
+- [x] **Correctness** — racing line derives curvature + a feasible brake/accel speed
+      profile; driver is pure-pursuit + cross-track + speed control + separation.
+- [x] **Determinism** — no `Math.random`/clock in `src/ai`; only the seeded PRNG;
+      `tests/ai-race.test.ts` asserts exact equality across runs.
+- [x] **Purity / testability** — `src/ai` imports only `src/physics` and
+      `src/stage`; no three.js, no DOM, so races run in Vitest.
+- [x] **On-surface** — verified 0 off-road samples and `maxCrossTrack <= halfWidth`
+      on every stage/seed in `APEX-7-race-report.txt` and the race tests.
+- [x] **No driving through each other** — `minSeparation > 2.0 m` on every stage,
+      including the finish (finished cars are parked off the line).
+- [x] **Corner braking** — corner mean speed < straight mean speed on every stage
+      (launch phase excluded from the metric).
+- [x] **Finish window** — every finish time inside `[0.75·ref, 1.6·ref]`.
+- [x] **Error handling** — degenerate spline handled in `buildRacingLine`; inputs
+      clamped; `?race=` validated.
+- [x] **DRY / standards** — shared car mesh; tuning constants live in
+      `DriverTuning` / `RacingLineOptions`, not scattered magic numbers.
+- [x] **No regression** — all 142 tests pass (117 pre-existing + 25 new);
+      `tsc --noEmit` clean; `vite build` succeeds; browser console clean.
+
+## Minor notes (non-blocking)
+
+- `buildCarMesh` is intentionally boxy placeholder art; detailed models arrive with
+  the asset pipeline (#APEX-6), not here.
+- The field is a credible procession with safe following; active overtaking is a
+  tuning concern owned by #APEX-8 (difficulty tiers / catch-up), which this ticket
+  deliberately exposes via per-car `skill`.
+
+## Verdict
+
+APPROVE — moves to security testing.

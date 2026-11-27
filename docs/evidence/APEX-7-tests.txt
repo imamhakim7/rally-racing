@@ -1,0 +1,32 @@
+$ bun run test
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-7
+
+
+ Test Files  26 passed (26)
+      Tests  142 passed (142)
+   Start at  19:12:57
+   Duration  1.03s (tests 67%, import 18%, transform 11%, worker 3%)
+
+exit=0
+
+$ bun run build
+$ bun run gen:stages
+$ bun scripts/generate-stage-index.ts
+stage index: 6 stage(s) -> src/stage/data/index.ts
+$ tsc --noEmit && vite build
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 42 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  1.54 kB │ gzip:   0.70 kB
+dist/assets/index-Y6nAxjzR.js  569.25 kB │ gzip: 147.57 kB │ map: 3,045.72 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.01s
+exit=0

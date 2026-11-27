@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:42677",
+  "results": [
+    {
+      "stage": "alpine-forest",
+      "file": "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-race-alpine-forest.png",
+      "start": {
+        "webgl2": true,
+        "carCount": 4,
+        "circuitId": "alpine-forest"
+      },
+      "after": {
+        "simTime": 4.699999999999989,
+        "leaderProgress": 0.1432465463993332,
+        "leaderId": "cpu-2"
+      }
+    },
+    {
+      "stage": "canyon-sprint",
+      "file": "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-race-canyon-sprint.png",
+      "start": {
+        "webgl2": true,
+        "carCount": 4,
+        "circuitId": "canyon-sprint"
+      },
+      "after": {
+        "simTime": 4.716666666666655,
+        "leaderProgress": 0.14906057274768064,
+        "leaderId": "cpu-1"
+      }
+    }
+  ],
+  "problems": []
+}
