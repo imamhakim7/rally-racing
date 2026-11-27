@@ -1,0 +1,34 @@
+APEX-7 headless four-car race report (seed 1)
+
+PASS alpine-forest: ref=18.72s window=[14.04,29.94] minSep=2.263 order=cpu-1>cpu-2>cpu-3>cpu-4
+    cpu-1 skill=0.95 finish=24.67s off=0 maxX=1.872 straight=21.43 corner=16.44
+    cpu-2 skill=0.9 finish=25.1s off=0 maxX=1.908 straight=20.71 corner=16.16
+    cpu-3 skill=0.942 finish=25.15s off=0 maxX=2.116 straight=21.58 corner=16.75
+    cpu-4 skill=0.978 finish=25.58s off=0 maxX=1.926 straight=21.12 corner=15.6
+PASS canyon-sprint: ref=15.04s window=[11.28,24.06] minSep=2.255 order=cpu-1>cpu-3>cpu-2>cpu-4
+    cpu-1 skill=0.95 finish=19.52s off=0 maxX=1.723 straight=17.91 corner=15.18
+    cpu-2 skill=0.9 finish=21.17s off=0 maxX=1.637 straight=16.98 corner=13.71
+    cpu-3 skill=0.942 finish=20.42s off=0 maxX=1.779 straight=17.72 corner=14.95
+    cpu-4 skill=0.978 finish=21.8s off=0 maxX=1.813 straight=17.4 corner=13.37
+PASS coastal-cliffs: ref=16.07s window=[12.06,25.72] minSep=2.264 order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.95 finish=20.68s off=0 maxX=2.061 straight=24.38 corner=15.48
+    cpu-2 skill=0.9 finish=20.6s off=0 maxX=2.139 straight=23.67 corner=16.09
+    cpu-3 skill=0.942 finish=21.73s off=0 maxX=2.009 straight=23.86 corner=15.36
+    cpu-4 skill=0.978 finish=21.15s off=0 maxX=2.191 straight=24.2 corner=15.34
+PASS desert-dunes: ref=19.4s window=[14.55,31.04] minSep=2.262 order=cpu-1>cpu-3>cpu-2>cpu-4
+    cpu-1 skill=0.95 finish=27.28s off=0 maxX=2.192 straight=22.21 corner=18.98
+    cpu-2 skill=0.9 finish=28.45s off=0 maxX=2.208 straight=21.48 corner=17.42
+    cpu-3 skill=0.942 finish=28.4s off=0 maxX=2.19 straight=21.78 corner=18.82
+    cpu-4 skill=0.978 finish=28.93s off=0 maxX=2.21 straight=21.64 corner=18.03
+PASS mountain-pass: ref=18.92s window=[14.19,30.27] minSep=2.255 order=cpu-1>cpu-2>cpu-3>cpu-4
+    cpu-1 skill=0.95 finish=25.02s off=0 maxX=1.669 straight=17.68 corner=15.02
+    cpu-2 skill=0.9 finish=26.68s off=0 maxX=1.705 straight=16.98 corner=13.72
+    cpu-3 skill=0.942 finish=27s off=0 maxX=1.859 straight=16.68 corner=14.41
+    cpu-4 skill=0.978 finish=27.28s off=0 maxX=1.773 straight=16.97 corner=14.2
+PASS valley-rally: ref=19.36s window=[14.52,30.98] minSep=2.26 order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.95 finish=25.83s off=0 maxX=2.078 straight=22.38 corner=15.34
+    cpu-2 skill=0.9 finish=25.67s off=0 maxX=2.122 straight=21.91 corner=15.49
+    cpu-3 skill=0.942 finish=26.83s off=0 maxX=2.06 straight=22.09 corner=15.26
+    cpu-4 skill=0.978 finish=26.22s off=0 maxX=2.14 straight=22.3 corner=15.2
+
+ALL OK: true

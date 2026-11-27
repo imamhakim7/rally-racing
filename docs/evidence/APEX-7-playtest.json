@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:45377",
+  "stages": [
+    {
+      "stage": "alpine-forest",
+      "ok": true,
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-alpine-forest-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-alpine-forest-t8.png",
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-alpine-forest-t16.png",
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-alpine-forest-t24.png"
+      ],
+      "duration": 26.349999999999785,
+      "halfWidth": 4.5,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 25.04999999999986,
+        "cpu-4": 25.54999999999983,
+        "cpu-1": 25.649999999999824,
+        "cpu-3": 26.149999999999796
+      },
+      "maxAbsOffset": 3.913,
+      "offRoadSamples": 0,
+      "minSeparation": 2.264,
+      "onScreenMinActive": 4,
+      "onScreenMeanActive": 4,
+      "straightMeanSpeed": 20.01,
+      "cornerMeanSpeed": 15.58,
+      "brakesForCorners": true
+    },
+    {
+      "stage": "canyon-sprint",
+      "ok": true,
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-canyon-sprint-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-canyon-sprint-t8.png",
+        "/root/sarawedi-worktrees/wt/APEX-7/docs/evidence/APEX-7-playtest-canyon-sprint-t16.png"
+      ],
+      "duration": 21.93333333333337,
+      "halfWidth": 4,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-1": 20.233333333333466,
+        "cpu-3": 20.83333333333343,
+        "cpu-2": 21.23333333333341,
+        "cpu-4": 21.833333333333375
+      },
+      "maxAbsOffset": 2.096,
+      "offRoadSamples": 0,
+      "minSeparation": 2.259,
+      "onScreenMinActive": 1,
+      "onScreenMeanActive": 3.85,
+      "straightMeanSpeed": 15.99,
+      "cornerMeanSpeed": 13.89,
+      "brakesForCorners": true
+    }
+  ],
+  "problems": []
+}

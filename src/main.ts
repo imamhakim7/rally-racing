@@ -1,4 +1,4 @@
-import { createEngine, type EngineApp } from "./engine";
+import { createEngine, type EngineApp, type SceneHandle } from "./engine";
 import { getWebGL2Context } from "./engine/renderer";
 import {
   assessSupport,
@@ -17,21 +17,30 @@ import {
 } from "./stage";
 import { bootRace, createTelemetryHarness } from "./race";
 import { mountSupportScreen } from "./ui/supportScreen";
+import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
 
 /**
  * Browser entry point. Boots the engine with the stage scene and wires the
- * (minimal) stage select, then layers the stage race loop on top.
+ * (minimal) stage select, then layers the stage race loop on top. With
+ * `?race=<stageId>` it boots the visible CPU race scene (#APEX-7) instead.
  *
  * Boot order matters here: WebGL2 and the required extensions are detected
  * *first*. A browser that cannot run the game gets an actionable unsupported
  * screen instead of a thrown error and a black canvas (#APEX-14); a supported
  * browser gets a capability-derived quality preset.
  *
- * All simulation lives in `src/engine`; stage data and world building live in
- * `src/stage`; race state lives in `src/race`. The engine's fixed-timestep loop
- * drives everything through one clock: the scene (via `sceneHandle.update`) and
- * the race loop (via `onUpdate`), so world physics and race timing stay
- * frame-rate independent and in lockstep.
+ * All simulation lives in `src/engine` / `src/ai`; stage data and world building
+ * live in `src/stage`; race state lives in `src/race`. The engine's fixed-timestep
+ * loop drives everything through one clock: the scene (via `sceneHandle.update`)
+ * and, when present, the race loop (via `onUpdate`), so world physics and race
+ * timing stay frame-rate independent and in lockstep.
+ *
+ * Integration note: the vehicle (#APEX-2, `src/physics`) consumes the resolved
+ * `StageWorld` (surface zones, gate transforms, spline); in-world gate detection
+ * for the race loop is left to a later integration ticket, so the race HUD hosts
+ * a keyboard harness for crossings (see `docs/openspecs/APEX-3.md` non-goals).
+ * The `?race=` scene is the watchable CPU race from #APEX-7 (evidence/playtest),
+ * built on the same `CpuDriver` + `Vehicle` logic as the headless simulator.
  */
 const canvasElement = document.getElementById("app");
 if (!(canvasElement instanceof HTMLCanvasElement)) {
@@ -84,7 +93,14 @@ function bootGame(assessment: SupportAssessment): void {
   canvas.setAttribute("data-support", assessment.level);
 
   const library = new StageLibrary();
-  const sceneHandle: StageSceneHandle = createStageScene(library);
+  // #APEX-7: the two scenes have different shapes (stage select vs. race field);
+  // they only share the engine's `SceneHandle` contract, so keep each narrow type
+  // separately. `bootRace()` is skipped when the AI scene owns the clock.
+  const raceParam = new URLSearchParams(window.location.search).get("race");
+  const aiRaceId = raceParam && library.has(raceParam) ? raceParam : null;
+  const aiRace: AiRaceScene | null = aiRaceId ? createAiRaceScene(library.load(aiRaceId)) : null;
+  const stageScene: StageSceneHandle | null = aiRace ? null : createStageScene(library);
+  const sceneHandle: SceneHandle = aiRace ?? stageScene!;
 
   // Stage race loop: countdown -> ordered checkpoints -> finish -> results. Gate
   // crossings are injected via the HUD's keyboard harness until in-world gate
@@ -92,39 +108,45 @@ function bootGame(assessment: SupportAssessment): void {
   // from a keyboard-driven vehicle harness (same interim pattern) and the
   // minimap from the resolved stage world.
   const telemetry = createTelemetryHarness();
-  const race = bootRace({ telemetry, minimap: sceneHandle.world.minimap });
+  const race = aiRace ? null : bootRace({ telemetry, minimap: stageScene!.world.minimap });
 
   // Keep the minimap in sync when the stage select swaps the circuit.
-  let minimapCircuitId = sceneHandle.current.id;
+  let minimapCircuitId = stageScene?.current.id ?? "";
   const syncMinimap = (): void => {
-    if (sceneHandle.current.id !== minimapCircuitId) {
-      minimapCircuitId = sceneHandle.current.id;
-      race.hud.setMinimap(sceneHandle.world.minimap);
+    if (!race || !stageScene) return;
+    if (stageScene.current.id !== minimapCircuitId) {
+      minimapCircuitId = stageScene.current.id;
+      race.hud.setMinimap(stageScene.world.minimap);
     }
   };
 
   const app: EngineApp = createEngine(canvas, {
     sceneHandle,
     renderer: { quality, maxPixelRatio: quality.maxPixelRatio },
-    onUpdate: (dt) => race.update(dt),
-    onRender: () => {
-      syncMinimap();
-      race.render();
-    },
+    onUpdate: race ? (dt) => race.update(dt) : undefined,
+    onRender: race
+      ? () => {
+          syncMinimap();
+          race.render();
+        }
+      : undefined,
   });
   app.start();
 
-  const selectHost = document.getElementById("stage-select");
-  if (selectHost) {
-    mountStageSelect(selectHost, library, sceneHandle);
+  if (!aiRace) {
+    const selectHost = document.getElementById("stage-select");
+    if (selectHost) {
+      mountStageSelect(selectHost, library, stageScene!);
+    }
+    window.apexStage = { library, scene: stageScene!, app, race: race!, support: assessment, quality };
+  } else {
+    window.apexRace = { library, scene: aiRace, app };
   }
-
-  window.apexStage = { library, scene: sceneHandle, app, race, support: assessment, quality };
 
   // Vite HMR: release GPU + overlay resources before the module is replaced.
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
-      race.dispose();
+      race?.dispose();
       app.dispose();
     });
   }
@@ -157,5 +179,7 @@ declare global {
       support: SupportAssessment;
       quality?: ReturnType<typeof resolveQualityPreset>;
     };
+    /** Exposed when running the visible CPU race (`?race=<id>`). */
+    apexRace?: { library: StageLibrary; scene: AiRaceScene; app: EngineApp } | null;
   }
 }

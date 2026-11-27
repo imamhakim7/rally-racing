@@ -1,0 +1,353 @@
+{
+  "allOk": true,
+  "stages": [
+    {
+      "stage": "alpine-forest",
+      "ok": true,
+      "referenceTime": 18.72,
+      "window": [
+        14.04,
+        29.94
+      ],
+      "minSeparation": 2.263,
+      "finishOrder": [
+        "cpu-1",
+        "cpu-2",
+        "cpu-3",
+        "cpu-4"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 24.67,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.872,
+          "straightMeanSpeed": 21.43,
+          "cornerMeanSpeed": 16.44,
+          "progress": 0.9991
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 25.1,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.908,
+          "straightMeanSpeed": 20.71,
+          "cornerMeanSpeed": 16.16,
+          "progress": 0.9997
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 25.15,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.116,
+          "straightMeanSpeed": 21.58,
+          "cornerMeanSpeed": 16.75,
+          "progress": 0.999
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 25.58,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.926,
+          "straightMeanSpeed": 21.12,
+          "cornerMeanSpeed": 15.6,
+          "progress": 0.9992
+        }
+      ]
+    },
+    {
+      "stage": "canyon-sprint",
+      "ok": true,
+      "referenceTime": 15.04,
+      "window": [
+        11.28,
+        24.06
+      ],
+      "minSeparation": 2.255,
+      "finishOrder": [
+        "cpu-1",
+        "cpu-3",
+        "cpu-2",
+        "cpu-4"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 19.52,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.723,
+          "straightMeanSpeed": 17.91,
+          "cornerMeanSpeed": 15.18,
+          "progress": 0.9987
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 21.17,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.637,
+          "straightMeanSpeed": 16.98,
+          "cornerMeanSpeed": 13.71,
+          "progress": 0.9986
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 20.42,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.779,
+          "straightMeanSpeed": 17.72,
+          "cornerMeanSpeed": 14.95,
+          "progress": 0.9985
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 21.8,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.813,
+          "straightMeanSpeed": 17.4,
+          "cornerMeanSpeed": 13.37,
+          "progress": 0.9988
+        }
+      ]
+    },
+    {
+      "stage": "coastal-cliffs",
+      "ok": true,
+      "referenceTime": 16.07,
+      "window": [
+        12.06,
+        25.72
+      ],
+      "minSeparation": 2.264,
+      "finishOrder": [
+        "cpu-2",
+        "cpu-1",
+        "cpu-4",
+        "cpu-3"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 20.68,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.061,
+          "straightMeanSpeed": 24.38,
+          "cornerMeanSpeed": 15.48,
+          "progress": 0.999
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 20.6,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.139,
+          "straightMeanSpeed": 23.67,
+          "cornerMeanSpeed": 16.09,
+          "progress": 0.9992
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 21.73,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.009,
+          "straightMeanSpeed": 23.86,
+          "cornerMeanSpeed": 15.36,
+          "progress": 0.9992
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 21.15,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.191,
+          "straightMeanSpeed": 24.2,
+          "cornerMeanSpeed": 15.34,
+          "progress": 0.9989
+        }
+      ]
+    },
+    {
+      "stage": "desert-dunes",
+      "ok": true,
+      "referenceTime": 19.4,
+      "window": [
+        14.55,
+        31.04
+      ],
+      "minSeparation": 2.262,
+      "finishOrder": [
+        "cpu-1",
+        "cpu-3",
+        "cpu-2",
+        "cpu-4"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 27.28,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.192,
+          "straightMeanSpeed": 22.21,
+          "cornerMeanSpeed": 18.98,
+          "progress": 0.9993
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 28.45,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.208,
+          "straightMeanSpeed": 21.48,
+          "cornerMeanSpeed": 17.42,
+          "progress": 0.9993
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 28.4,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.19,
+          "straightMeanSpeed": 21.78,
+          "cornerMeanSpeed": 18.82,
+          "progress": 0.9995
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 28.93,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.21,
+          "straightMeanSpeed": 21.64,
+          "cornerMeanSpeed": 18.03,
+          "progress": 0.9995
+        }
+      ]
+    },
+    {
+      "stage": "mountain-pass",
+      "ok": true,
+      "referenceTime": 18.92,
+      "window": [
+        14.19,
+        30.27
+      ],
+      "minSeparation": 2.255,
+      "finishOrder": [
+        "cpu-1",
+        "cpu-2",
+        "cpu-3",
+        "cpu-4"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 25.02,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.669,
+          "straightMeanSpeed": 17.68,
+          "cornerMeanSpeed": 15.02,
+          "progress": 0.9991
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 26.68,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.705,
+          "straightMeanSpeed": 16.98,
+          "cornerMeanSpeed": 13.72,
+          "progress": 0.9991
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 27,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.859,
+          "straightMeanSpeed": 16.68,
+          "cornerMeanSpeed": 14.41,
+          "progress": 0.9993
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 27.28,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 1.773,
+          "straightMeanSpeed": 16.97,
+          "cornerMeanSpeed": 14.2,
+          "progress": 0.9989
+        }
+      ]
+    },
+    {
+      "stage": "valley-rally",
+      "ok": true,
+      "referenceTime": 19.36,
+      "window": [
+        14.52,
+        30.98
+      ],
+      "minSeparation": 2.26,
+      "finishOrder": [
+        "cpu-2",
+        "cpu-1",
+        "cpu-4",
+        "cpu-3"
+      ],
+      "cars": [
+        {
+          "id": "cpu-1",
+          "skill": 0.95,
+          "finishTime": 25.83,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.078,
+          "straightMeanSpeed": 22.38,
+          "cornerMeanSpeed": 15.34,
+          "progress": 0.9995
+        },
+        {
+          "id": "cpu-2",
+          "skill": 0.9,
+          "finishTime": 25.67,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.122,
+          "straightMeanSpeed": 21.91,
+          "cornerMeanSpeed": 15.49,
+          "progress": 0.9992
+        },
+        {
+          "id": "cpu-3",
+          "skill": 0.942,
+          "finishTime": 26.83,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.06,
+          "straightMeanSpeed": 22.09,
+          "cornerMeanSpeed": 15.26,
+          "progress": 0.9994
+        },
+        {
+          "id": "cpu-4",
+          "skill": 0.978,
+          "finishTime": 26.22,
+          "offSurfaceSamples": 0,
+          "maxCrossTrack": 2.14,
+          "straightMeanSpeed": 22.3,
+          "cornerMeanSpeed": 15.2,
+          "progress": 0.9993
+        }
+      ]
+    }
+  ]
+}
