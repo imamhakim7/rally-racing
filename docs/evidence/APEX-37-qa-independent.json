@@ -1,0 +1,255 @@
+{
+  "pass": true,
+  "failures": [],
+  "results": {
+    "desktop": {
+      "scale_1": {
+        "appliedVar": 1,
+        "countdown": {
+          "font": 115.2,
+          "display": "block"
+        },
+        "race": {
+          "root": {
+            "font": 16.24,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 115.2,
+            "display": "none"
+          },
+          "time": {
+            "font": 30.72,
+            "display": "block"
+          },
+          "speed": {
+            "font": 43.52,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 33.28,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [],
+          "docOverX": 0,
+          "docOverY": 0
+        }
+      },
+      "scale_1.5": {
+        "appliedVar": 1.5,
+        "countdown": {
+          "font": 172.8,
+          "display": "none"
+        },
+        "race": {
+          "root": {
+            "font": 24.36,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 172.8,
+            "display": "none"
+          },
+          "time": {
+            "font": 46.08,
+            "display": "block"
+          },
+          "speed": {
+            "font": 65.28,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 49.92,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [],
+          "docOverX": 0,
+          "docOverY": 0
+        },
+        "ratio_root": 1.5,
+        "ratio_countdown": 1.5,
+        "ratio_time": 1.5,
+        "ratio_speed": 1.5,
+        "ratio_notes": 1.5
+      },
+      "scale_2": {
+        "appliedVar": 2,
+        "countdown": {
+          "font": 230.4,
+          "display": "none"
+        },
+        "race": {
+          "root": {
+            "font": 32.48,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 230.4,
+            "display": "none"
+          },
+          "time": {
+            "font": 61.44,
+            "display": "block"
+          },
+          "speed": {
+            "font": 87.04,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 66.56,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [
+            {
+              "selector": ".apex-panel",
+              "cls": "apex-panel apex-live",
+              "scrollHeight": 192,
+              "clientHeight": 190,
+              "overflow": "visible"
+            },
+            {
+              "selector": ".apex-live",
+              "cls": "apex-panel apex-live",
+              "scrollHeight": 192,
+              "clientHeight": 190,
+              "overflow": "visible"
+            }
+          ],
+          "docOverX": 0,
+          "docOverY": 0
+        },
+        "ratio_root": 2,
+        "ratio_countdown": 2,
+        "ratio_time": 2,
+        "ratio_speed": 2,
+        "ratio_notes": 2
+      }
+    },
+    "mobile": {
+      "scale_1": {
+        "appliedVar": 1,
+        "countdown": {
+          "font": 48,
+          "display": "none"
+        },
+        "race": {
+          "root": {
+            "font": 12,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 48,
+            "display": "none"
+          },
+          "time": {
+            "font": 22,
+            "display": "block"
+          },
+          "speed": {
+            "font": 28,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 22,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [],
+          "docOverX": 0,
+          "docOverY": 0
+        }
+      },
+      "scale_1.5": {
+        "appliedVar": 1.5,
+        "countdown": {
+          "font": 72,
+          "display": "none"
+        },
+        "race": {
+          "root": {
+            "font": 18,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 72,
+            "display": "none"
+          },
+          "time": {
+            "font": 33,
+            "display": "block"
+          },
+          "speed": {
+            "font": 42,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 33,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [],
+          "docOverX": 0,
+          "docOverY": 0
+        },
+        "ratio_root": 1.5,
+        "ratio_countdown": 1.5,
+        "ratio_time": 1.5,
+        "ratio_speed": 1.5,
+        "ratio_notes": 1.5
+      },
+      "scale_2": {
+        "appliedVar": 2,
+        "countdown": {
+          "font": 96,
+          "display": "none"
+        },
+        "race": {
+          "root": {
+            "font": 24,
+            "display": "block"
+          },
+          "countdown": {
+            "font": 96,
+            "display": "none"
+          },
+          "time": {
+            "font": 44,
+            "display": "block"
+          },
+          "speed": {
+            "font": 56,
+            "display": "inline"
+          },
+          "notes": {
+            "font": 44,
+            "display": "block"
+          }
+        },
+        "clip": {
+          "offenders": [],
+          "notices": [],
+          "docOverX": 0,
+          "docOverY": 0
+        },
+        "ratio_root": 2,
+        "ratio_countdown": 2,
+        "ratio_time": 2,
+        "ratio_speed": 2,
+        "ratio_notes": 2
+      }
+    }
+  }
+}

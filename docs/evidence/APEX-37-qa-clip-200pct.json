@@ -1,0 +1,190 @@
+{
+  "desktop": {
+    "vw": 1280,
+    "vh": 800,
+    "res": {
+      "countdown": {
+        "found": true,
+        "font": 230.4,
+        "scrollW": 0,
+        "clientW": 0,
+        "scrollH": 0,
+        "clientH": 0,
+        "textW": 0,
+        "textH": 0,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 0,
+          "right": 0,
+          "top": 0,
+          "bottom": 0
+        }
+      },
+      "time": {
+        "found": true,
+        "font": 61.44,
+        "scrollW": 292,
+        "clientW": 292,
+        "scrollH": 72,
+        "clientH": 68,
+        "textW": 256,
+        "textH": 77,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 37,
+          "right": 329,
+          "top": 34,
+          "bottom": 102
+        }
+      },
+      "speed": {
+        "found": true,
+        "font": 87.04,
+        "scrollW": 0,
+        "clientW": 0,
+        "scrollH": 0,
+        "clientH": 0,
+        "textW": 89,
+        "textH": 110,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 1154,
+          "right": 1243,
+          "top": 644,
+          "bottom": 754
+        }
+      },
+      "notes": {
+        "found": true,
+        "font": 66.56,
+        "scrollW": 242,
+        "clientW": 242,
+        "scrollH": 78,
+        "clientH": 73,
+        "textW": 242,
+        "textH": 84,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 37,
+          "right": 279,
+          "top": 606,
+          "bottom": 680
+        }
+      }
+    }
+  },
+  "mobile": {
+    "vw": 390,
+    "vh": 844,
+    "res": {
+      "countdown": {
+        "found": true,
+        "font": 96,
+        "scrollW": 0,
+        "clientW": 0,
+        "scrollH": 0,
+        "clientH": 0,
+        "textW": 0,
+        "textH": 0,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 0,
+          "right": 0,
+          "top": 0,
+          "bottom": 0
+        }
+      },
+      "time": {
+        "found": true,
+        "font": 44,
+        "scrollW": 216,
+        "clientW": 216,
+        "scrollH": 51,
+        "clientH": 48,
+        "textW": 183,
+        "textH": 55,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 19,
+          "right": 235,
+          "top": 17,
+          "bottom": 65
+        }
+      },
+      "speed": {
+        "found": true,
+        "font": 56,
+        "scrollW": 0,
+        "clientW": 0,
+        "scrollH": 0,
+        "clientH": 0,
+        "textW": 57,
+        "textH": 71,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 314,
+          "right": 371,
+          "top": 746,
+          "bottom": 817
+        }
+      },
+      "notes": {
+        "found": true,
+        "font": 44,
+        "scrollW": 134,
+        "clientW": 134,
+        "scrollH": 99,
+        "clientH": 97,
+        "textW": 114,
+        "textH": 103,
+        "textFits": true,
+        "nearestClippingAncestor": {
+          "cls": "",
+          "ox": "hidden",
+          "oy": "hidden"
+        },
+        "box": {
+          "left": 19,
+          "right": 153,
+          "top": 662,
+          "bottom": 759
+        }
+      }
+    }
+  }
+}

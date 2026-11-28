@@ -58,7 +58,7 @@ const STYLE = `
 .apex-btn:focus-visible { outline: 3px solid var(--apex-good); outline-offset: 2px; }
 .apex-countdown {
   left: 50%; top: 40%; transform: translate(-50%,-50%); text-align: center;
-  font-size: clamp(48px, 9vw, 140px); font-weight: 800; letter-spacing: .04em;
+  font-size: calc(clamp(48px, 9vw, 140px) * var(--apex-text-scale, 1)); font-weight: 800; letter-spacing: .04em;
   text-shadow: 0 4px 24px rgba(0,0,0,.6);
 }
 .apex-countdown .apex-go { color: var(--apex-good); font-size: .66em; }
@@ -68,7 +68,7 @@ const STYLE = `
   left: var(--apex-safe); top: var(--apex-safe);
   max-width: min(46vw, 560px); max-height: 24vh;
 }
-.apex-live .apex-time { font-size: clamp(22px, 2.4vw, 56px); font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
+.apex-live .apex-time { font-size: calc(clamp(22px, 2.4vw, 56px) * var(--apex-text-scale, 1)); font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
 .apex-live .apex-row { color: var(--apex-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .apex-live .apex-pos { color: var(--apex-good); font-weight: 700; }
 .apex-split { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 999px; font-weight: 700; }
@@ -86,7 +86,7 @@ const STYLE = `
 
 /* Speed: bottom-right, bounded, clear of the centre. */
 .apex-speed { right: var(--apex-safe); bottom: var(--apex-safe); text-align: right; max-width: min(46vw, 420px); }
-.apex-speed .apex-speed-value { font-size: clamp(28px, 3.4vw, 84px); font-weight: 800; line-height: 1; letter-spacing: .01em; }
+.apex-speed .apex-speed-value { font-size: calc(clamp(28px, 3.4vw, 84px) * var(--apex-text-scale, 1)); font-weight: 800; line-height: 1; letter-spacing: .01em; }
 .apex-speed .apex-speed-unit { color: var(--apex-muted); font-size: .5em; letter-spacing: .18em; text-transform: uppercase; }
 
 /* Pace notes (#APEX-18): bottom-left, bounded, clear of the centre band. */
@@ -98,7 +98,7 @@ const STYLE = `
   color: var(--apex-muted); font-size: .62em; letter-spacing: .18em; text-transform: uppercase;
 }
 .apex-notes .apex-notes-call {
-  font-size: clamp(22px, 2.6vw, 52px); font-weight: 800; line-height: 1.1;
+  font-size: calc(clamp(22px, 2.6vw, 52px) * var(--apex-text-scale, 1)); font-weight: 800; line-height: 1.1;
   letter-spacing: .02em; color: var(--apex-accent);
 }
 .apex-notes .apex-notes-distance { color: var(--apex-muted); font-size: .8em; }
