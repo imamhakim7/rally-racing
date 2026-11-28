@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { StageLibrary } from "../src/stage/library";
 import { createAiRaceScene } from "../src/scenes/aiRaceScene";
+import { FULL_MOTION, REDUCED_MOTION } from "../src/engine/motion";
 
 const library = new StageLibrary();
 
@@ -58,6 +59,23 @@ describe("visible AI race scene", () => {
     expect(offRoad).toBe(0);
     expect(minSeparation).toBeGreaterThan(2.0);
     scene.dispose();
+  });
+
+  it("applies camera motion only when full motion is allowed (#APEX-12, AC4)", () => {
+    const circuit = library.load(library.list()[0]!.id);
+    const reduced = createAiRaceScene(circuit, { seed: 7, motion: REDUCED_MOTION });
+    const full = createAiRaceScene(circuit, { seed: 7, motion: FULL_MOTION });
+    for (let i = 0; i < 60 * 6; i += 1) {
+      reduced.update(1 / 60);
+      reduced.interpolate(0);
+      full.update(1 / 60);
+      full.interpolate(0);
+    }
+    expect(reduced.cameraEffects()).toEqual({ shake: 0, blur: 0 });
+    expect(full.cameraEffects().blur).toBeGreaterThan(0);
+    expect(full.cameraEffects().shake).toBeGreaterThan(0);
+    reduced.dispose();
+    full.dispose();
   });
 
   it("resizes its camera without error", () => {

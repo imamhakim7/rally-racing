@@ -31,6 +31,14 @@ describe("src/main.ts boot wiring", () => {
     expect(main).toMatch(/window\.apexRace\s*=/);
   });
 
+  it("keeps the input abstraction + accessibility wiring (#APEX-12)", () => {
+    expect(main).toMatch(/createInputManager\(/);
+    expect(main).toMatch(/createLocalStorageStore\(/);
+    expect(main).toMatch(/applySettingsToDocument\(/);
+    expect(main).toMatch(/mountSettingsPanel\(/);
+    expect(main).toMatch(/motionPolicy\(/);
+  });
+
   it("never ships conflict markers", () => {
     expect(main).not.toMatch(/^(<<<<<<<|=======|>>>>>>>)/m);
   });

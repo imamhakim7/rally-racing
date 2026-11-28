@@ -1,0 +1,13 @@
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-12
+
+
+ Test Files  47 passed (47)
+      Tests  318 passed (318)
+   Start at  07:57:37
+   Duration  8.73s (tests 81%, import 10%, transform 6%, worker 2%)
+
+    Isolate  47 workers spawned · ~95ms startup each (spawn + environment, per file)
+             at least ~544ms faster with isolate: false — reuses workers across files instead of one per file
+
