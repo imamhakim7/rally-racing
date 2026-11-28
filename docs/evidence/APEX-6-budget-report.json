@@ -1,15 +1,15 @@
 {
   "ticket": "APEX-6",
   "schemaVersion": 1,
-  "generatedAt": "2026-11-27T04:33:52.510Z",
+  "generatedAt": "2026-11-28T08:26:12.104Z",
   "profile": "slow-4g",
   "geometry": "meshopt",
   "ok": true,
   "totals": {
-    "bytes": 13957,
-    "count": 3,
+    "bytes": 24301,
+    "count": 6,
     "byKind": {
-      "audio": 8044,
+      "audio": 18388,
       "model": 4416,
       "texture": 1497
     },
@@ -29,11 +29,11 @@
   },
   "assets": [
     {
-      "logicalName": "ambient-loop",
+      "logicalName": "engine",
       "kind": "audio",
-      "url": "/assets/audio/ambient-loop.385e0597.wav",
-      "hash": "385e0597",
-      "bytes": 8044
+      "url": "/assets/audio/engine.ab4f8d1b.mp3",
+      "hash": "ab4f8d1b",
+      "bytes": 4597
     },
     {
       "logicalName": "gate-arch",
@@ -43,22 +43,43 @@
       "bytes": 4416
     },
     {
+      "logicalName": "rain",
+      "kind": "audio",
+      "url": "/assets/audio/rain.a4996fe0.mp3",
+      "hash": "a4996fe0",
+      "bytes": 4597
+    },
+    {
       "logicalName": "tarmac",
       "kind": "texture",
       "url": "/assets/textures/tarmac.4d8ea45f.ktx2",
       "hash": "4d8ea45f",
       "bytes": 1497
+    },
+    {
+      "logicalName": "tyres",
+      "kind": "audio",
+      "url": "/assets/audio/tyres.1b345026.mp3",
+      "hash": "1b345026",
+      "bytes": 4597
+    },
+    {
+      "logicalName": "wind",
+      "kind": "audio",
+      "url": "/assets/audio/wind.6327af18.mp3",
+      "hash": "6327af18",
+      "bytes": 4597
     }
   ],
   "load": {
     "profile": "slow-4g",
     "trials": 200,
     "seed": 1,
-    "totalBytes": 13957,
-    "p50Ms": 521.314678646382,
-    "p95Ms": 530.7166408419423,
-    "minMs": 510.7065714964024,
-    "maxMs": 532.0208049223843,
+    "totalBytes": 24301,
+    "p50Ms": 574.1683747070094,
+    "p95Ms": 590.538445876624,
+    "minMs": 555.6982441738248,
+    "maxMs": 592.80916962233,
     "budgetP50Ms": 1500,
     "budgetP95Ms": 2500,
     "ok": true

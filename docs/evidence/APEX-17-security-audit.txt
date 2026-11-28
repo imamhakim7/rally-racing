@@ -1,0 +1,39 @@
+# APEX-17 security audit — 2026-11-28T08:38:58Z
+HEAD: 6349ae4  base: d48abf4
+
+## Dangerous sinks in the changed source (expect none)
+$ git diff origin/main...HEAD -- src | grep "^+" | grep -nE "innerHTML|outerHTML|document.write|eval\\(|new Function|child_process|exec\\(|spawn\\("
+(no matches)
+
+## Network / storage sinks introduced (reviewed)
+310:+    return new URL(relative, base).href;
+324:+  const response = await fetch(url);
+440:+  decodeAudioData?(data: ArrayBuffer): Promise<AudioBufferLike>;
+718:+      if (disposed || typeof ctx.decodeAudioData !== "function") {
+722:+        return Promise.resolve(ctx.decodeAudioData(data)).catch(() => null);
+1156:+ * with a `localStorage` default and an in-memory implementation for tests; #APEX-11
+1169:+/** The `localStorage` key audio persists under. */
+1213:+/** A `localStorage`-backed store; malformed values read as "nothing stored". */
+1416:+ * #APEX-17: persistence for the audio mute/volume. Uses `localStorage` where it
+1418:+ * runs. `localStorage` access itself can throw in a sandboxed frame.
+
+## New dependency is build-only (not in the client bundle)
+$ grep -c "Mp3Encoder|breezystack|lamejs" dist/assets/index-*.js
+0
+$ grep -oE "require\\(\"node:(fs|path|os)\"\\)|process.versions" dist/assets/index-*.js | sort -u
+
+## Dependency audit
+$ bun audit
+bun audit v1.4.4 (38afee6c8)
+
+No vulnerabilities found (checked 145 packages) [512.00ms]
+
+## Secrets scan of the change
+$ git diff origin/main...HEAD | grep -iE "^\\+.*(api[_-]?key|secret|password|token|PRIVATE KEY|AKIA[0-9A-Z]{16})"
++## No secrets committed in the change
++$ rg -n -i 'api[_-]?key|secret|password|token|BEGIN .*PRIVATE KEY' src/audio tests/audio-*.test.ts || true
++| Secrets / data exposure | Nothing sensitive stored or logged; settings are `{muted, volume}` only. Pass. |
++- `docs/evidence/APEX-17-security-audit.txt` — grep-based secret/sink audit.
+
+## Vite middleware containment probe (dev/preview only)
+string-prefix check: normalize(join(ASSET_DIST, '..','dist-secret','k')) startsWith(ASSET_DIST) => true

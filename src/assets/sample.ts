@@ -4,7 +4,10 @@
  *
  *   gate-arch.glb    — a start/finish gantry mesh (3 boxes) with an embedded texture
  *   tarmac.png       — a standalone ground/road texture
- *   ambient-loop.wav — a short ambient audio loop
+ *   engine.wav       — a 60 Hz harmonic engine loop (#APEX-17)
+ *   tyres.wav        — a low-passed tyre-scrub loop (#APEX-17)
+ *   wind.wav         — a brown-noise wind loop (#APEX-17)
+ *   rain.wav         — a high-frequency rain loop (#APEX-17)
  *
  * Deterministic: the same bytes every run, so the committed sources and their hashes
  * are reproducible. Run `bun run assets:sample` to regenerate.
@@ -144,11 +147,12 @@ async function makeTexturePng(): Promise<Uint8Array> {
   );
 }
 
-/** 0.5s, 8kHz, mono, 16-bit PCM sine — small and deterministic. */
-function makeAmbientWav(): Uint8Array {
-  const sampleRate = 8000;
-  const seconds = 0.5;
-  const count = Math.floor(sampleRate * seconds);
+/**
+ * Writes a mono 16-bit PCM WAV from float samples in [-1, 1].
+ * Shared by the car/environment audio loops (#APEX-17).
+ */
+function writeWav(sampleRate: number, samples: Float32Array): Uint8Array {
+  const count = samples.length;
   const dataBytes = count * 2;
   const buffer = Buffer.alloc(44 + dataBytes);
   buffer.write("RIFF", 0, "ascii");
@@ -165,10 +169,94 @@ function makeAmbientWav(): Uint8Array {
   buffer.write("data", 36, "ascii");
   buffer.writeUInt32LE(dataBytes, 40);
   for (let i = 0; i < count; i++) {
-    const sample = Math.round(Math.sin((2 * Math.PI * 220 * i) / sampleRate) * 0.2 * 32767);
-    buffer.writeInt16LE(sample, 44 + i * 2);
+    const clamped = Math.max(-1, Math.min(1, samples[i]!));
+    buffer.writeInt16LE(Math.round(clamped * 32767), 44 + i * 2);
   }
   return new Uint8Array(buffer);
+}
+
+/** Deterministic PRNG (mulberry32) so the noise loops are reproducible. */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Scale in place so the loudest sample hits `peak` (0..1). */
+function normalize(samples: Float32Array, peak: number): void {
+  let max = 0;
+  for (const s of samples) max = Math.max(max, Math.abs(s));
+  if (max < 1e-6) return;
+  const gain = peak / max;
+  for (let i = 0; i < samples.length; i++) samples[i] = samples[i]! * gain;
+}
+
+/**
+ * The four car/environment source loops (#APEX-17), 0.5 s @ 22.05 kHz mono.
+ * The tonal engine loop is periodic over the loop length (integer cycles) so it
+ * loops without a click; the noise loops are deterministic via a seeded PRNG.
+ * `assets:build` encodes each to MP3 within the 64 KiB per-asset budget.
+ */
+function makeAudioLoops(): [string, Uint8Array][] {
+  const sampleRate = 22_050;
+  const count = Math.floor(sampleRate * 0.5);
+
+  // Engine: 60 Hz fundamental + harmonics; 60 Hz completes 30 cycles in 0.5 s.
+  const engine = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const t = i / sampleRate;
+    const f = 60;
+    const tone =
+      0.6 * Math.sin(2 * Math.PI * f * t) +
+      0.25 * Math.sin(2 * Math.PI * 2 * f * t) +
+      0.12 * Math.sin(2 * Math.PI * 3 * f * t) +
+      0.06 * Math.sin(2 * Math.PI * 4 * f * t);
+    engine[i] = tone * (0.7 + 0.3 * Math.sin(2 * Math.PI * 30 * t));
+  }
+  normalize(engine, 0.85);
+
+  // Tyres: dense low-passed noise (rolling rumble).
+  const tyres = new Float32Array(count);
+  const tyreRng = mulberry32(0x51ce);
+  let lp = 0;
+  for (let i = 0; i < count; i++) {
+    lp = lp * 0.9 + (tyreRng() * 2 - 1) * 0.1;
+    tyres[i] = lp;
+  }
+  normalize(tyres, 0.7);
+
+  // Wind: brown noise (integrated white).
+  const wind = new Float32Array(count);
+  const windRng = mulberry32(0xb0b);
+  let brown = 0;
+  for (let i = 0; i < count; i++) {
+    brown = (brown + 0.05 * (windRng() * 2 - 1)) * 0.995;
+    wind[i] = brown;
+  }
+  normalize(wind, 0.6);
+
+  // Rain: high-frequency noise (first difference of white).
+  const rain = new Float32Array(count);
+  const rainRng = mulberry32(0xa11);
+  let previous = 0;
+  for (let i = 0; i < count; i++) {
+    const white = rainRng() * 2 - 1;
+    rain[i] = (white - previous) * 0.5;
+    previous = white;
+  }
+  normalize(rain, 0.6);
+
+  return [
+    ["engine.wav", writeWav(sampleRate, engine)],
+    ["tyres.wav", writeWav(sampleRate, tyres)],
+    ["wind.wav", writeWav(sampleRate, wind)],
+    ["rain.wav", writeWav(sampleRate, rain)],
+  ];
 }
 
 async function main(): Promise<void> {
@@ -176,7 +264,7 @@ async function main(): Promise<void> {
   const outputs: [string, Uint8Array][] = [
     ["gate-arch.glb", await buildGateArch()],
     ["tarmac.png", await makeTexturePng()],
-    ["ambient-loop.wav", makeAmbientWav()],
+    ...makeAudioLoops(),
   ];
   for (const [name, bytes] of outputs) {
     writeFileSync(join(SOURCE_DIR, name), bytes);

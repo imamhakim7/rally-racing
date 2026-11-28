@@ -1,0 +1,43 @@
+$ bun run gen:stages && bun run assets:dist
+$ bun scripts/generate-stage-index.ts
+stage index: 6 stage(s) -> src/stage/data/index.ts
+$ bun src/assets/cli.ts build --evidence=0
+prune: Removed types... Accessor (4)
+prune: Removed types... Accessor (2)
+Total slices: 8
+Slice: 0, alpha: 0, orig width/height: 128x128, width/height: 128x128, first_block: 0, image_index: 0, mip_level: 0, iframe: 0
+Slice: 1, alpha: 0, orig width/height: 64x64, width/height: 64x64, first_block: 1024, image_index: 0, mip_level: 1, iframe: 0
+Slice: 2, alpha: 0, orig width/height: 32x32, width/height: 32x32, first_block: 1280, image_index: 0, mip_level: 2, iframe: 0
+Slice: 3, alpha: 0, orig width/height: 16x16, width/height: 16x16, first_block: 1344, image_index: 0, mip_level: 3, iframe: 0
+Slice: 4, alpha: 0, orig width/height: 8x8, width/height: 8x8, first_block: 1360, image_index: 0, mip_level: 4, iframe: 0
+Slice: 5, alpha: 0, orig width/height: 4x4, width/height: 4x4, first_block: 1364, image_index: 0, mip_level: 5, iframe: 0
+Slice: 6, alpha: 0, orig width/height: 2x2, width/height: 4x4, first_block: 1365, image_index: 0, mip_level: 6, iframe: 0
+Slice: 7, alpha: 0, orig width/height: 1x1, width/height: 4x4, first_block: 1366, image_index: 0, mip_level: 7, iframe: 0
+Mode: ETC1S Quality (0-255): 128, Comp Level (Effort, 0-6): 2
+basis_compressor::process: Success
+Total slices: 8
+Slice: 0, alpha: 0, orig width/height: 128x128, width/height: 128x128, first_block: 0, image_index: 0, mip_level: 0, iframe: 0
+Slice: 1, alpha: 0, orig width/height: 64x64, width/height: 64x64, first_block: 1024, image_index: 0, mip_level: 1, iframe: 0
+Slice: 2, alpha: 0, orig width/height: 32x32, width/height: 32x32, first_block: 1280, image_index: 0, mip_level: 2, iframe: 0
+Slice: 3, alpha: 0, orig width/height: 16x16, width/height: 16x16, first_block: 1344, image_index: 0, mip_level: 3, iframe: 0
+Slice: 4, alpha: 0, orig width/height: 8x8, width/height: 8x8, first_block: 1360, image_index: 0, mip_level: 4, iframe: 0
+Slice: 5, alpha: 0, orig width/height: 4x4, width/height: 4x4, first_block: 1364, image_index: 0, mip_level: 5, iframe: 0
+Slice: 6, alpha: 0, orig width/height: 2x2, width/height: 4x4, first_block: 1365, image_index: 0, mip_level: 6, iframe: 0
+Slice: 7, alpha: 0, orig width/height: 1x1, width/height: 4x4, first_block: 1366, image_index: 0, mip_level: 7, iframe: 0
+Mode: ETC1S Quality (0-255): 150, Comp Level (Effort, 0-6): 2
+basis_compressor::process: Success
+assets: 6 files, 24301B total (budget=PASS load=PASS)
+$ tsc --noEmit && vite build
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 78 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  2.74 kB │ gzip:   1.01 kB
+dist/assets/index-Do8SaFa7.js  645.30 kB │ gzip: 173.49 kB │ map: 3,380.75 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.17s

@@ -1,17 +1,23 @@
 Asset budget report — APEX-6
-profile=slow-4g geometry=meshopt generatedAt=2026-11-27T04:33:52.510Z
+profile=slow-4g geometry=meshopt generatedAt=2026-11-28T08:26:12.104Z
 
 ASSET BUDGET: PASS
-  ok  ambient-loop                   8044 /      65536 B (audio)
+  ok  engine                         4597 /      65536 B (audio)
   ok  gate-arch                      4416 /     262144 B (model)
+  ok  rain                           4597 /      65536 B (audio)
   ok  tarmac                         1497 /     131072 B (texture)
-  total      13957 /     524288 B
+  ok  tyres                          4597 /      65536 B (audio)
+  ok  wind                           4597 /      65536 B (audio)
+  total      24301 /     524288 B
 
 Content-addressed assets:
-  /assets/audio/ambient-loop.385e0597.wav  (8044 B, sha256:385e0597)
+  /assets/audio/engine.ab4f8d1b.mp3  (4597 B, sha256:ab4f8d1b)
   /assets/models/gate-arch.f7717c9f.glb  (4416 B, sha256:f7717c9f)
+  /assets/audio/rain.a4996fe0.mp3  (4597 B, sha256:a4996fe0)
   /assets/textures/tarmac.4d8ea45f.ktx2  (1497 B, sha256:4d8ea45f)
+  /assets/audio/tyres.1b345026.mp3  (4597 B, sha256:1b345026)
+  /assets/audio/wind.6327af18.mp3  (4597 B, sha256:6327af18)
 
-Cold-start load [slow-4g] trials=200 seed=1: p50=521.3ms (budget 1500ms), p95=530.7ms (budget 2500ms) → PASS
+Cold-start load [slow-4g] trials=200 seed=1: p50=574.2ms (budget 1500ms), p95=590.5ms (budget 2500ms) → PASS
 
 OVERALL: PASS

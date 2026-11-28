@@ -76,7 +76,7 @@ assets/source/*.{glb,gltf,png,wav}
 | `src/assets/pipeline.ts` | `runPipeline({ sourceDir, outDir, budgets, profile })` → `{ manifest, budget, load }`; writes dist + report. |
 | `src/assets/cli.ts` | `bun run assets:build` (full build, exits non-zero on budget failure); `assets:check` (budget gate only, for CI). |
 | `src/assets/sample.ts` | Deterministically generates the sample-stage source assets (a textured gantry + ground texture) under `assets/source/`. |
-| `assets/source/` | Committed sample sources (small): `gate-arch.glb`, `tarmac.png`, `ambient-loop.wav`. |
+| `assets/source/` | Committed sample sources (small): `gate-arch.glb`, `tarmac.png`, `engine.wav`, `tyres.wav`, `wind.wav`, `rain.wav` (#APEX-17). |
 | `docs/assets/budgets.json` | The agreed budgets (single source of truth for the gate). |
 | `docs/assets/asset-pipeline.md` | The "Asset pipeline" README. |
 
