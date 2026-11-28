@@ -13,7 +13,8 @@ export type RaceListener = (controller: RaceController) => void;
  * timer is read directly from the controller each frame.
  */
 export class StageSession {
-  readonly stage: StageDefinition;
+  /** The stage most recently started; updated by `startWith`. */
+  stage: StageDefinition;
   readonly controller: RaceController;
 
   private readonly listeners = new Set<RaceListener>();
@@ -45,6 +46,16 @@ export class StageSession {
   /** Begin the stage from the countdown. */
   start(): void {
     this.controller.startStage(this.stage);
+    this.syncPhase(true);
+  }
+
+  /**
+   * Begin a (possibly different) stage from the countdown. Used by the menus
+   * (#APEX-11) so the race matches the selected/next stage card.
+   */
+  startWith(stage: StageDefinition): void {
+    this.stage = stage;
+    this.controller.startStage(stage);
     this.syncPhase(true);
   }
 

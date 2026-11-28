@@ -83,7 +83,9 @@ async function settingsEvidence() {
     };
   });
 
-  await page.getByRole("button", { name: "Settings" }).click();
+  // #APEX-11 added a menu with its own "Settings" button; target this panel's
+  // toggle specifically so the a11y check is unambiguous.
+  await page.locator(".apex-settings__toggle").click();
   const panelVisible = await page.isVisible("#apex-settings-panel");
 
   // Keyboard reachability + logical order: tab from the toggle and record the DOM order.

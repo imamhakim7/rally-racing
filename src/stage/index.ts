@@ -69,6 +69,5 @@ export {
 export { createContainment, DEFAULT_CONTAINMENT_SHOULDER } from "./containment";
 export { resolveMinimapPath, toSvgPath, type MinimapPath } from "./minimap";
 export { buildStageWorld, disposeStageWorld } from "./world";
-export { toRaceStage } from "./race-adapter";
+export { toRaceStage, toStageDefinition } from "./race-adapter";
 export { createStageScene, type StageSceneHandle } from "./scene";
-export { mountStageSelect, type StageSelectHandle } from "./select";

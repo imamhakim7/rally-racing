@@ -39,16 +39,31 @@ export interface AccessibilitySettings {
   textScale: number;
 }
 
+/**
+ * Game preferences owned by #APEX-11's menus but persisted in the one shared
+ * store (the epic binds `src/input/settings.ts` as the single settings module).
+ */
+export interface GamePreferences {
+  /** Master volume, 0..1. */
+  volume: number;
+  /** Co-driver speech enabled. */
+  voice: boolean;
+  /** Set once the first-run tutorial has been seen; gates the callout. */
+  tutorialSeen: boolean;
+}
+
 export interface GameSettings {
   version: number;
   input: InputSettings;
   accessibility: AccessibilitySettings;
+  game: GamePreferences;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
   version: SETTINGS_VERSION,
   input: { bindings: DEFAULT_BINDINGS, deadzone: 0.15 },
   accessibility: { reducedMotion: "auto", colorBlindMode: "default", textScale: 1 },
+  game: { volume: 0.8, voice: true, tutorialSeen: false },
 };
 
 export function defaultSettings(): GameSettings {
@@ -56,6 +71,7 @@ export function defaultSettings(): GameSettings {
     version: SETTINGS_VERSION,
     input: { bindings: defaultBindings(), deadzone: DEFAULT_SETTINGS.input.deadzone },
     accessibility: { ...DEFAULT_SETTINGS.accessibility },
+    game: { ...DEFAULT_SETTINGS.game },
   };
 }
 
@@ -84,6 +100,9 @@ export function normalizeSettings(raw: unknown): GameSettings {
     : {};
   const accessibility = typeof source.accessibility === "object" && source.accessibility !== null
     ? (source.accessibility as Record<string, unknown>)
+    : {};
+  const game = typeof source.game === "object" && source.game !== null
+    ? (source.game as Record<string, unknown>)
     : {};
 
   return {
@@ -114,6 +133,14 @@ export function normalizeSettings(raw: unknown): GameSettings {
         MAX_TEXT_SCALE,
         DEFAULT_SETTINGS.accessibility.textScale,
       ),
+    },
+    game: {
+      volume: clampNumber(game.volume, 0, 1, DEFAULT_SETTINGS.game.volume),
+      voice: typeof game.voice === "boolean" ? game.voice : DEFAULT_SETTINGS.game.voice,
+      tutorialSeen:
+        typeof game.tutorialSeen === "boolean"
+          ? game.tutorialSeen
+          : DEFAULT_SETTINGS.game.tutorialSeen,
     },
   };
 }

@@ -67,8 +67,16 @@ try {
   await page.goto(`${origin}/`, { waitUntil: "load" });
   await page.waitForTimeout(1000);
 
-  // Start the stage and wait out the countdown into "racing".
-  await page.getByRole("button", { name: "Start stage" }).click();
+  // Start the stage through the real menu (#APEX-11) and wait out the countdown.
+  await page.evaluate(() => {
+    const menu = window.apexStage?.menu;
+    if (menu) {
+      menu.element.hidden = false;
+      menu.showScreen("stage_select");
+    }
+  });
+  await page.click(".apex-card");
+  await page.getByRole("button", { name: "Race" }).click();
   await page.waitForSelector('.apex-hud[data-phase="racing"]', { timeout: 15_000 });
 
   // Surface the notes deterministically for the capture (long lead, all notes).

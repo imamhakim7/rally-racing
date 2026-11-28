@@ -90,10 +90,19 @@ try {
 
   await page.goto(`${origin}/`, { waitUntil: "load" });
   await waitForPhase(page, "stage_select");
+  // #APEX-11: the menu owns stage selection; show it and capture the select screen.
+  await page.evaluate(() => {
+    const menu = window.apexStage?.menu;
+    if (menu) {
+      menu.element.hidden = false;
+      menu.showScreen("stage_select");
+    }
+  });
   await page.screenshot({ path: shots.select });
 
-  // Start the stage -> countdown gates input.
-  await page.getByRole("button", { name: "Start stage" }).click();
+  // Start the stage: select a card, then Race -> countdown gates input.
+  await page.click(".apex-card");
+  await page.getByRole("button", { name: "Race" }).click();
   await waitForPhase(page, "countdown");
   await page.waitForTimeout(600); // show a countdown digit
   await page.screenshot({ path: shots.countdown });

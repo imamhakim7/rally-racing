@@ -185,7 +185,7 @@ async function checkWiring() {
       .catch(() => {});
     const stage = await page.evaluate(() => {
       const api = window.apexStage;
-      const select = document.querySelector("#stage-select select");
+      const cards = [...document.querySelectorAll(".apex-card")];
       return {
         support: api?.support?.level ?? null,
         quality: api?.quality?.id ?? null,
@@ -194,8 +194,9 @@ async function checkWiring() {
         race: Boolean(api?.race),
         hud: Boolean(api?.race?.hud),
         minimap: typeof api?.race?.hud?.setMinimap === "function",
-        stageOptions: select ? select.options.length : 0,
-        firstStage: select?.options?.[0]?.value ?? null,
+        menu: Boolean(api?.menu),
+        stageCards: cards.length,
+        firstStage: cards[0]?.dataset?.stageId ?? null,
       };
     });
     const stageOk =
@@ -205,7 +206,8 @@ async function checkWiring() {
       stage.race &&
       stage.hud &&
       stage.minimap &&
-      stage.stageOptions >= 6;
+      stage.menu &&
+      stage.stageCards >= 6;
     if (!stageOk) problems.push(`stage wiring incomplete: ${JSON.stringify(stage)}`);
 
     const raceId = stage.firstStage ?? "alpine-forest";

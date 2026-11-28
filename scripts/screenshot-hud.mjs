@@ -102,6 +102,19 @@ async function measure(page) {
 const results = [];
 let ok = true;
 
+// #APEX-11: start the first stage through the real menu (Play -> card -> Race).
+async function startRaceFromMenu(page) {
+  await page.evaluate(() => {
+    const menu = window.apexStage?.menu;
+    if (menu) {
+      menu.element.hidden = false;
+      menu.showScreen("stage_select");
+    }
+  });
+  await page.click(".apex-card");
+  await page.getByRole("button", { name: "Race" }).click();
+}
+
 try {
   await mkdir(outDir, { recursive: true });
   const browser = await chromium.launch({
@@ -127,7 +140,7 @@ try {
 
     await page.goto(`${origin}/`, { waitUntil: "load" });
     await waitForPhase(page, "stage_select");
-    await page.getByRole("button", { name: "Start stage" }).click();
+    await startRaceFromMenu(page);
     await waitForPhase(page, "racing", 8000);
 
     // Drive with real telemetry; cross cp-1 quickly for an "ahead" (green) split.
@@ -163,7 +176,7 @@ try {
     // Slow split for a "behind" (red) delta.
     await page.keyboard.press("q");
     await waitForPhase(page, "stage_select");
-    await page.getByRole("button", { name: "Start stage" }).click();
+    await startRaceFromMenu(page);
     await waitForPhase(page, "racing", 8000);
     await page.waitForTimeout(12500); // cp-1 reference is 12s -> behind
     await page.keyboard.press("1");

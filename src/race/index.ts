@@ -71,6 +71,10 @@ export interface RaceBootOptions extends RaceControllerOptions {
   telemetry?: TelemetryFeed;
   /** Circuit minimap path from `StageWorld` (absent = no minimap). */
   minimap?: HudMinimap | null;
+  /** Advance to the next stage from the results screen (#APEX-11). */
+  onNextStage?: () => void;
+  /** Show the HUD's built-in select panel; set false when menus own selection. */
+  stageSelect?: boolean;
 }
 
 export interface RaceBoot {
@@ -98,9 +102,11 @@ export function bootRace(options: RaceBootOptions = {}): RaceBoot {
     onStart: () => session.start(),
     onRestart: () => session.restart(),
     onQuit: () => session.quit(),
+    onNextStage: () => options.onNextStage?.(),
     onCrossGate: (gateId) => session.crossGate(gateId),
   };
   const hud = new RaceHud(handlers);
+  if (options.stageSelect === false) hud.setStageSelectEnabled(false);
   hud.setTelemetry(options.telemetry ? () => options.telemetry!.read() : null);
   hud.setMinimap(options.minimap ?? null);
   if (typeof document !== "undefined") {

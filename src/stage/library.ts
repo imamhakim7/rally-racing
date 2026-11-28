@@ -10,6 +10,7 @@
  * takes a list.)
  */
 import { loadStage } from "./loader";
+import { sampleSpline } from "./spline";
 import { stageModules } from "./data";
 import type { StageCircuit } from "./types";
 
@@ -25,6 +26,8 @@ export interface StageCatalogEntry {
   name: string;
   biome: string;
   difficulty: number;
+  /** Centreline arc length in metres (sampled) — drives the stage-card preview. */
+  lengthM: number;
   source: string;
 }
 
@@ -76,6 +79,7 @@ export class StageLibrary {
         name: circuit.name,
         biome: circuit.biome,
         difficulty: circuit.difficulty,
+        lengthM: sampleSpline(circuit.spline, circuit.road.sampleStep).length,
         source: circuit.source,
       }))
       .sort((a, b) => a.id.localeCompare(b.id));

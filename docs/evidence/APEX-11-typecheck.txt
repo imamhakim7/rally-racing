@@ -1,0 +1,5 @@
+# APEX-11 — typecheck
+# bun run typecheck
+
+$ tsc --noEmit
+exit=0

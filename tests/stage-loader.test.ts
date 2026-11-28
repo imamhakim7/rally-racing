@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { StageLibrary, collectBundledStages } from "../src/stage/library";
 import { parseStage } from "../src/stage/loader";
 import { buildStageWorld, disposeStageWorld } from "../src/stage/world";
-import { toRaceStage } from "../src/stage/race-adapter";
+import { toRaceStage, toStageDefinition } from "../src/stage/race-adapter";
 import { validateStage } from "../src/stage/validate";
 import { clone, makeStageDocument } from "./stage-fixtures";
 
@@ -17,6 +17,36 @@ describe("stage library", () => {
     expect(new Set(catalog.map((entry) => entry.biome)).size).toBeGreaterThanOrEqual(6);
     // `collectBundledStages` is the "no code change" discovery path.
     expect(collectBundledStages().length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("reports a sampled centreline length for every catalog entry (#APEX-11 AC2)", () => {
+    const library = new StageLibrary();
+    for (const entry of library.list()) {
+      expect(Number.isFinite(entry.lengthM)).toBe(true);
+      expect(entry.lengthM).toBeGreaterThan(0);
+    }
+  });
+
+  it("builds a race definition whose gates and pace follow the circuit (#APEX-11 AC4)", () => {
+    const library = new StageLibrary();
+    for (const entry of library.list()) {
+      const circuit = library.load(entry.id);
+      const stage = toStageDefinition(circuit, entry.lengthM);
+      expect(stage.id).toBe(entry.id);
+      expect(stage.checkpoints.map((cp) => cp.id)).toEqual(
+        [...circuit.checkpoints].sort((a, b) => a.t - b.t).map((cp) => cp.id),
+      );
+      expect(stage.checkpoints.map((cp) => cp.index)).toEqual(
+        stage.checkpoints.map((_, i) => i),
+      );
+      // Reference splits are cumulative + non-decreasing, ending at the finish.
+      const splits = stage.referenceSplits ?? [];
+      expect(splits.at(-1)?.checkpointId).toBe("finish");
+      for (let i = 1; i < splits.length; i += 1) {
+        expect(splits[i]!.time).toBeGreaterThanOrEqual(splits[i - 1]!.time);
+      }
+      expect(stage.opponents.length).toBeGreaterThan(0);
+    }
   });
 
   it("loads and builds every shipped stage without error (AC1/AC6)", () => {

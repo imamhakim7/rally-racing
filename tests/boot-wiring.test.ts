@@ -18,8 +18,17 @@ describe("src/main.ts boot wiring", () => {
     expect(main).toMatch(/mountSupportScreen\(/);
   });
 
-  it("keeps the stage select and the HUD telemetry/minimap loop (#8)", () => {
-    expect(main).toMatch(/mountStageSelect\(/);
+  it("keeps the menus, settings and three-action flow (#APEX-11)", () => {
+    expect(main).toMatch(/mountMenu\(/);
+    expect(main).toMatch(/settingsStore\.load\(\)/);
+    expect(main).toMatch(/settingsStore\.save\(/);
+    expect(main).toMatch(/mountTutorialOverlay\(/);
+    expect(main).toMatch(/onRace:/);
+    expect(main).toMatch(/stageSelect: false/);
+    expect(main).toMatch(/session\.startWith\(/);
+  });
+
+  it("keeps the HUD telemetry/minimap loop and the race boot (#8)", () => {
     expect(main).toMatch(/createTelemetryHarness\(/);
     expect(main).toMatch(/bootRace\(\s*\{/);
     expect(main).toMatch(/setMinimap\(/);

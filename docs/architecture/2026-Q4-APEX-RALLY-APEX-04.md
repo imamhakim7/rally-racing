@@ -61,6 +61,29 @@ interface HudState {                                         // pure, DOM-free
 }
 ```
 
+## Menus, settings & tutorial interfaces (#APEX-11)
+
+The menu is the same canvas-independent DOM overlay as the HUD, driven by pure view
+models (`src/ui/menu-model.ts`, `src/ui/tutorial.ts`). Local preferences live in the
+**one shared store** (`src/input/settings.ts`, owned by #APEX-12); #APEX-11 consumes it
+and extends `GameSettings` with a `game` section for the values the menus surface.
+
+```ts
+interface GamePreferences { volume: number; voice: boolean; tutorialSeen: boolean }
+// GameSettings (#APEX-12) gains: game: GamePreferences
+interface StageCardView {
+  id: string; name: string; biome: string
+  lengthText: string        // sampled arc length, "477 m" / "2.4 km"
+  difficulty: number; difficultyText: string; difficultyGlyph: string // glyph + word, never colour-only
+}
+
+class TutorialModel {        // lessons: accelerate → brake → handbrake → steer
+  observe(input: VehicleInput, speedKmh: number): boolean  // sequential gating; advances only on the action
+}
+```
+
+Flow: `home --Play--> stage_select --card--> --Race--> countdown`, exactly three actions.
+
 ## Invariants
 
 1. The overlay renders with `textContent` only — **never** `innerHTML` with dynamic data
