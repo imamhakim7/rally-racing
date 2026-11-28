@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "name": "valid ghost=7",
+      "url": "http://127.0.0.1:38935/?race=alpine-forest&ghost=7",
+      "obs": {
+        "hasRace": true,
+        "ghost": [
+          "cpu-2",
+          "cpu-1",
+          "cpu-4",
+          "cpu-3"
+        ],
+        "circuitId": "alpine-forest"
+      },
+      "errors": [],
+      "pass": true
+    },
+    {
+      "name": "non-numeric ghost=abc -> seed 7 default",
+      "url": "http://127.0.0.1:38935/?race=alpine-forest&ghost=abc",
+      "obs": {
+        "hasRace": true,
+        "ghost": [
+          "cpu-2",
+          "cpu-1",
+          "cpu-4",
+          "cpu-3"
+        ],
+        "circuitId": "alpine-forest"
+      },
+      "errors": [],
+      "pass": true
+    },
+    {
+      "name": "ghost=0 disables",
+      "url": "http://127.0.0.1:38935/?race=alpine-forest&ghost=0",
+      "obs": {
+        "hasRace": true,
+        "ghost": null,
+        "circuitId": "alpine-forest"
+      },
+      "errors": [],
+      "pass": true
+    },
+    {
+      "name": "no ghost param",
+      "url": "http://127.0.0.1:38935/?race=alpine-forest",
+      "obs": {
+        "hasRace": true,
+        "ghost": null,
+        "circuitId": "alpine-forest"
+      },
+      "errors": [],
+      "pass": true
+    },
+    {
+      "name": "invalid stage with ghost",
+      "url": "http://127.0.0.1:38935/?race=not-a-stage&ghost=7",
+      "obs": {
+        "hasRace": false,
+        "ghost": null,
+        "circuitId": null
+      },
+      "errors": [],
+      "pass": true
+    }
+  ]
+}
+probe exit=0

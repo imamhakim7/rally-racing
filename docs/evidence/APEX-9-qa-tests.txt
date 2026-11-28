@@ -1,0 +1,26 @@
+# APEX-9 independent QA — test suite
+
+$ bunx vitest run tests/ai-replay.test.ts tests/ai-race.test.ts
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-9
+
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  13:47:35
+   Duration  451ms (tests 85%, transform 9%, import 5%, worker 1%)
+
+focused exit=0
+
+$ bun run test   # full suite
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-9
+
+
+ Test Files  51 passed (51)
+      Tests  348 passed (348)
+   Start at  13:47:35
+   Duration  6.02s (tests 87%, import 8%, transform 3%, worker 2%)
+
+full exit=0

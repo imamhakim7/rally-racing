@@ -1,0 +1,4 @@
+# APEX-9 independent QA — typecheck
+$ bun run typecheck
+$ tsc --noEmit
+exit=0

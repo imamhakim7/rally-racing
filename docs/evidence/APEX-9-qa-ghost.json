@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:32841",
+  "stage": "alpine-forest",
+  "ghostSeed": 7,
+  "ms": 7179,
+  "file": "/root/sarawedi-worktrees/wt/APEX-9/docs/evidence/APEX-9-ghost.png",
+  "start": {
+    "webgl2": true,
+    "carCount": 4,
+    "circuitId": "alpine-forest",
+    "ghostFinishOrder": [
+      "cpu-2",
+      "cpu-1",
+      "cpu-4",
+      "cpu-3"
+    ]
+  },
+  "after": {
+    "simTime": 3.6999999999999917,
+    "ghostFinishOrder": [
+      "cpu-2",
+      "cpu-1",
+      "cpu-4",
+      "cpu-3"
+    ]
+  },
+  "problems": []
+}
+screenshot exit=0

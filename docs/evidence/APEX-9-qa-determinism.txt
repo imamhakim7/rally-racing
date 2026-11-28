@@ -1,0 +1,31 @@
+# APEX-9 independent QA — determinism gate (AC1, AC5)
+
+# exact CI step: two independent bun processes, byte-diff JSON + TXT
+$ bun scripts/headless-race.ts --out=/tmp/apex9-qa-a
+runA exit=0
+$ bun scripts/headless-race.ts --out=/tmp/apex9-qa-b
+runB exit=0
+
+--- tail runA ---
+
+ALL OK: true
+VERDICT: PASS
+
+$ diff /tmp/apex9-qa-a.json /tmp/apex9-qa-b.json
+(identical)
+$ diff /tmp/apex9-qa-a.txt /tmp/apex9-qa-b.txt
+(identical)
+
+# committed evidence reproduces exactly (no tampering)
+$ diff /tmp/apex9-qa-a.json docs/evidence/APEX-9-determinism.json
+(identical)
+$ sha256sum /tmp/apex9-qa-a.json docs/evidence/APEX-9-determinism.json
+3f145740a9686c096d342ed98ae9d6f1dc5638eec30930ebb016f53c733c9f7c  /tmp/apex9-qa-a.json
+3f145740a9686c096d342ed98ae9d6f1dc5638eec30930ebb016f53c733c9f7c  docs/evidence/APEX-9-determinism.json
+
+# 18 runs = 6 stages x 3 seeds x 2 runs; allOk:
+allOk= True runs= 18
+all det= True all roundtrip= True all contract ok= True
+stages= ['alpine-forest', 'canyon-sprint', 'coastal-cliffs', 'desert-dunes', 'mountain-pass', 'valley-rally']
+seeds= [1, 7, 42]
+min minSeparation= 2.3666
