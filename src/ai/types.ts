@@ -109,6 +109,8 @@ export interface RaceResult {
 /** Tunables for {@link simulateRace}. */
 export interface RaceOptions {
   cars?: CpuCarSpec[];
+  /** Overrides merged into every car's `DriverTuning` (difficulty, tests). */
+  driverTuning?: Partial<import("./driver").DriverTuning>;
   /** Seed for the deterministic PRNG. Default 1. */
   seed?: number;
   /** Fixed step in seconds. Default 1/60. */

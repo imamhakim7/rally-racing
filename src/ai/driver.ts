@@ -40,6 +40,27 @@ export interface DriverTuning {
   minGap: number;
   /** How hard to steer around a slower car ahead. */
   overtakeGain: number;
+  /**
+   * Fraction of the road half-width at which corner-edge speed easing starts.
+   * Below this the car is simply following the line; above it, every extra m/s
+   * only widens the excursion.
+   */
+  edgeEaseStart: number;
+  /**
+   * Lateral metres from the ribbon edge within which an avoidance/overtake
+   * steer command that points *toward* that edge loses authority (0 at the
+   * edge, full at `edgeGuardBand`). Containment must beat car-to-car spacing:
+   * a car pushed over the edge fails the stage contract for every car behind it.
+   */
+  edgeGuardBand: number;
+  /** Centreline fraction from which a *drifting* car starts shedding speed. */
+  recoveryEdgeStart: number;
+  /** Heading (rad) off the road tangent that counts as drifting toward the edge. */
+  recoveryHeading: number;
+  /** Steering authority (|steer|) above which the recovery brake is armed. */
+  recoverySteerStart: number;
+  /** Brake command applied while recovering toward the ribbon edge. */
+  recoveryBrake: number;
 }
 
 export const DEFAULT_DRIVER_TUNING: DriverTuning = {
@@ -56,6 +77,12 @@ export const DEFAULT_DRIVER_TUNING: DriverTuning = {
   blockLateral: 1.8,
   minGap: 8,
   overtakeGain: 0.4,
+  edgeEaseStart: 0.78,
+  edgeGuardBand: 2.5,
+  recoveryEdgeStart: 0.4,
+  recoveryHeading: 0.08,
+  recoverySteerStart: 0.8,
+  recoveryBrake: 1,
 };
 
 export interface CpuDriverOptions {
@@ -224,16 +251,32 @@ export class CpuDriver {
     const lineError = crossTrack - this.lineOffset;
     let steer = this.tuning.kHeading * headingError - this.tuning.kCross * lineError;
 
+    // Containment first: the ribbon edge is a hard limit and an avoidance
+    // command must never overrule it (#APEX-27).
+    const halfWidth = line.halfWidth > 0 ? line.halfWidth : Infinity;
+    /**
+     * Scale a steer command that pushes *toward* the near edge by the room left
+     * on that side. Steering away from it (recovering) keeps full authority.
+     */
+    const edgeGuard = (delta: number): number => {
+      if (!(halfWidth > 0) || delta === 0) return delta;
+      const room = delta > 0 ? halfWidth - this.lastCenterOffset : halfWidth + this.lastCenterOffset;
+      return delta * clamp01(room / this.tuning.edgeGuardBand);
+    };
+
     // 2. Speed target: the line's feasible speed, scaled by skill. If the car
     //    is running wide of the line, ease off so it does not outrun its grip.
     const widen = clamp(1 - 0.07 * Math.abs(lineError), 0.5, 1);
     // #APEX-27: |lineError| only grows after the car has already left the ideal
     // line, so it reacts too late at the ribbon edge. Ease the target by the
     // car's distance from the CENTRELINE (not just the error to the desired
-    // lane) as |centerOffset| approaches half-width.
-    const halfWidth = line.halfWidth > 0 ? line.halfWidth : Infinity;
+    // lane) as |centerOffset| approaches half-width. The easing starts late
+    // (`edgeEaseStart`) so a normal wide line keeps its lap time — the original
+    // 0.55 start cost 2.4 s on `mountain-pass` seed 9 and broke the finish
+    // window (#APEX-31).
     const edge = halfWidth === Infinity ? 0 : Math.abs(this.lastCenterOffset) / halfWidth;
-    const edgeEase = clamp(1 - 0.9 * clamp01((edge - 0.55) / 0.45), 0.25, 1);
+    const edgeWindow = Math.max(1 - this.tuning.edgeEaseStart, 1e-6);
+    const edgeEase = clamp(1 - 0.5 * clamp01((edge - this.tuning.edgeEaseStart) / edgeWindow), 0.5, 1);
     let vTarget = point.targetSpeed * this.skill * widen * edgeEase;
     // Bound the command by what the tyres can actually turn: following the
     // line's curvature PLUS recovering the current cross-track error needs
@@ -272,19 +315,37 @@ export class CpuDriver {
         const proximity = 1 - clamp(along / this.tuning.avoidRange, 0, 1);
         const closet = clamp(1 - absLateral / this.tuning.avoidLateral, 0, 1);
         const dir = lateral >= 0 ? -1 : 1;
-        steer += dir * this.tuning.overtakeGain * proximity * closet;
+        steer += edgeGuard(dir * this.tuning.overtakeGain * proximity * closet);
       }
 
       // Emergency separation: never let two cars occupy the same point. If a
       // car is beside us within a car width, brake and steer firmly away.
+      // Yielding asymmetrically (only the car behind brakes) looked plausible
+      // but measured worse: 39/1800 races under 2 m instead of 26, because the
+      // leader's extra speed is what drags the pair together through the bend.
       if (absLateral < 2.3 && Math.abs(along) < this.tuning.minGap * 0.85) {
         vTarget = Math.min(vTarget, other.speed() * 0.5);
         const dir = lateral >= 0 ? -1 : 1;
-        steer += dir * 1.0;
+        steer += edgeGuard(dir * 1.0);
       }
     }
 
     steer = clamp(steer, -1, 1);
+
+    // #APEX-27/#APEX-31: a car commanding (nearly) full steering lock while it
+    // is already close to the ribbon edge has lost the geometry — more steering
+    // cannot help, and the road-wheel angle falls off with speed, so shedding
+    // speed is the only way back inside. Gate the brake on *saturation* so a
+    // wide-but-controllable line keeps its lap time; a flat speed cut from 55 %
+    // of half-width cost 2.4 s on `mountain-pass` seed 9 and broke the window.
+    // Only brake when the car is *sliding toward* that edge: its heading is off
+    // the road tangent on the edge's side, or it is already beyond the ribbon.
+    const side = this.lastCenterOffset >= 0 ? 1 : -1;
+    const tangentYaw = Math.atan2(point.tangent.x, point.tangent.z);
+    const drift = edge >= 1 ? 1 : clamp01((wrapAngle(state.yaw - tangentYaw) * side) / this.tuning.recoveryHeading);
+    const nearEdge = clamp01((edge - this.tuning.recoveryEdgeStart) / Math.max(1 - this.tuning.recoveryEdgeStart, 1e-6));
+    const atLimit = clamp01((Math.abs(steer) - this.tuning.recoverySteerStart) / Math.max(1 - this.tuning.recoverySteerStart, 1e-6));
+    const recovery = nearEdge * drift * atLimit;
 
     // 4. Longitudinal control.
     const error = vTarget - speed;
@@ -297,6 +358,10 @@ export class CpuDriver {
     } else {
       // Hold speed against drag.
       throttle = point.targetSpeed > 1 ? 0.18 : 0;
+    }
+    if (recovery > 0) {
+      throttle = 0;
+      brake = Math.max(brake, this.tuning.recoveryBrake * clamp01(0.3 + 0.7 * recovery));
     }
     // Guarantee a launch from standstill even if avoidance capped the target.
     if (speed < 4 && vTarget > 2) throttle = Math.max(throttle, 0.7);
