@@ -1,0 +1,13 @@
+# APEX-11 — unit + integration tests
+# bun run test
+
+$ vitest run
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-11
+
+
+ Test Files  49 passed (49)
+      Tests  336 passed (336)
+   Start at  08:32:05
+   Duration  6.42s (tests 84%, import 10%, transform 4%, worker 2%)
+

@@ -1,0 +1,529 @@
+{
+  "ok": true,
+  "steps": [
+    {
+      "name": "home",
+      "screen": "home",
+      "selectedId": null,
+      "menuHidden": false,
+      "phase": "stage_select",
+      "currentStage": "alpine-forest",
+      "raceStageId": null,
+      "raceGateCount": null,
+      "tutorialIndex": null,
+      "tutorialComplete": null,
+      "settings": {
+        "version": 1,
+        "input": {
+          "bindings": {
+            "throttle": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyW"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowUp"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "7"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "0"
+              }
+            ],
+            "brake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyS"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowDown"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "6"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "1"
+              }
+            ],
+            "steerLeft": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyA"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowLeft"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "steerRight": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyD"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowRight"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "handbrake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "Space"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "2"
+              }
+            ]
+          },
+          "deadzone": 0.15
+        },
+        "accessibility": {
+          "reducedMotion": "auto",
+          "colorBlindMode": "default",
+          "textScale": 1
+        },
+        "game": {
+          "volume": 0.8,
+          "voice": true,
+          "tutorialSeen": false
+        }
+      }
+    },
+    {
+      "name": "settings-changed",
+      "settings": {
+        "version": 1,
+        "input": {
+          "bindings": {
+            "throttle": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyW"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowUp"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "7"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "0"
+              }
+            ],
+            "brake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyS"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowDown"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "6"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "1"
+              }
+            ],
+            "steerLeft": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyA"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowLeft"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "steerRight": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyD"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowRight"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "handbrake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "Space"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "2"
+              }
+            ]
+          },
+          "deadzone": 0.15
+        },
+        "accessibility": {
+          "reducedMotion": "on",
+          "colorBlindMode": "default",
+          "textScale": 1
+        },
+        "game": {
+          "volume": 0.25,
+          "voice": false,
+          "tutorialSeen": false
+        }
+      }
+    },
+    {
+      "name": "settings-reloaded",
+      "settings": {
+        "version": 1,
+        "input": {
+          "bindings": {
+            "throttle": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyW"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowUp"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "7"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "0"
+              }
+            ],
+            "brake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyS"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowDown"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "6"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "1"
+              }
+            ],
+            "steerLeft": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyA"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowLeft"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "steerRight": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyD"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowRight"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "handbrake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "Space"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "2"
+              }
+            ]
+          },
+          "deadzone": 0.15
+        },
+        "accessibility": {
+          "reducedMotion": "on",
+          "colorBlindMode": "default",
+          "textScale": 1
+        },
+        "game": {
+          "volume": 0.25,
+          "voice": false,
+          "tutorialSeen": false
+        }
+      }
+    },
+    {
+      "name": "stage-select",
+      "screen": "stage_select",
+      "cards": 6,
+      "sample": {
+        "id": "alpine-forest",
+        "name": "Alpine Forest",
+        "meta": "forest · 477 m",
+        "difficulty": "★★★☆☆ Medium",
+        "biome": "forest",
+        "lengthM": 476.61380785457175
+      }
+    },
+    {
+      "name": "stage-selected",
+      "selectedId": "alpine-forest",
+      "raceEnabled": true
+    },
+    {
+      "name": "race-started",
+      "screen": "stage_select",
+      "selectedId": "alpine-forest",
+      "menuHidden": true,
+      "phase": "countdown",
+      "currentStage": "alpine-forest",
+      "raceStageId": "alpine-forest",
+      "raceGateCount": 4,
+      "tutorialIndex": null,
+      "tutorialComplete": null,
+      "settings": {
+        "version": 1,
+        "input": {
+          "bindings": {
+            "throttle": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyW"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowUp"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "7"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "0"
+              }
+            ],
+            "brake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyS"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowDown"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "6"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "1"
+              }
+            ],
+            "steerLeft": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyA"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowLeft"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "steerRight": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "KeyD"
+              },
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "ArrowRight"
+              },
+              {
+                "device": "gamepad",
+                "kind": "axis",
+                "code": "0"
+              }
+            ],
+            "handbrake": [
+              {
+                "device": "keyboard",
+                "kind": "button",
+                "code": "Space"
+              },
+              {
+                "device": "gamepad",
+                "kind": "button",
+                "code": "2"
+              }
+            ]
+          },
+          "deadzone": 0.15
+        },
+        "accessibility": {
+          "reducedMotion": "on",
+          "colorBlindMode": "default",
+          "textScale": 1
+        },
+        "game": {
+          "volume": 0.25,
+          "voice": false,
+          "tutorialSeen": false
+        }
+      }
+    },
+    {
+      "name": "results",
+      "buttons": [
+        "Restart",
+        "Next stage",
+        "Quit to stage select"
+      ]
+    },
+    {
+      "name": "next-stage",
+      "from": "alpine-forest",
+      "to": "canyon-sprint",
+      "raceStageId": "canyon-sprint",
+      "gateCount": 4
+    },
+    {
+      "name": "results-invalidated",
+      "buttons": [
+        "Restart",
+        "Next stage",
+        "Quit to stage select"
+      ]
+    },
+    {
+      "name": "first-run-callout",
+      "visible": true
+    },
+    {
+      "name": "tutorial-gate-negative",
+      "indexAfterBrake": 0
+    },
+    {
+      "name": "tutorial-complete",
+      "index": 4,
+      "complete": true,
+      "tutorialSeen": true,
+      "firstRunCalloutHidden": true
+    },
+    {
+      "name": "tutorial-skip",
+      "overlayHidden": true,
+      "menuVisible": true
+    }
+  ],
+  "problems": []
+}

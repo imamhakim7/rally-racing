@@ -7,6 +7,8 @@ export interface RaceHudHandlers {
   onStart: () => void;
   onRestart: () => void;
   onQuit: () => void;
+  /** Advance to the next stage from the results screen (#APEX-11). */
+  onNextStage: () => void;
   /** Simulated gate crossing from the keyboard harness (until #APEX-16 lands). */
   onCrossGate: (gateId: string) => void;
 }
@@ -214,6 +216,10 @@ export class RaceHud {
   private lastPaceSr = "";
   private lastSrKey = "";
   private lastSplitIndex = -1;
+  /** When false the built-in select panel is suppressed (#APEX-11 owns the menu). */
+  private stageSelectEnabled = true;
+  /** When false the keyboard harness ignores keys (menus/tutorial own input). */
+  private keyboardEnabled = true;
 
   constructor(handlers: RaceHudHandlers) {
     this.handlers = handlers;
@@ -298,6 +304,8 @@ export class RaceHud {
     table.append(head, this.resultsBody);
     const restart = el("button", "apex-btn", "Restart");
     restart.addEventListener("click", () => this.handlers.onRestart());
+    const nextStage = el("button", "apex-btn", "Next stage");
+    nextStage.addEventListener("click", () => this.handlers.onNextStage());
     const quit = el("button", "apex-btn secondary", "Quit to stage select");
     quit.addEventListener("click", () => this.handlers.onQuit());
     const help = el(
@@ -305,7 +313,7 @@ export class RaceHud {
       "apex-help",
       "keys: W/A/S/D or arrows drive · 1..9 cross checkpoint · F finish · R restart · Q quit · V voice",
     );
-    this.resultsPanel.append(resultsTitle, this.posNode, table, restart, quit, help);
+    this.resultsPanel.append(resultsTitle, this.posNode, table, restart, nextStage, quit, help);
 
     // Screen-reader race summary (updated only on coarse state changes).
     this.srNode = el("div", "apex-sr");
@@ -348,6 +356,19 @@ export class RaceHud {
   /** Wire a telemetry snapshot source (speed); `null` renders speed as "–". */
   setTelemetry(read: (() => HudTelemetry | null) | null): void {
     this.telemetry = read;
+  }
+
+  /**
+   * Show/hide the built-in stage-select panel. The menus (#APEX-11) own stage
+   * selection, so the composition root disables this to avoid two selectors.
+   */
+  setStageSelectEnabled(enabled: boolean): void {
+    this.stageSelectEnabled = enabled;
+  }
+
+  /** Enable/disable the keyboard harness (off while the menus or tutorial own input). */
+  setKeyboardEnabled(enabled: boolean): void {
+    this.keyboardEnabled = enabled;
   }
 
   /** Supply the circuit minimap path; `null` hides the minimap panel. */
@@ -402,7 +423,7 @@ export class RaceHud {
     }
     const phase = controller.phase;
     this.root.dataset.phase = phase;
-    this.toggle(this.selectPanel, phase === "stage_select");
+    this.toggle(this.selectPanel, phase === "stage_select" && this.stageSelectEnabled);
     this.toggle(this.countdownPanel, phase === "countdown");
     this.toggle(this.livePanel, phase === "racing");
     this.toggle(this.minimapPanel, phase === "racing" && this.minimap !== null);
@@ -543,6 +564,7 @@ export class RaceHud {
   }
 
   private onKey(event: KeyboardEvent): void {
+    if (!this.keyboardEnabled) return;
     if (event.repeat) return;
     const key = event.key.toLowerCase();
     if (key === "q") {
@@ -563,7 +585,9 @@ export class RaceHud {
     }
     if (key === "enter" || key === " ") {
       const phase = this.root.dataset.phase;
-      if (phase === "stage_select" || phase === undefined) this.handlers.onStart();
+      if (this.stageSelectEnabled && (phase === "stage_select" || phase === undefined)) {
+        this.handlers.onStart();
+      }
       return;
     }
     if (/^[1-9]$/.test(key)) {

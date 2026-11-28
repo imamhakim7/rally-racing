@@ -12,8 +12,8 @@ import {
 import {
   StageLibrary,
   createStageScene,
-  mountStageSelect,
   sampleSpline,
+  toStageDefinition,
   type StageSceneHandle,
 } from "./stage";
 import {
@@ -26,7 +26,12 @@ import {
   type SpeechSource,
   type Voice,
 } from "./race";
+import { createKeyboardInput, type InputSource, type KeyboardTarget } from "./input/keyboard";
 import { mountSupportScreen } from "./ui/supportScreen";
+import { mountMenu, type MenuHandle } from "./ui/menu";
+import { nextStageId } from "./ui/menu-model";
+import { TutorialModel } from "./ui/tutorial";
+import { mountTutorialOverlay, type TutorialOverlayHandle } from "./ui/tutorialOverlay";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
 import {
   createInputManager,
@@ -38,7 +43,7 @@ import { applySettingsToDocument, systemPrefersReducedMotion } from "./ui/a11y";
 import { motionPolicy, resolveMotionState } from "./engine/motion";
 import { mountMotionBlur } from "./ui/motionBlur";
 import { createTouchControls } from "./ui/touchControls";
-import { mountSettingsPanel } from "./ui/settingsPanel";
+import { mountSettingsPanel, type SettingsPanelHandle } from "./ui/settingsPanel";
 
 /**
  * Browser entry point. Boots the engine with the stage scene and wires the
@@ -150,6 +155,7 @@ function bootGame(assessment: SupportAssessment): void {
   applySettingsToDocument(document, settings, systemReducedMotion);
 
   const library = new StageLibrary();
+
   // #APEX-7: the two scenes have different shapes (stage select vs. race field);
   // they only share the engine's `SceneHandle` contract, so keep each narrow type
   // separately. `bootRace()` is skipped when the AI scene owns the clock.
@@ -166,13 +172,35 @@ function bootGame(assessment: SupportAssessment): void {
   const stageScene: StageSceneHandle | null = aiRace ? null : createStageScene(library);
   const sceneHandle: SceneHandle = aiRace ?? stageScene!;
 
+  const catalog = library.list();
+  const stageIds = catalog.map((entry) => entry.id);
+  // #APEX-11: the selected stage drives the race definition (gates, reference
+  // pace, opponents), so the run matches the card the player chose.
+  const raceDefinitionFor = (id: string) =>
+    toStageDefinition(library.load(id), catalog.find((entry) => entry.id === id)?.lengthM);
+
   // Stage race loop: countdown -> ordered checkpoints -> finish -> results. Gate
   // crossings are injected via the HUD's keyboard harness until in-world gate
   // detection lands; the race clock rides the engine's fixed step. Speed comes
-  // from a keyboard-driven vehicle harness (same interim pattern) and the
-  // minimap from the resolved stage world.
+  // from the shared input manager (#APEX-12) through the telemetry harness and
+  // the minimap from the resolved stage world.
   const telemetry = createTelemetryHarness({ input: () => input.read() });
-  const race = aiRace ? null : bootRace({ telemetry, minimap: stageScene!.world.minimap });
+  let race: ReturnType<typeof bootRace> | null = null;
+  if (!aiRace) {
+    race = bootRace({
+      telemetry,
+      stage: raceDefinitionFor(stageScene!.current.id),
+      minimap: stageScene!.world.minimap,
+      // #APEX-11 owns stage selection: hide the HUD's built-in select panel.
+      stageSelect: false,
+      onNextStage: () => {
+        if (!stageScene || !race) return;
+        const next = nextStageId(stageIds, stageScene.current.id);
+        stageScene.load(next);
+        race.session.startWith(raceDefinitionFor(next));
+      },
+    });
+  }
 
   // Co-driver pace notes (#APEX-18): derive once per stage from the sampled
   // centreline and advance the scheduler from the car harness position. The
@@ -184,11 +212,10 @@ function bootGame(assessment: SupportAssessment): void {
   let paceSpline = stageScene ? splineFor(stageScene) : null;
   let paceTracker = stageScene ? new PaceNoteTracker(notesFor(stageScene)) : null;
   const voice = createSpeechVoice(window as unknown as SpeechSource);
-  let voiceEnabled = voice.available;
+  let voiceEnabled = settings.game.voice && voice.available;
 
-  if (race && paceTracker) {
-    race.hud.setPaceNotes(() => paceTracker!.view());
-    race.hud.setVoice({
+  const syncVoice = (): void => {
+    race?.hud.setVoice({
       available: voice.available,
       enabled: voiceEnabled,
       onToggle: (enabled) => {
@@ -196,7 +223,25 @@ function bootGame(assessment: SupportAssessment): void {
         if (!enabled) voice.cancel();
       },
     });
+  };
+  if (race && paceTracker) {
+    race.hud.setPaceNotes(() => paceTracker!.view());
+    syncVoice();
   }
+
+  // Settings surfaces: #APEX-12's panel (bindings/a11y) and #APEX-11's menu
+  // (game prefs). Both write the ONE shared store; this fans a change out to
+  // every consumer (document, bindings, menu, panel, co-driver voice).
+  let menu: MenuHandle | null = null;
+  let settingsPanel: SettingsPanelHandle | null = null;
+  const onSettingsChange = (next: GameSettings): void => {
+    applySettings(next);
+    menu?.setSettings(next);
+    settingsPanel?.update(next);
+    voiceEnabled = next.game.voice && voice.available;
+    syncVoice();
+    if (!voiceEnabled) voice.cancel();
+  };
 
   // Keep the minimap and pace notes in sync when the stage select swaps circuit.
   let currentCircuitId = stageScene?.current.id ?? "";
@@ -210,12 +255,63 @@ function bootGame(assessment: SupportAssessment): void {
     }
   };
 
+  // First-run tutorial (#APEX-11): optional driving lessons gated on the player
+  // performing each action. Pure `TutorialModel` + a thin DOM overlay.
+  let tutorial: TutorialModel | null = null;
+  let tutorialOverlay: TutorialOverlayHandle | null = null;
+  let tutorialInput: InputSource | null = null;
+  let tutorialActive = false;
+  let tutorialFinishing = false;
+
+  function endTutorial(markSeen = true): void {
+    if (!tutorialActive && !tutorialFinishing) return;
+    tutorialActive = false;
+    tutorialFinishing = false;
+    tutorialInput?.dispose();
+    tutorialInput = null;
+    tutorialOverlay?.dispose();
+    tutorialOverlay = null;
+    if (markSeen) {
+      onSettingsChange({
+        ...settings,
+        game: { ...settings.game, tutorialSeen: true },
+      });
+    }
+    if (menu) {
+      menu.element.hidden = false;
+      menu.showScreen("home");
+    }
+  }
+
+  function startTutorial(): void {
+    if (aiRace || !menu) return;
+    tutorial = new TutorialModel();
+    tutorialOverlay = mountTutorialOverlay(document.body, () => endTutorial());
+    tutorialInput = createKeyboardInput(window as unknown as KeyboardTarget);
+    tutorialActive = true;
+    tutorialFinishing = false;
+    menu.element.hidden = true;
+    tutorialOverlay.update(tutorial);
+    tutorialOverlay.focus();
+  }
+
   const app: EngineApp = createEngine(canvas, {
     sceneHandle,
     renderer: { quality, maxPixelRatio: quality.maxPixelRatio },
     onUpdate: race
       ? (dt) => {
           race.update(dt);
+          if (tutorialActive && tutorial && tutorialInput && tutorialOverlay) {
+            const advanced = tutorial.observe(tutorialInput.read(), telemetry.read().speedKmh);
+            if (advanced) {
+              tutorialOverlay.update(tutorial);
+              // Let the "Tutorial complete" state paint before closing.
+              if (tutorial.complete && !tutorialFinishing) {
+                tutorialFinishing = true;
+                window.setTimeout(() => endTutorial(), 1200);
+              }
+            }
+          }
           if (paceTracker && race.session.phase === "countdown") paceTracker.reset();
           if (paceTracker && paceSpline && telemetry.position) {
             const position = telemetry.position();
@@ -243,13 +339,34 @@ function bootGame(assessment: SupportAssessment): void {
 
   // Accessibility + controls settings surface (#APEX-12). Mounted on both paths;
   // changes are persisted and applied live (palette, motion, text scale, bindings).
-  const settingsPanel = mountSettingsPanel(document.body, { settings, onChange: applySettings });
+  settingsPanel = mountSettingsPanel(document.body, { settings, onChange: onSettingsChange });
 
   if (!aiRace) {
-    const selectHost = document.getElementById("stage-select");
-    if (selectHost) {
-      mountStageSelect(selectHost, library, stageScene!);
-    }
+    const menuHost = document.getElementById("menu") ?? document.body;
+    menu = mountMenu(menuHost, catalog, settings, {
+      onStageSelected: (id) => stageScene!.load(id),
+      onRace: (id) => {
+        stageScene!.load(id);
+        race!.session.startWith(raceDefinitionFor(id));
+      },
+      onSettingsChange: (next) => onSettingsChange(next),
+      onTutorial: () => startTutorial(),
+    });
+
+    // The menu is visible exactly while the race is not running (stage_select).
+    // Quitting a run returns here; per #APEX-11/L2 the menu resets to home and
+    // clears the prior selection rather than showing stale state.
+    race!.session.subscribe((controller) => {
+      if (!menu || tutorialActive) return;
+      race!.hud.setKeyboardEnabled(controller.phase !== "stage_select");
+      if (controller.phase === "stage_select") {
+        menu.reset();
+        menu.element.hidden = false;
+      } else {
+        menu.element.hidden = true;
+      }
+    });
+
     window.apexStage = {
       library,
       scene: stageScene!,
@@ -260,6 +377,10 @@ function bootGame(assessment: SupportAssessment): void {
       /** Input abstraction (#APEX-12), exposed for tooling + evidence. */
       input,
       pace: { get tracker() { return paceTracker; }, voice },
+      menu,
+      get settings() { return settings; },
+      startTutorial,
+      get tutorial() { return tutorial; },
     };
   } else {
     window.apexRace = { library, scene: aiRace, app };
@@ -269,8 +390,11 @@ function bootGame(assessment: SupportAssessment): void {
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
       voice.cancel();
+      tutorialInput?.dispose();
+      tutorialOverlay?.dispose();
+      menu?.dispose();
       race?.dispose();
-      settingsPanel.dispose();
+      settingsPanel?.dispose();
       motionBlur?.dispose();
       input.dispose();
       app.dispose();
@@ -308,6 +432,14 @@ declare global {
       input?: InputManager;
       /** Co-driver pace-note state (#APEX-18), exposed for tooling + evidence. */
       pace?: { tracker: PaceNoteTracker | null; voice: Voice };
+      /** Menus (#APEX-11), exposed for the smoke test + screenshot evidence. */
+      menu?: MenuHandle;
+      /** Live settings snapshot (#APEX-11), exposed for evidence scripts. */
+      settings?: GameSettings;
+      /** Start the first-run tutorial (#APEX-11). */
+      startTutorial?: () => void;
+      /** Live tutorial state (#APEX-11), exposed for evidence scripts. */
+      tutorial?: TutorialModel | null;
     };
     /** Exposed when running the visible CPU race (`?race=<id>`). */
     apexRace?: { library: StageLibrary; scene: AiRaceScene; app: EngineApp } | null;

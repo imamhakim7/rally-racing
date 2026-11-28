@@ -83,12 +83,23 @@ try {
   });
 
   await mkdir(outDir, { recursive: true });
+  // The menus (#APEX-11) cover the canvas at boot; hide them to capture the stage.
+  await page.evaluate(() => {
+    if (window.apexStage?.menu) window.apexStage.menu.element.hidden = true;
+  });
   const firstFile = join(outDir, `APEX-4-stage-${before.current}.png`);
   await page.screenshot({ path: firstFile });
 
-  // Switch through the real DOM control so the screenshot proves stage select.
+  // Switch through the real menu control so the screenshot proves stage select.
   const target = before.stages.find((id) => id !== before.current);
-  await page.selectOption(".stage-select__control", target);
+  await page.evaluate(() => {
+    window.apexStage?.menu?.showScreen("stage_select");
+    if (window.apexStage?.menu) window.apexStage.menu.element.hidden = false;
+  });
+  await page.click(`.apex-card[data-stage-id="${target}"]`);
+  await page.evaluate(() => {
+    if (window.apexStage?.menu) window.apexStage.menu.element.hidden = true;
+  });
   await page.waitForTimeout(900);
   const after = await page.evaluate(() => ({
     current: window.apexStage?.scene.current.id ?? null,
