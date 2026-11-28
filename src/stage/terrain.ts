@@ -21,6 +21,9 @@ import type {
   TerrainStats,
 } from "./types";
 import type { SampledSpline } from "./spline";
+import { skyState, type TimeOfDay } from "./sky";
+
+export type { TimeOfDay };
 
 /** The biome look-up table: no per-biome branches anywhere else. */
 export const BIOME_TERRAIN: Record<Biome, TerrainAppearance> = {
@@ -44,8 +47,6 @@ const MAX_ALONG_SECTIONS = 240;
 /** Terrain sits this far below the road ribbon so it never pokes through. */
 const ROAD_EPSILON = 0.04;
 
-export type TimeOfDay = "midday" | "dusk";
-
 export interface TerrainLighting {
   sunColor: number;
   sunIntensity: number;
@@ -55,26 +56,20 @@ export interface TerrainLighting {
 }
 
 /**
- * Lighting the terrain is rendered under. Geometry is time-of-day invariant, so
- * the draw/triangle budget is identical at midday and dusk; #APEX-29 owns the
- * dynamic sky that will drive this seam.
+ * Lighting the terrain is rendered under. Delegates to the #APEX-29 sky seam
+ * (`skyState`) so the terrain and the dynamic sky agree; weather defaults to
+ * `clear` to keep this the terrain's own two-named-time contract. Geometry is
+ * time-of-day invariant, so the draw/triangle budget is identical at midday and
+ * dusk.
  */
 export function terrainLighting(timeOfDay: TimeOfDay): TerrainLighting {
-  if (timeOfDay === "dusk") {
-    return {
-      sunColor: 0xff9d5c,
-      sunIntensity: 1.35,
-      sunDirection: [-70, 26, 55],
-      ambientColor: 0x6b5b86,
-      ambientIntensity: 0.5,
-    };
-  }
+  const state = skyState(timeOfDay, "clear");
   return {
-    sunColor: 0xfff0d0,
-    sunIntensity: 2.0,
-    sunDirection: [60, 90, 40],
-    ambientColor: 0x9dc4ff,
-    ambientIntensity: 0.85,
+    sunColor: state.sunColor,
+    sunIntensity: state.sunIntensity,
+    sunDirection: state.sunDirection,
+    ambientColor: state.ambientSky,
+    ambientIntensity: state.ambientIntensity,
   };
 }
 
