@@ -1,0 +1,46 @@
+APEX-33 pre-merge security audit
+Diff: 38193a6...f4318dd  (src/race/pace-notes.ts, tests/pace-notes.test.ts, docs/*)
+Scope: PaceNoteTracker announcement bookkeeping — positional cursor replaced by a
+       distance-keyed Set<number>. Re-run after the #APEX-18 QA gate failure.
+
+1) Dependency manifest changes (expect none):
+   none — package.json / bun.lock are not touched by the change.
+
+2) Risky sink scan (changed .ts only):
+   no matches for eval( | Function( | innerHTML | outerHTML | document.write |
+   fetch( | XMLHttpRequest | postMessage | child_process | WebSocket.
+
+3) Secret-like tokens in the change:
+   none.
+
+4) New external surface introduced:
+   none. src/race/pace-notes.ts imports only `import type { SampledSpline }`
+   (type-only, erased at runtime). No DOM, Web Audio, network or storage access.
+
+5) Voice sink data source (bounded vocabulary — not free-form data):
+src/main.ts:178:            if (note) voice.speak(note.call);
+   note.call is produced by noteCall(): {"Left"|"Right" n, "Hairpin left"|
+   "Hairpin right"} with n = 1..6. Stage-file checkpoint names reach `label`
+   only, which is never spoken.
+
+6) Input validation on the touched class (unchanged, re-verified):
+   setDistance      -> ignores non-finite, clamps to >= 0
+   setDensity       -> clamp01 -> [0,1]
+   setLeadDistance  -> non-finite -> default, clamps to >= 0
+   constructor      -> leadDistance >= 0, density clamped to [0,1]
+
+7) Announcement-state growth (DoS check):
+   `announced: Set<number>` grows by at most one entry per announced note, i.e.
+   bounded by the note count (bounded by stage samples). reset() clears it on
+   countdown and a fresh tracker is built per stage load — no unbounded growth,
+   no amplification. pollAnnouncement() stays O(1) (Set.has/add), no per-frame
+   allocation.
+
+8) Dependency CVE baseline:
+   $ bun audit  ->  No vulnerabilities found (checked 144 packages)
+
+9) Logging / PII added by the change:
+   none.
+
+Verdict: PASS — no Critical / High / Medium / Low findings. No blocking issue,
+no linked bug ticket required.
