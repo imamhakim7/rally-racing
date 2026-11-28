@@ -1,6 +1,7 @@
 import { Document, NodeIO, type Transform } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { dedup, draco, meshopt, prune, resample } from "@gltf-transform/functions";
+import { Mp3Encoder } from "@breezystack/lamejs";
 import { encodeToKTX2 } from "ktx2-encoder";
 import { ktx2 } from "ktx2-encoder/gltf-transform";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
@@ -122,4 +123,99 @@ export async function readGlb(
 ): Promise<Document> {
   const io = await createIO({ draco: codec === "draco" });
   return io.readBinary(bytes);
+}
+
+/** One decoded interleaved PCM WAV, split into per-channel `Int16Array`s. */
+export interface WavPcm {
+  sampleRate: number;
+  channels: number;
+  samples: Int16Array[];
+}
+
+function ascii(bytes: Uint8Array, offset: number, length: number): string {
+  let out = "";
+  for (let i = 0; i < length; i += 1) out += String.fromCharCode(bytes[offset + i]!);
+  return out;
+}
+
+function concatBytes(chunks: Uint8Array[]): Uint8Array {
+  let total = 0;
+  for (const chunk of chunks) total += chunk.byteLength;
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out;
+}
+
+/**
+ * Decode a 16-bit PCM RIFF/WAVE file (the format `sample.ts` writes) into
+ * per-channel samples. Throws on anything else so the pipeline fails closed.
+ */
+export function decodeWavPcm16(bytes: Uint8Array): WavPcm {
+  if (bytes.byteLength < 12 || ascii(bytes, 0, 4) !== "RIFF" || ascii(bytes, 8, 4) !== "WAVE") {
+    throw new Error("not a RIFF/WAVE file");
+  }
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let channels = 1;
+  let sampleRate = 44_100;
+  let bits = 16;
+  let dataStart = -1;
+  let dataLength = 0;
+
+  let offset = 12;
+  while (offset + 8 <= bytes.byteLength) {
+    const id = ascii(bytes, offset, 4);
+    const size = view.getUint32(offset + 4, true);
+    const body = offset + 8;
+    if (id === "fmt ") {
+      channels = view.getUint16(body + 2, true);
+      sampleRate = view.getUint32(body + 4, true);
+      bits = view.getUint16(body + 14, true);
+    } else if (id === "data") {
+      dataStart = body;
+      dataLength = Math.min(size, bytes.byteLength - body);
+      break;
+    }
+    offset = body + size + (size % 2);
+  }
+
+  if (dataStart < 0 || bits !== 16 || channels < 1) {
+    throw new Error("unsupported WAV: need 16-bit PCM with a data chunk");
+  }
+  const frameCount = Math.floor(dataLength / (2 * channels));
+  const samples: Int16Array[] = [];
+  for (let c = 0; c < channels; c += 1) samples.push(new Int16Array(frameCount));
+  for (let i = 0; i < frameCount; i += 1) {
+    for (let c = 0; c < channels; c += 1) {
+      samples[c]![i] = view.getInt16(dataStart + (i * channels + c) * 2, true);
+    }
+  }
+  return { sampleRate, channels, samples };
+}
+
+/**
+ * Encode 16-bit PCM WAV to MP3 (lamejs). Deterministic for a given input, so a
+ * rebuild of unchanged sources yields identical bytes and therefore the same
+ * content hash (#APEX-6 invariant). Runtime audio is encoded to keep the load
+ * budget small (~8 KiB/s mono @ 64 kbps vs ~44 KiB/s raw WAV).
+ */
+export function encodeMp3(wav: Uint8Array, kbps = 64): Uint8Array {
+  const { sampleRate, channels, samples } = decodeWavPcm16(wav);
+  const encoder = new Mp3Encoder(channels, sampleRate, kbps);
+  const chunks: Uint8Array[] = [];
+  const block = 1152;
+  const frameCount = samples[0]!.length;
+  for (let i = 0; i < frameCount; i += block) {
+    const end = Math.min(i + block, frameCount);
+    const left = samples[0]!.subarray(i, end);
+    const buffer =
+      channels > 1 ? encoder.encodeBuffer(left, samples[1]!.subarray(i, end)) : encoder.encodeBuffer(left);
+    if (buffer.length > 0) chunks.push(new Uint8Array(buffer));
+  }
+  const tail = encoder.flush();
+  if (tail.length > 0) chunks.push(new Uint8Array(tail));
+  return concatBytes(chunks);
 }

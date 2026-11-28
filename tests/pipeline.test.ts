@@ -57,12 +57,23 @@ describe("runPipeline", () => {
       seed: 1,
     });
 
-    expect(result.manifest.assets).toHaveLength(3);
+    expect(result.manifest.assets).toHaveLength(6);
     expect(result.manifest.assets.map((a) => a.kind).sort()).toEqual([
+      "audio",
+      "audio",
+      "audio",
       "audio",
       "model",
       "texture",
     ]);
+    // #APEX-17: source WAV loops are encoded to MP3 within the audio budget.
+    const audio = result.manifest.assets.filter((a) => a.kind === "audio");
+    expect(audio.map((a) => a.logicalName).sort()).toEqual(["engine", "rain", "tyres", "wind"]);
+    for (const asset of audio) {
+      expect(asset.contentType).toBe("audio/mpeg");
+      expect(asset.url).toMatch(/\.mp3$/);
+      expect(asset.bytes).toBeLessThanOrEqual(budgets.perAsset.audio);
+    }
     expect(result.budget.ok).toBe(true);
     expect(result.load.ok).toBe(true);
 
@@ -73,7 +84,7 @@ describe("runPipeline", () => {
       expect(existsSync(join(outDir, rel))).toBe(true);
     }
     const manifest = readManifest(join(outDir, "manifest.json"));
-    expect(manifest.totals.count).toBe(3);
+    expect(manifest.totals.count).toBe(6);
   });
 
   it("is reproducible: identical manifests for unchanged inputs", async () => {

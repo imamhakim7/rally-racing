@@ -51,13 +51,16 @@ function argValue(flag: string, fallback: string): string {
 const geometry = argValue("geometry", "meshopt") as GeometryCodec;
 const trials = Number(argValue("trials", "200"));
 const seed = Number(argValue("seed", "1"));
+// `--evidence=0` skips the timestamped evidence report so a plain build does not
+// dirty the committed APEX-6 report (used by `prebuild`/`predev`).
+const writeEvidence = argValue("evidence", "1") !== "0";
 
 async function build(): Promise<void> {
   if (!existsSync(SOURCE_DIR)) {
     console.error(`no source directory: ${SOURCE_DIR} (run 'bun run assets:sample')`);
     process.exit(2);
   }
-  const generatedAt = new Date().toISOString();
+  const generatedAt = argValue("generatedAt", new Date().toISOString());
   const result = await runPipeline({
     sourceDir: SOURCE_DIR,
     outDir: OUT_DIR,
@@ -68,18 +71,30 @@ async function build(): Promise<void> {
     trials,
     seed,
   });
-  const report = buildReportArtifact(
-    result,
-    { ticket: TICKET, profile: loadProfile.name, geometry, generatedAt },
-    budgets.perAsset,
-  );
-  const text = formatReportText(report, result);
-  const { txtPath } = writeReportArtifacts(EVIDENCE_DIR, report, text);
-  console.log(text);
-  console.log(`evidence: ${txtPath}`);
-  if (!report.ok) {
-    console.error("BUILD FAILED: asset budget or load gate violated");
-    process.exit(1);
+  if (writeEvidence) {
+    const report = buildReportArtifact(
+      result,
+      { ticket: TICKET, profile: loadProfile.name, geometry, generatedAt },
+      budgets.perAsset,
+    );
+    const text = formatReportText(report, result);
+    const { txtPath } = writeReportArtifacts(EVIDENCE_DIR, report, text);
+    console.log(text);
+    console.log(`evidence: ${txtPath}`);
+    if (!report.ok) {
+      console.error("BUILD FAILED: asset budget or load gate violated");
+      process.exit(1);
+    }
+  } else {
+    const { budget, load, manifest } = result;
+    console.log(
+      `assets: ${manifest.totals.count} files, ${manifest.totals.bytes}B total ` +
+        `(budget=${budget.ok ? "PASS" : "FAIL"} load=${load.ok ? "PASS" : "FAIL"})`,
+    );
+    if (!budget.ok || !load.ok) {
+      console.error("BUILD FAILED: asset budget or load gate violated");
+      process.exit(1);
+    }
   }
 }
 

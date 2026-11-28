@@ -1,9 +1,9 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { splitExt } from "./hash.ts";
 import { detectKind, KIND_DIR } from "./formats.ts";
 import { finalizeAsset, buildManifest, writeManifest } from "./manifest.ts";
-import { optimizeGlb, encodeKtx2 } from "./optimize.ts";
+import { optimizeGlb, encodeKtx2, encodeMp3 } from "./optimize.ts";
 import { checkBudget } from "./budget.ts";
 import { simulateColdStart } from "./load-budget.ts";
 import type {
@@ -50,8 +50,12 @@ async function optimizeByKind(
     case "texture":
       return { ext: "ktx2", bytes: await encodeKtx2(bytes) };
     case "audio":
-      // Already-encoded runtime audio is passed through unchanged.
-      return { ext, bytes };
+      // Source loops are 16-bit PCM WAV; encode to MP3 so the load budget
+      // carries ~1/5 the bytes (#APEX-17, lead hard gate). Already-encoded
+      // runtime audio (.ogg/.mp3) is passed through unchanged.
+      return ext.toLowerCase() === "wav"
+        ? { ext: "mp3", bytes: encodeMp3(bytes) }
+        : { ext, bytes };
     default:
       throw new Error(`cannot optimize unknown asset kind (ext .${ext})`);
   }
@@ -66,6 +70,10 @@ async function optimizeByKind(
 export async function runPipeline(opts: PipelineOptions): Promise<PipelineResult> {
   const geometry = opts.geometry ?? "meshopt";
   const baseUrl = opts.baseUrl ?? "/assets";
+  // The build is content-addressed, so a stale file from a previous run must not
+  // survive: clear the output dir before writing this run's bundles.
+  if (existsSync(opts.outDir)) rmSync(opts.outDir, { recursive: true, force: true });
+  mkdirSync(opts.outDir, { recursive: true });
   const files = readdirSync(opts.sourceDir, { withFileTypes: true })
     .filter((e) => e.isFile())
     .map((e) => e.name)

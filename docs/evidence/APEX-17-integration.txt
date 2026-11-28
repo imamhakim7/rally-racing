@@ -1,0 +1,83 @@
+# APEX-17 — integration / rebase evidence (PR #21)
+
+Integration: player (seat-orchestrator) · rebased
+`feat/APEX-17-dynamic-car-and-environment-audio` onto `origin/main` `0c08e86`
+("feat: menus, stage select, settings and first-run tutorial (#23)").
+
+Reason: devops reported `pr-skip: branch … needs a rebase onto origin/main
+(conflicts); not opening a PR` (PR #21 `mergeable_state: dirty`).
+
+## Conflict resolution
+
+Single conflicted file: `src/main.ts` (three hunks). Both sides were kept — no
+work dropped:
+
+1. **Voice wiring vs. audio block** — kept APEX-17's audio graph + loader block
+   (`audioStore`/`loadAudioSettings`/`createWebAudioPort`/`audioMixer`/`audioEnv`/
+   gesture `unlock`/`audioControls`/`loadGameAudio`) *and* APEX-11's `syncVoice()`
+   helper + `if (race && paceTracker) { setPaceNotes(); syncVoice(); }`.
+2. **`window.apexStage` literal** — kept APEX-11's `menu`/`settings`/`startTutorial`/
+   `tutorial` members *and* APEX-17's `audio: { port, controls, mixer, env }`.
+3. **`declare global` Window type** — kept APEX-11's menu/settings/tutorial fields
+   *and* APEX-17's `audio?` field.
+
+Imports auto-merged (both `toStageDefinition`/`nextStageId`/`MenuHandle`/
+`TutorialModel`/`mountTutorialOverlay`/`mountMenu`/`SettingsPanelHandle` from
+#APEX-11 and the `./audio` barrel from #APEX-17). No conflict markers remain.
+
+## Verification (post-rebase)
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Typecheck | `bun run typecheck` | clean (exit 0) |
+| Tests | `bun run test` | **54 files / 390 tests green** |
+| Build | `bun run build` | clean; `assets: 6 files, 24301B total (budget=PASS load=PASS)` |
+| Encoded loops | `ls dist/assets/audio` | `engine/tyres/wind/rain.*.mp3` (4 × 4597 B, `audio/mpeg`) |
+| Build-only dep | `grep -c Mp3Encoder dist/assets/index-*.js` | `0` (lamejs not in the client bundle) |
+
+Test/file counts rose from 52/372 to 54/390 because the rebase pulled in
+#APEX-11's suites; the APEX-17 audio suites still pass alongside them.
+
+## Live end-to-end probe (production preview, chromium 1255)
+
+`bun run build && bun run preview`, then Playwright against
+`http://localhost:4173/` (instrumented `createBufferSource`, `decodeAudioData`,
+`fetch`; click to satisfy autoplay; hold ArrowUp ~1.8 s):
+
+```json
+{
+  "hasApexStage": true,
+  "portUnlocked": true,
+  "settings": { "muted": false, "volume": 0.8 },
+  "stats": {
+    "available": true,
+    "unlocked": true,
+    "buses": 5,
+    "activeVoices": 4,
+    "updates": 117,
+    "updateCostMs": 0
+  },
+  "probe": {
+    "bufferSources": 4,
+    "decodeCalls": 4,
+    "audioFetches": [
+      "http://localhost:4173/assets/audio/engine.ab4f8d1b.mp3",
+      "http://localhost:4173/assets/audio/rain.a4996fe0.mp3",
+      "http://localhost:4173/assets/audio/tyres.1b345026.mp3",
+      "http://localhost:4173/assets/audio/wind.6327af18.mp3"
+    ]
+  },
+  "menuHidden": false,
+  "pageErrors": []
+}
+```
+
+The shipped build is **not silent** after integration: 4 loops are fetched,
+decoded and playing, the context unlocks only after the gesture, and there are no
+page errors (`menuHidden: false` is APEX-11's stage-select menu, expected).
+
+## Outcome
+
+Branch is rebased and mergeable; `src/main.ts` carries both #APEX-11's menus and
+#APEX-17's audio mix. Platform owns push/squash/PR; not pushed or merged from this
+seat.

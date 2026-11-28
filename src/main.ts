@@ -33,6 +33,26 @@ import { nextStageId } from "./ui/menu-model";
 import { TutorialModel } from "./ui/tutorial";
 import { mountTutorialOverlay, type TutorialOverlayHandle } from "./ui/tutorialOverlay";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
+import { physicsSurfaceAt } from "./ai";
+import {
+  AudioMixer,
+  createLocalStorageSettingsStore,
+  createMemorySettingsStore,
+  createWebAudioPort,
+  listenerFromCar,
+  loadAudioBusAssets,
+  loadAudioSettings,
+  resolveAudioUrl,
+  setAudioMuted,
+  setAudioVolume,
+  type AudioContextSource,
+  type AudioManifest,
+  type AudioPort,
+  type AudioSettings,
+  type AudioSettingsStore,
+  type CarAudioState,
+  type EnvironmentAudioState,
+} from "./audio";
 import {
   createInputManager,
   createLocalStorageStore,
@@ -77,6 +97,19 @@ const canvas: HTMLCanvasElement = canvasElement;
 function deviceHints(): DeviceHints {
   const nav = navigator as Navigator & { deviceMemory?: number };
   return { deviceMemory: nav.deviceMemory, hardwareConcurrency: nav.hardwareConcurrency };
+}
+
+/**
+ * #APEX-17: persistence for the audio mute/volume. Uses `localStorage` where it
+ * is available (and not blocked), otherwise an in-memory store so the game still
+ * runs. `localStorage` access itself can throw in a sandboxed frame.
+ */
+function audioSettingsStore(): AudioSettingsStore {
+  try {
+    return createLocalStorageSettingsStore(window.localStorage);
+  } catch {
+    return createMemorySettingsStore();
+  }
 }
 
 /**
@@ -214,6 +247,60 @@ function bootGame(assessment: SupportAssessment): void {
   const voice = createSpeechVoice(window as unknown as SpeechSource);
   let voiceEnabled = settings.game.voice && voice.available;
 
+  // Audio mix (#APEX-17): a pure model + a Web Audio port. Master mute/volume
+  // persist through localStorage; the AudioContext unlocks on the first user
+  // gesture (browser autoplay policy). Sampled loops come from the shared asset
+  // pipeline (#APEX-6) — with none supplied the graph is structurally complete
+  // but silent, and the game is unaffected.
+  const audioStore = audioSettingsStore();
+  let audioSettings: AudioSettings = loadAudioSettings(audioStore);
+  const audio: AudioPort = createWebAudioPort(window as unknown as AudioContextSource, {
+    maxOpponents: aiRace ? aiRace.carCount : 4,
+  });
+  audio.setSettings(audioSettings);
+  const audioMixer = new AudioMixer();
+  const audioEnv: EnvironmentAudioState = { wind01: 0, rain01: 0 };
+  const unlockAudio = (): void => audio.unlock();
+  window.addEventListener("pointerdown", unlockAudio, { once: true });
+  window.addEventListener("keydown", unlockAudio, { once: true });
+
+  /** Settings mutations the menus (#APEX-11) call; each persists and re-applies. */
+  const audioControls = {
+    get settings(): AudioSettings {
+      return audioSettings;
+    },
+    setMuted(muted: boolean): AudioSettings {
+      audioSettings = setAudioMuted(audioStore, audioSettings, muted);
+      audio.setSettings(audioSettings);
+      return audioSettings;
+    },
+    setVolume(volume: number): AudioSettings {
+      audioSettings = setAudioVolume(audioStore, audioSettings, volume);
+      audio.setSettings(audioSettings);
+      return audioSettings;
+    },
+  };
+
+  // Load the compiled sampled loops (#APEX-6 pipeline) and hand them to the port.
+  // Non-blocking and best-effort: while it resolves (and if it ever fails) the
+  // mix is silent but the race runs. Decoded buffers are started by `unlock()`
+  // (or immediately if the player already gestured).
+  const loadGameAudio = async (): Promise<void> => {
+    try {
+      const manifestUrl = resolveAudioUrl("assets/manifest.json", document.baseURI);
+      const response = await fetch(manifestUrl);
+      if (!response.ok) return;
+      const manifest = (await response.json()) as AudioManifest;
+      const busAssets = await loadAudioBusAssets(manifest, (data) => audio.decode(data), {
+        base: document.baseURI,
+      });
+      audio.setAssets(busAssets);
+    } catch {
+      // No manifest/assets or offline: stay silent, never break the boot.
+    }
+  };
+  void loadGameAudio();
+
   const syncVoice = (): void => {
     race?.hud.setVoice({
       available: voice.available,
@@ -313,10 +400,34 @@ function bootGame(assessment: SupportAssessment): void {
             }
           }
           if (paceTracker && race.session.phase === "countdown") paceTracker.reset();
+          let distance: number | null = null;
           if (paceTracker && paceSpline && telemetry.position) {
             const position = telemetry.position();
-            paceTracker.setDistance(nearestDistanceOnSpline(paceSpline, position.x, position.z));
+            distance = nearestDistanceOnSpline(paceSpline, position.x, position.z);
+            paceTracker.setDistance(distance);
           }
+          // Drive the mix from the car harness. rpm/load are derived from speed
+          // and the surface from the stage's surface spans at the car's
+          // arc-length, until in-world telemetry lands (same interim pattern as
+          // gate crossings); environment state defaults dry until #APEX-29.
+          const speed01 = Math.min(1, Math.max(0, telemetry.read().speedKmh / 200));
+          const surface =
+            stageScene && paceSpline && distance !== null
+              ? physicsSurfaceAt(stageScene.current, distance / paceSpline.length).id
+              : "tarmac";
+          const carState: CarAudioState = {
+            rpm01: speed01,
+            load01: Math.min(1, speed01 * 1.2),
+            speed01,
+            // No slip telemetry in the harness yet; scale with speed so the tyre
+            // bus is audible and the per-surface timbre is distinguishable.
+            slip01: Math.min(1, speed01 * 0.7),
+            surface,
+            impact01: 0,
+          };
+          const mix = audioMixer.step(carState, audioEnv, dt);
+          const carPosition = telemetry.position?.() ?? null;
+          audio.update(mix, carPosition ? listenerFromCar(carPosition) : { x: 0, y: 0, z: 0, yaw: 0 });
         }
       : undefined,
     onRender: aiRace
@@ -381,6 +492,7 @@ function bootGame(assessment: SupportAssessment): void {
       get settings() { return settings; },
       startTutorial,
       get tutorial() { return tutorial; },
+      audio: { port: audio, controls: audioControls, mixer: audioMixer, env: audioEnv },
     };
   } else {
     window.apexRace = { library, scene: aiRace, app };
@@ -389,6 +501,9 @@ function bootGame(assessment: SupportAssessment): void {
   // Vite HMR: release GPU + overlay resources before the module is replaced.
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+      audio.dispose();
       voice.cancel();
       tutorialInput?.dispose();
       tutorialOverlay?.dispose();
@@ -440,6 +555,17 @@ declare global {
       startTutorial?: () => void;
       /** Live tutorial state (#APEX-11), exposed for evidence scripts. */
       tutorial?: TutorialModel | null;
+      /** Dynamic car/environment audio mix (#APEX-17), exposed for tooling + evidence. */
+      audio?: {
+        port: AudioPort;
+        mixer: AudioMixer;
+        env: EnvironmentAudioState;
+        controls: {
+          readonly settings: AudioSettings;
+          setMuted(muted: boolean): AudioSettings;
+          setVolume(volume: number): AudioSettings;
+        };
+      };
     };
     /** Exposed when running the visible CPU race (`?race=<id>`). */
     apexRace?: { library: StageLibrary; scene: AiRaceScene; app: EngineApp } | null;

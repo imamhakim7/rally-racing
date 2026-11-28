@@ -1,0 +1,153 @@
+# APEX-17 — QA defect reproduction: shipped build is silent
+
+QA: qa (gate: qa_testing)
+Verdict: **FAIL** — open linked bug; ticket rejected and looped back to dev.
+
+## Lead hard gate (the acceptance bar this run must meet)
+
+> "CC0 audio sources identified for the mix (not yet downloaded): ... engine/tyre/
+> rain/wind loops. Hard gate: audio per-asset 64 KiB, total cold-start 512 KiB —
+> ship short encoded loops (ogg/mp3) through the pipeline."
+
+Source: board message from `lead`, message id 70271 (`/api/v2/tickets/APEX-17`
+→ `messages`). The same numbers are codified in `docs/assets/budgets.json`
+(`perAsset.audio = 65536`, `totalBytes = 524288`).
+
+## Defect
+
+The pure mix model and the Web Audio port are unit-tested and green, but the
+**running build never feeds them any audio**. `src/main.ts` calls
+`createWebAudioPort(window, { maxOpponents })` with **no `assets`**, so no
+`AudioBufferSourceNode` is ever created, nothing is fetched or decoded, and the
+scene is still silent — the exact problem the ticket exists to fix. The asset
+pipeline also emits a single raw `.wav` ambient loop, not the encoded
+engine/tyre/wind/rain loops of the hard gate.
+
+## Evidence 1 — live production bundle probe (Playwright, chromium)
+
+Command: `bun run build && bun run preview` then the probe script below against
+`http://localhost:4173/` (click to satisfy autoplay, hold ArrowUp ~1.5 s).
+
+```json
+{
+  "hasApexStage": true,
+  "hasAudioApi": true,
+  "portAvailable": true,
+  "portUnlocked": true,
+  "settings": { "muted": false, "volume": 0.8 },
+  "stats": {
+    "available": true,
+    "unlocked": true,
+    "buses": 5,
+    "activeVoices": 0,
+    "updates": 99,
+    "updateCostMs": 0
+  },
+  "probe": {
+    "bufferSources": 0,
+    "decodeCalls": 0,
+    "audioFetches": []
+  },
+  "pageErrors": []
+}
+```
+
+Interpretation: the context unlocks and the mixer updates every frame, but
+`activeVoices === 0`, `createBufferSource` was called **0** times,
+`decodeAudioData` **0** times, and **no** `.ogg/.mp3/.wav` was fetched. Silence.
+
+Probe script (instrumentation of `AudioContext.prototype.createBufferSource`,
+`decodeAudioData` and `window.fetch`):
+
+```js
+import { chromium } from "playwright";
+const browser = await chromium.launch({ args: ["--autoplay-policy=no-user-gesture-required"] });
+const page = await browser.newPage();
+await page.addInitScript(() => {
+  const probe = { bufferSources: 0, decodeCalls: 0, audioFetches: [] };
+  window.__audioProbe = probe;
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  if (Ctor) {
+    const src = Ctor.prototype.createBufferSource;
+    Ctor.prototype.createBufferSource = function (...a) { probe.bufferSources++; return src.apply(this, a); };
+    if (Ctor.prototype.decodeAudioData) {
+      const dec = Ctor.prototype.decodeAudioData;
+      Ctor.prototype.decodeAudioData = function (...a) { probe.decodeCalls++; return dec.apply(this, a); };
+    }
+  }
+  const fetch = window.fetch;
+  window.fetch = function (...a) { const u = String(a[0]); if (/\.(ogg|mp3|wav)(\?|$)/i.test(u)) probe.audioFetches.push(u); return fetch.apply(this, a); };
+});
+await page.goto("http://localhost:4173/", { waitUntil: "load" });
+await page.waitForFunction(() => Boolean(window.apexStage || window.apexRace));
+await page.mouse.click(200, 200);
+await page.keyboard.down("ArrowUp");
+await page.waitForTimeout(1500);
+await page.keyboard.up("ArrowUp");
+console.log(JSON.stringify(await page.evaluate(() => ({
+  stats: window.apexStage?.audio?.port?.stats?.() ?? null,
+  probe: window.__audioProbe,
+})), null, 2));
+await browser.close();
+```
+
+## Evidence 2 — asset pipeline output (`bun run assets:build`)
+
+```
+ASSET BUDGET: PASS
+  ok  ambient-loop                   8044 /      65536 B (audio)
+  ok  gate-arch                      4416 /     262144 B (model)
+  ok  tarmac                         1497 /     131072 B (texture)
+  total      13957 /     524288 B
+
+Content-addressed assets:
+  /assets/audio/ambient-loop.385e0597.wav  (8044 B, sha256:385e0597)
+```
+
+Only one audio asset; it is `audio/wav` (passthrough), not encoded ogg/mp3, and
+it is not referenced by any runtime code (`grep -rn "manifest|decodeAudioData"
+src --include=*.ts` excluding `src/assets/` → no loader).
+
+## Evidence 3 — proving test (red on this branch)
+
+`tests/audio-assets.test.ts` (added by QA, withheld from the branch so CI is not
+left red; dev should add it with the fix):
+
+```ts
+it("ships encoded audio loops (ogg/mp3), not raw wav", ...);
+it("ships a distinct loop for each mix bus (engine, tyres, wind, rain)", ...);
+it("boot wiring loads decoded audio into the Web Audio port", ...);
+```
+
+Red output on `4feecf2`:
+
+```
+ ❯ tests/audio-assets.test.ts (4 tests | 3 failed)
+     × ships encoded audio loops (ogg/mp3), not raw wav
+     × ships a distinct loop for each mix bus (engine, tyres, wind, rain)
+     × boot wiring loads decoded audio into the Web Audio port
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+```
+
+The one passing test is the byte-budget guard (raw 8 KiB wav is under budget).
+
+## What does pass (for the fix to preserve)
+
+- `tests/audio-mix.test.ts` / `audio-spatial.test.ts` / `audio-settings.test.ts` /
+  `audio-port.test.ts` — 47 green: engine tracks rpm/load, per-surface tyre
+  gain+pitch, wind/rain layers, attenuation/pan, gesture unlock, persisted
+  mute/volume, bounded voices. The model layer is sound; only the shipped
+  asset + wiring is missing.
+- Typecheck + build clean; live probe shows `updateCostMs ≈ 0`.
+
+## Fix scope (dev)
+
+1. Ship short **encoded** (ogg/mp3) engine/tyre/wind/rain loops (CC0) through the
+   asset pipeline — either transcode in `optimizeByKind` (`case "audio"`) or
+   commit pre-encoded sources — each ≤ 64 KiB, total ≤ 512 KiB.
+2. Load the manifest + `decodeAudioData` at boot and pass `AudioBusAssets` to
+   `createWebAudioPort` (gameplay must not block: decode after first gesture /
+   in the background).
+3. Add the proving test and drive `window.apexStage.audio.port.stats().activeVoices`
+   above zero in the live probe.

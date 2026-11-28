@@ -6,9 +6,9 @@
   "description": "Apex Rally — browser rally game built on three.js, with a glTF/KTX2 asset pipeline",
   "scripts": {
     "gen:stages": "bun scripts/generate-stage-index.ts",
-    "predev": "bun run gen:stages",
+    "predev": "bun run gen:stages && bun run assets:dist",
     "dev": "vite",
-    "prebuild": "bun run gen:stages",
+    "prebuild": "bun run gen:stages && bun run assets:dist",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit",
@@ -17,6 +17,7 @@
     "screenshot": "bun run build && bun scripts/screenshot.mjs",
     "assets:sample": "bun src/assets/sample.ts",
     "assets:build": "bun src/assets/cli.ts build",
+    "assets:dist": "bun src/assets/cli.ts build --evidence=0",
     "assets:check": "bun src/assets/cli.ts check",
     "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
     "screenshot:race": "bun run build && bun scripts/screenshot-race.mjs",
@@ -36,6 +37,7 @@
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@types/node": "^22.10.2",
     "@types/three": "^0.187.0",
     "playwright": "1.65.1",
