@@ -103,6 +103,31 @@ describe("FixedTimestepLoop", () => {
     expect(loop.steps).toBe(60);
   });
 
+  // Regression for #APEX-21: dispose() called from inside update() must not
+  // render a frame after the scene/renderer were released.
+  it("does not render after dispose() from inside update()", () => {
+    const updates: number[] = [];
+    const renders: number[] = [];
+    let loop: FixedTimestepLoop | null = null;
+    loop = new FixedTimestepLoop(
+      {
+        update: () => {
+          updates.push(1);
+          loop?.dispose();
+        },
+        render: () => renders.push(1),
+      },
+      { fixedDelta: 1 / 60, maxDelta: 1 },
+    );
+
+    const steps = loop.tick(1);
+
+    expect(steps).toBe(1); // the disposing step aborts the remaining steps
+    expect(updates).toHaveLength(1);
+    expect(renders).toHaveLength(0);
+    expect(loop.steps).toBe(1);
+  });
+
   // Regression for #APEX-20: stop() called from inside update() must not leave a
   // frame armed (a stale frame becomes a second rAF chain after a restart).
   function makeScheduler() {

@@ -121,7 +121,9 @@ export class FixedTimestepLoop {
       while (
         this.accumulator >= this.fixedDelta - STEP_EPSILON &&
         stepsThisFrame < maxSteps &&
-        !this.stepAbort
+        !this.stepAbort &&
+        // #APEX-21: dispose() inside update() ends the tick immediately.
+        !this._disposed
       ) {
         this.callbacks.update(this.fixedDelta);
         this.accumulator -= this.fixedDelta;
@@ -134,7 +136,9 @@ export class FixedTimestepLoop {
     if (this.accumulator < 0) this.accumulator = 0;
 
     this._steps += stepsThisFrame;
-    this.callbacks.render(this.alpha);
+    // #APEX-21: update() may have disposed the loop (and with it the scene and
+    // renderer) during this tick. Do not draw a frame on released resources.
+    if (!this._disposed) this.callbacks.render(this.alpha);
     return stepsThisFrame;
   }
 
@@ -178,5 +182,8 @@ export class FixedTimestepLoop {
   dispose(): void {
     this.stop();
     this._disposed = true;
+    // #APEX-21: dispose() may be called from inside update(); make the step
+    // loop stop even when the loop was never started (stop() no-ops then).
+    if (this.inTick) this.stepAbort = true;
   }
 }
