@@ -1,0 +1,44 @@
+APEX-27 security audit — raw evidence (commit 4fc24c4 on fix/APEX-27-cpu-car-leaves-the-road)
+
+[1] Changed files (git show --stat)
+    src/ai/driver.ts           | 19 +++++++++++++++++--
+    src/ai/racing-line.ts      |  2 ++
+    src/ai/types.ts            |  2 ++
+    tests/ai-race-edge.test.ts | 30 ++++++++++++++++++++++++++++++
+    No package.json / bun.lock change -> no dependency/CVE surface change.
+
+[2] Dangerous-sink grep on the commit diff (eval|Function(|innerHTML|fetch|
+    XMLHttpRequest|child_process|exec|process.env|console.log): NONE.
+
+[3] Typecheck
+    $ bun run typecheck
+    $ tsc --noEmit            -> clean
+
+[4] Unit suite
+    $ bun run test           -> 38 files / 245 tests passed
+
+[5] AC2 — the 8 reported (stage, seed) pairs: offSurfaceSamples == 0 for every car.
+    coastal-cliffs 12/52, mountain-pass 86/155/156/178/214/280  -> FIXED
+
+[6] AC1 — swept seed range (6 stages x seeds 0..999 and 9980..9999 = 6120 races)
+    off-surface failures = 0
+    incomplete           = 0
+    global maxCrossTrack = 4.6484 m (<= each stage half-width)
+    AC1 PASS over swept range
+
+[7] Determinism on the changed path (repeat runs, seed 86)
+    maxCrossTrack equal: true
+    finishTime    equal: true
+
+[8] Baseline comparison (parent f3d1ca1), same sweep seeds 0..299
+    off-surface failures = 8  (the reported set)  -> resolved by the fix
+    separation violations present on baseline too (alpine-forest 8, desert-dunes 15,
+    coastal-cliffs 2, mountain-pass 1, valley-rally 1) -> pre-existing, not introduced.
+
+[9] Residual (functional, non-security): finish-window regression
+    stage=mountain-pass seed=9 car=cpu-3 skill=0.911
+      fixed   finish=30.53 s  > windowHigh=30.27 s   (violates AC3 / #APEX-7 AC4)
+      baseline finish=28.12 s (inside window)
+
+Verdict: security PASS — no exploitable issue. Low informational note on the new
+required RacingLine.halfWidth field (only in-repo implementer updated; tsc clean).

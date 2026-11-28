@@ -96,6 +96,7 @@ export function buildRacingLine(
     return {
       points: [point],
       length: 0,
+      halfWidth,
       referenceTime: 0,
       sampleAtDistance: () => point,
       indexAtDistance: () => 0,
@@ -174,6 +175,7 @@ export function buildRacingLine(
   const api: RacingLine = {
     points,
     length,
+    halfWidth,
     referenceTime,
     indexAtDistance(distance) {
       return Math.round(fractionAt(distance) * lastIndex);
