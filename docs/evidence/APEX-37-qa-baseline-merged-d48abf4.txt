@@ -1,0 +1,9 @@
+#APEX-37 independent QA verification — FAIL
+viewports=desktop,mobile scales=1,1.5,2
+desktop scale_1: applied=1 root=- countdown=- time=- speed=- notes=- clipOffenders=0 docOverX=0 docOverY=0
+desktop scale_1.5: applied=1.5 root=1.5 countdown=1 time=1 speed=1 notes=1 clipOffenders=0 docOverX=0 docOverY=0
+desktop scale_2: applied=2 root=2 countdown=1 time=1 speed=1 notes=1 clipOffenders=0 docOverX=0 docOverY=0
+mobile scale_1: applied=1 root=- countdown=- time=- speed=- notes=- clipOffenders=0 docOverX=0 docOverY=0
+mobile scale_1.5: applied=1.5 root=1.5 countdown=1 time=1 speed=1 notes=1 clipOffenders=0 docOverX=0 docOverY=0
+mobile scale_2: applied=2 root=2 countdown=1 time=1 speed=1 notes=1 clipOffenders=0 docOverX=0 docOverY=0
+FAILURES: desktop@1.5: countdown ratio 1 != 1.5 (base=115.2px, target=115.2px) | desktop@1.5: time ratio 1 != 1.5 (base=30.72px, target=30.72px) | desktop@1.5: speed ratio 1 != 1.5 (base=43.52px, target=43.52px) | desktop@1.5: notes ratio 1 != 1.5 (base=33.28px, target=33.28px) | desktop@2: countdown ratio 1 != 2 (base=115.2px, target=115.2px) | desktop@2: time ratio 1 != 2 (base=30.72px, target=30.72px) | desktop@2: speed ratio 1 != 2 (base=43.52px, target=43.52px) | desktop@2: notes ratio 1 != 2 (base=33.28px, target=33.28px) | mobile@1.5: countdown ratio 1 != 1.5 (base=48px, target=48px) | mobile@1.5: time ratio 1 != 1.5 (base=22px, target=22px) | mobile@1.5: speed ratio 1 != 1.5 (base=28px, target=28px) | mobile@1.5: notes ratio 1 != 1.5 (base=22px, target=22px) | mobile@2: countdown ratio 1 != 2 (base=48px, target=48px) | mobile@2: time ratio 1 != 2 (base=22px, target=22px) | mobile@2: speed ratio 1 != 2 (base=28px, target=28px) | mobile@2: notes ratio 1 != 2 (base=22px, target=22px)

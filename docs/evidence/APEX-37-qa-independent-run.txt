@@ -1,0 +1,8 @@
+#APEX-37 independent QA verification — PASS
+viewports=desktop,mobile scales=1,1.5,2
+desktop scale_1: applied=1 root=- countdown=- time=- speed=- notes=- clipped=0 docOverX=0 docOverY=0
+desktop scale_1.5: applied=1.5 root=1.5 countdown=1.5 time=1.5 speed=1.5 notes=1.5 clipped=0 docOverX=0 docOverY=0
+desktop scale_2: applied=2 root=2 countdown=2 time=2 speed=2 notes=2 clipped=0 docOverX=0 docOverY=0 notices=2(.apex-panel:visibley,.apex-live:visibley)
+mobile scale_1: applied=1 root=- countdown=- time=- speed=- notes=- clipped=0 docOverX=0 docOverY=0
+mobile scale_1.5: applied=1.5 root=1.5 countdown=1.5 time=1.5 speed=1.5 notes=1.5 clipped=0 docOverX=0 docOverY=0
+mobile scale_2: applied=2 root=2 countdown=2 time=2 speed=2 notes=2 clipped=0 docOverX=0 docOverY=0

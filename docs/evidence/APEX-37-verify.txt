@@ -1,0 +1,117 @@
+{
+  "pass": true,
+  "desktop": {
+    "one": {
+      "root": 16.24,
+      "speed": {
+        "font": 43.52,
+        "right": 1243,
+        "bottom": 760,
+        "overX": false
+      },
+      "time": {
+        "font": 30.72,
+        "right": 165,
+        "bottom": 68,
+        "overX": false
+      },
+      "notes": {
+        "font": 33.28,
+        "right": 235,
+        "bottom": 714,
+        "overX": false
+      },
+      "clippedPanels": [],
+      "docOverX": 0,
+      "docOverY": 0
+    },
+    "two": {
+      "root": 32.48,
+      "speed": {
+        "font": 87.04,
+        "right": 1243,
+        "bottom": 754,
+        "overX": false
+      },
+      "time": {
+        "font": 61.44,
+        "right": 292,
+        "bottom": 102,
+        "overX": false
+      },
+      "notes": {
+        "font": 66.56,
+        "right": 279,
+        "bottom": 680,
+        "overX": false
+      },
+      "clippedPanels": [],
+      "docOverX": 0,
+      "docOverY": 0
+    },
+    "ratios": {
+      "root": 2,
+      "speed": 2,
+      "time": 2,
+      "notes": 2
+    },
+    "clipped": false
+  },
+  "mobile": {
+    "one": {
+      "root": 12,
+      "speed": {
+        "font": 28,
+        "right": 371,
+        "bottom": 822,
+        "overX": false
+      },
+      "time": {
+        "font": 22,
+        "right": 111,
+        "bottom": 41,
+        "overX": false
+      },
+      "notes": {
+        "font": 22,
+        "right": 137,
+        "bottom": 784,
+        "overX": false
+      },
+      "clippedPanels": [],
+      "docOverX": 0,
+      "docOverY": 0
+    },
+    "two": {
+      "root": 24,
+      "speed": {
+        "font": 56,
+        "right": 371,
+        "bottom": 817,
+        "overX": false
+      },
+      "time": {
+        "font": 44,
+        "right": 202,
+        "bottom": 65,
+        "overX": false
+      },
+      "notes": {
+        "font": 44,
+        "right": 153,
+        "bottom": 759,
+        "overX": false
+      },
+      "clippedPanels": [],
+      "docOverX": 0,
+      "docOverY": 0
+    },
+    "ratios": {
+      "root": 2,
+      "speed": 2,
+      "time": 2,
+      "notes": 2
+    },
+    "clipped": false
+  }
+}
