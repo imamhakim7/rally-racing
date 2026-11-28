@@ -323,6 +323,39 @@ bun scripts/screenshot-terrain.mjs   # per-stage terrain stats + screenshots, he
   on-road car is untouched, application is idempotent and safe on non-finite state.
 - `tests/stage-surface-grip.test.ts` — every shipped zone's grip reaches the vehicle model.
 
+## CPU opponents, difficulty tiers & fair catch-up (#APEX-7 / #APEX-8)
+
+CPU drivers race the racing line headlessly and visibly (`?race=<stage>`). Four
+difficulty tiers tune the field — each one changes the CPU's **corner speed**
+(`skill`), **reaction** (`kHeading`/`kCross`) and **aggression** (`overtakeGain`,
+following gap):
+
+| Tier | `skill` | `reaction` | `aggression` | catch-up band |
+| --- | --- | --- | --- | --- |
+| `easy` | 0.80 | 0.90 | 0.70 | +4 % / −2 % |
+| `normal` | 0.92 | 1.00 | 1.00 | +4 % / −2 % |
+| `hard` | 1.02 | 1.04 | 1.10 | +3 % / −1.5 % |
+| `rally-legend` | 1.06 | 1.08 | 1.15 | +3 % / −1.5 % |
+
+**Catch-up is bounded and capped.** A CPU behind the reference gets at most the
+tier's `maxBoost` target-speed multiplier; ahead it gets at most `maxSlow`; and the
+effective skill is always clamped by the tier's `skillCap`. It only ever scales a
+car's *target speed* — never a position or velocity — so it can never teleport a car.
+A **solo reference "competent human"** pace car (skill 1.0, default tuning) grades the
+balance: it wins on `easy` and can lose on `hard`/`rally-legend`.
+
+The tiered field also runs the same soft roadside barrier as the visible race, so a
+faster tier can never leave the ribbon, and the no-teleport / bounded-speed-delta
+telemetry (`maxStepDisplacement`, `maxSpeedDelta`) is asserted on every stage.
+
+```bash
+bun run test                              # tests/difficulty.test.ts (AC1–AC7)
+bun scripts/ai-difficulty-report.ts        # seeded win-rate + telemetry bands -> docs/evidence/
+```
+
+Open the visible race at a tier with `?race=alpine-forest&difficulty=hard` (unknown
+values fall back to `normal`).
+
 ## Stage race loop
 
 A stage is a countdown, a timed run through **ordered** checkpoints and a finish, giving a

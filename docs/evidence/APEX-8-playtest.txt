@@ -1,0 +1,10 @@
+PASS alpine-forest/easy         dur=29.3 spread=30.59 finishSpread=1.4 maxSpeedStep=2.43 minSep=2.502 off=0 onScreen>=4 corner<straight=true
+PASS alpine-forest/normal       dur=26.0 spread=25.56 finishSpread=0.95 maxSpeedStep=2.32 minSep=2.491 off=0 onScreen>=4 corner<straight=true
+PASS alpine-forest/hard         dur=25.0 spread=33.62 finishSpread=1.58 maxSpeedStep=1.98 minSep=2.473 off=0 onScreen>=2 corner<straight=true
+PASS alpine-forest/rally-legend dur=24.0 spread=30.39 finishSpread=1.02 maxSpeedStep=1.87 minSep=2.49 off=0 onScreen>=1 corner<straight=true
+PASS canyon-sprint/easy         dur=27.4 spread=41.78 finishSpread=3.38 maxSpeedStep=1.35 minSep=2.483 off=0 onScreen>=3 corner<straight=true
+PASS canyon-sprint/normal       dur=23.2 spread=36.44 finishSpread=2.5 maxSpeedStep=1.42 minSep=2.477 off=0 onScreen>=1 corner<straight=true
+PASS canyon-sprint/hard         dur=21.9 spread=30.01 finishSpread=1.85 maxSpeedStep=1.48 minSep=2.483 off=0 onScreen>=1 corner<straight=true
+PASS canyon-sprint/rally-legend dur=21.9 spread=42.93 finishSpread=1.45 maxSpeedStep=1.2 minSep=2.48 off=0 onScreen>=1 corner<straight=true
+
+ALL OK: true

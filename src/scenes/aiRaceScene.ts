@@ -24,6 +24,7 @@ import type { CpuDriver } from "../ai/driver";
 import { physicsSurfaceAt } from "../ai/surface";
 import { GhostOverlay } from "../ai/ghost";
 import type { RaceTrace } from "../ai/trace";
+import type { DifficultyTier } from "../ai/difficulty";
 import { buildCarMesh } from "./carMesh";
 
 export interface AiRaceSceneOptions {
@@ -33,6 +34,8 @@ export interface AiRaceSceneOptions {
   motion?: MotionPolicy;
   /** #APEX-9: a recorded trace to replay as a ghost alongside the live race. */
   ghost?: RaceTrace;
+  /** Difficulty tier for the CPU field (#APEX-8); omitted = #APEX-7 default. */
+  tier?: DifficultyTier;
 }
 
 /** Per-car telemetry sample for playtest/QA tooling. */
@@ -102,7 +105,10 @@ export function createAiRaceScene(
   const spline = sampleSpline(circuit.spline, circuit.road.sampleStep);
   const roadYAt = (t: number): number => spline.sampleAtT(clamp(t, 0, 1)).position.y;
 
-  const { line, drivers } = createRaceField(circuit, { seed: options.seed ?? 7 });
+  const { line, drivers } = createRaceField(circuit, {
+    seed: options.seed ?? 7,
+    tier: options.tier,
+  });
 
   const carMeshes = drivers.map((driver, i) => {
     const car = buildCarMesh(COLORS[i % COLORS.length]!);

@@ -140,6 +140,12 @@ export class CpuDriver {
   private lastCenterOffset = 0;
   /** Signed curvature at the car's last projected line point (1/m). */
   private lastCurvature = 0;
+  /**
+   * #APEX-8 bounded catch-up multiplier applied to the target speed. Default `1`
+   * (no change); see {@link setCatchUp}. It only ever scales a *command*, never a
+   * position or velocity, so it cannot teleport the car.
+   */
+  private catchUpFactor = 1;
 
   constructor(options: CpuDriverOptions) {
     this.id = options.id;
@@ -169,6 +175,20 @@ export class CpuDriver {
   /** Signed curvature at the last projected line point (1/m). */
   get curvature(): number {
     return this.lastCurvature;
+  }
+
+  /** Current bounded catch-up multiplier (1 = none). */
+  get catchUp(): number {
+    return this.catchUpFactor;
+  }
+
+  /**
+   * Set the bounded catch-up multiplier applied to the target speed this step.
+   * Guarded so a bad value can never produce a non-finite or absurd command: the
+   * factor is clamped to `[0.5, 2]` and a non-finite input resets to `1`.
+   */
+  setCatchUp(factor: number): void {
+    this.catchUpFactor = Number.isFinite(factor) ? clamp(factor, 0.5, 2) : 1;
   }
 
   /** Rectangular position on the ground plane. */
@@ -201,6 +221,16 @@ export class CpuDriver {
 
   setSampleStep(step: number): void {
     this.sampleStep = step > 0 ? step : 2;
+  }
+
+  /**
+   * Re-project the car onto the racing line, refreshing `centerOffset`,
+   * `curvature` and arc progress. The race loop calls this after stepping the
+   * vehicle (and after any containment correction) so the on-ribbon telemetry
+   * reflects the car's true position.
+   */
+  refreshProgress(line: RacingLine): void {
+    this.project(line);
   }
 
   /** Advance progress by projecting the car onto the racing line (monotonic). */
@@ -353,7 +383,7 @@ export class CpuDriver {
       1 - this.tuning.edgeEaseDepth,
       1,
     );
-    let vTarget = point.targetSpeed * this.skill * widen * edgeEase;
+    let vTarget = point.targetSpeed * this.skill * this.catchUpFactor * widen * edgeEase;
     // Bound the command by what the tyres can actually turn: following the
     // line's curvature PLUS recovering the current cross-track error needs
     // v²·k lateral acceleration. Cap v so that demand stays within grip.
