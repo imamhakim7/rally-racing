@@ -1,0 +1,267 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:44791",
+  "bounds": {
+    "MAX_PACK_SPREAD": 120,
+    "MAX_SPEED_STEP": 6
+  },
+  "races": [
+    {
+      "stage": "alpine-forest",
+      "tier": "easy",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-easy-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-easy-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-easy-t20.png"
+      ],
+      "duration": 29.28333333333295,
+      "halfWidth": 4.5,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 27.749999999999705,
+        "cpu-1": 28.333333333333005,
+        "cpu-4": 28.716666666666317,
+        "cpu-3": 29.116666666666294
+      },
+      "finishSpread": 1.37,
+      "maxAbsOffset": 2.16,
+      "offRoadSamples": 0,
+      "minSeparation": 2.502,
+      "maxPackSpread": 30.58,
+      "maxSpeedStep": 2.55,
+      "onScreenMinActive": 4,
+      "onScreenMeanActive": 4,
+      "straightMeanSpeed": 17.88,
+      "cornerMeanSpeed": 13.28,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "alpine-forest",
+      "tier": "normal",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-normal-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-normal-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-normal-t20.png"
+      ],
+      "duration": 26.033333333333136,
+      "halfWidth": 4.5,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 25.033333333333193,
+        "cpu-1": 25.383333333333173,
+        "cpu-4": 25.74999999999982,
+        "cpu-3": 25.93333333333314
+      },
+      "finishSpread": 0.9,
+      "maxAbsOffset": 2.163,
+      "offRoadSamples": 0,
+      "minSeparation": 2.493,
+      "maxPackSpread": 25.56,
+      "maxSpeedStep": 2,
+      "onScreenMinActive": 4,
+      "onScreenMeanActive": 4,
+      "straightMeanSpeed": 20.14,
+      "cornerMeanSpeed": 15.96,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "alpine-forest",
+      "tier": "hard",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-hard-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-hard-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-hard-t20.png"
+      ],
+      "duration": 25.216666666666516,
+      "halfWidth": 4.5,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 23.433333333333284,
+        "cpu-4": 23.983333333333253,
+        "cpu-1": 24.449999999999893,
+        "cpu-3": 25.033333333333193
+      },
+      "finishSpread": 1.6,
+      "maxAbsOffset": 2.663,
+      "offRoadSamples": 0,
+      "minSeparation": 2.484,
+      "maxPackSpread": 33.68,
+      "maxSpeedStep": 2.3,
+      "onScreenMinActive": 2,
+      "onScreenMeanActive": 3.97,
+      "straightMeanSpeed": 20.67,
+      "cornerMeanSpeed": 17.48,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "alpine-forest",
+      "tier": "rally-legend",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-rally-legend-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-rally-legend-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-alpine-forest-rally-legend-t20.png"
+      ],
+      "duration": 24.11666666666658,
+      "halfWidth": 4.5,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 22.933333333333312,
+        "cpu-1": 23.199999999999964,
+        "cpu-4": 23.649999999999938,
+        "cpu-3": 23.933333333333255
+      },
+      "finishSpread": 1,
+      "maxAbsOffset": 2.904,
+      "offRoadSamples": 0,
+      "minSeparation": 2.495,
+      "maxPackSpread": 30.38,
+      "maxSpeedStep": 2.3,
+      "onScreenMinActive": 1,
+      "onScreenMeanActive": 3.92,
+      "straightMeanSpeed": 21.7,
+      "cornerMeanSpeed": 18.41,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "canyon-sprint",
+      "tier": "easy",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-easy-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-easy-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-easy-t20.png"
+      ],
+      "duration": 27.483333333333054,
+      "halfWidth": 4,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 23.966666666666587,
+        "cpu-1": 24.983333333333196,
+        "cpu-3": 26.183333333333128,
+        "cpu-4": 27.38333333333306
+      },
+      "finishSpread": 3.42,
+      "maxAbsOffset": 2.677,
+      "offRoadSamples": 0,
+      "minSeparation": 2.483,
+      "maxPackSpread": 41.69,
+      "maxSpeedStep": 1.59,
+      "onScreenMinActive": 3,
+      "onScreenMeanActive": 4,
+      "straightMeanSpeed": 12.88,
+      "cornerMeanSpeed": 10.42,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "canyon-sprint",
+      "tier": "normal",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-normal-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-normal-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-normal-t20.png"
+      ],
+      "duration": 23.299999999999958,
+      "halfWidth": 4,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-1": 20.666666666666774,
+        "cpu-2": 21.950000000000035,
+        "cpu-3": 22.683333333333326,
+        "cpu-4": 23.199999999999964
+      },
+      "finishSpread": 2.53,
+      "maxAbsOffset": 2.09,
+      "offRoadSamples": 0,
+      "minSeparation": 2.476,
+      "maxPackSpread": 36.43,
+      "maxSpeedStep": 1.2,
+      "onScreenMinActive": 1,
+      "onScreenMeanActive": 3.82,
+      "straightMeanSpeed": 14.98,
+      "cornerMeanSpeed": 13.25,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "canyon-sprint",
+      "tier": "hard",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-hard-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-hard-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-hard-t20.png"
+      ],
+      "duration": 21.766666666666712,
+      "halfWidth": 4,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-1": 19.450000000000177,
+        "cpu-2": 20.666666666666774,
+        "cpu-3": 21.06666666666675,
+        "cpu-4": 21.366666666666735
+      },
+      "finishSpread": 1.92,
+      "maxAbsOffset": 1.919,
+      "offRoadSamples": 0,
+      "minSeparation": 2.483,
+      "maxPackSpread": 29.94,
+      "maxSpeedStep": 1.48,
+      "onScreenMinActive": 1,
+      "onScreenMeanActive": 3.86,
+      "straightMeanSpeed": 16.08,
+      "cornerMeanSpeed": 14.62,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    },
+    {
+      "stage": "canyon-sprint",
+      "tier": "rally-legend",
+      "frames": [
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-rally-legend-t1.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-rally-legend-t10.png",
+        "/root/sarawedi-worktrees/wt/APEX-8/docs/evidence/APEX-8-playtest-canyon-sprint-rally-legend-t20.png"
+      ],
+      "duration": 21.81666666666671,
+      "halfWidth": 4,
+      "allFinished": true,
+      "finishTime": {
+        "cpu-2": 19.383333333333514,
+        "cpu-1": 20.000000000000146,
+        "cpu-4": 20.41666666666679,
+        "cpu-3": 20.966666666666757
+      },
+      "finishSpread": 1.58,
+      "maxAbsOffset": 1.76,
+      "offRoadSamples": 0,
+      "minSeparation": 2.482,
+      "maxPackSpread": 42.94,
+      "maxSpeedStep": 1.32,
+      "onScreenMinActive": 1,
+      "onScreenMeanActive": 3.85,
+      "straightMeanSpeed": 15.72,
+      "cornerMeanSpeed": 15.33,
+      "brakesForCorners": true,
+      "boundedPack": true,
+      "smoothSpeed": true,
+      "ok": true
+    }
+  ],
+  "problems": []
+}

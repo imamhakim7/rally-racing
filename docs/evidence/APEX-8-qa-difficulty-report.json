@@ -1,0 +1,77 @@
+{
+  "allOk": true,
+  "seeds": 30,
+  "bands": {
+    "easyWins": true,
+    "hardCanLose": true,
+    "legendCanLose": true,
+    "cornerOrdered": true,
+    "telemetryBounded": true
+  },
+  "tiers": [
+    {
+      "tier": "easy",
+      "races": 180,
+      "referenceWins": 180,
+      "referenceWinRate": 1,
+      "cornerMeanSpeed": 13.03,
+      "straightMeanSpeed": 18.3,
+      "maxSpeedDelta": 15.14,
+      "maxStepDisplacement": 0.494,
+      "minSeparation": 2.379,
+      "offSurfaceSamples": 0,
+      "catchUpMinRatio": 0.997,
+      "catchUpMaxRatio": 1.04,
+      "cappedSteps": 254853,
+      "ok": true
+    },
+    {
+      "tier": "normal",
+      "races": 180,
+      "referenceWins": 180,
+      "referenceWinRate": 1,
+      "cornerMeanSpeed": 15.41,
+      "straightMeanSpeed": 20.25,
+      "maxSpeedDelta": 12.34,
+      "maxStepDisplacement": 0.552,
+      "minSeparation": 2.294,
+      "offSurfaceSamples": 0,
+      "catchUpMinRatio": 0.997,
+      "catchUpMaxRatio": 1.04,
+      "cappedSteps": 105753,
+      "ok": true
+    },
+    {
+      "tier": "hard",
+      "races": 180,
+      "referenceWins": 78,
+      "referenceWinRate": 0.433,
+      "cornerMeanSpeed": 17.05,
+      "straightMeanSpeed": 21.59,
+      "maxSpeedDelta": 9.42,
+      "maxStepDisplacement": 0.586,
+      "minSeparation": 2.305,
+      "offSurfaceSamples": 0,
+      "catchUpMinRatio": 0.994,
+      "catchUpMaxRatio": 1.03,
+      "cappedSteps": 28148,
+      "ok": true
+    },
+    {
+      "tier": "rally-legend",
+      "races": 180,
+      "referenceWins": 60,
+      "referenceWinRate": 0.333,
+      "cornerMeanSpeed": 17.59,
+      "straightMeanSpeed": 21.95,
+      "maxSpeedDelta": 10.46,
+      "maxStepDisplacement": 0.597,
+      "minSeparation": 2.356,
+      "offSurfaceSamples": 0,
+      "catchUpMinRatio": 0.989,
+      "catchUpMaxRatio": 1.03,
+      "cappedSteps": 64072,
+      "ok": true
+    }
+  ]
+}

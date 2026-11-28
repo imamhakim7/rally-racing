@@ -1,0 +1,9 @@
+APEX-8 independent QA verification — agent seat-qa
+seeds 7311001+137·i × 25 × 6 stages × 4 tiers
+
+easy          refWin=1 corner=13.055 maxΔv=15.139 traceStep=0.4942 minSep=2.35 off=0 capped=226207
+normal        refWin=1 corner=15.41 maxΔv=12.284 traceStep=0.5526 minSep=2.292 off=0 capped=97132
+hard          refWin=0.42 corner=17.044 maxΔv=9.422 traceStep=0.5856 minSep=2.363 off=0 capped=38383
+rally-legend  refWin=0.3333 corner=17.57 maxΔv=10.464 traceStep=0.5968 minSep=2.396 off=0 capped=70021
+
+ALL CHECKS PASS
