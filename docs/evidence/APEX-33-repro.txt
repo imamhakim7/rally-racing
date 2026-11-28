@@ -1,0 +1,13 @@
+# APEX-33 / APEX-18 QA-fail repro — post-fix run
+# command: bun /tmp/repro.mjs  (PaceNoteTracker, density toggled after an announcement)
+
+PRE-FIX:
+  A announce#1       : Left 5
+  A announce#2 (dup) : Left 5        <-- duplicate call (BUG)
+  B announce#2 (skip): null (skipped!) <-- missed corner (BUG)
+
+POST-FIX:
+A announce#1       : Left 5
+A announce#2 (dup) : null (no duplicate)
+B announce#1       : Left 2
+B announce#2 (skip): Left 5

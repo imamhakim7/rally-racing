@@ -98,7 +98,10 @@ the note list: `current` (last note at/before the car), `upcoming` (notes within
 `leadDistance` ahead, nearest first) and `next` (the first of those). Because the
 list is distance-ordered, advancing is a bounded scan from the cursor — O(notes in
 the window), not O(stage). `pollAnnouncement()` returns a note exactly once, the
-frame it enters the lead window, so the voice speaks each call once.
+frame it enters the lead window, so the voice speaks each call once. Announcements
+are keyed by the note's stable `distance`, not by its position in the filtered
+list, so a runtime `setDensity`/`setLeadDistance` change never re-calls a note that
+was already voiced and never skips a note the filter has just revealed (#APEX-33).
 
 - `setLeadDistance(metres)` changes how far ahead notes are surfaced/called.
 - `setDensity(01)` filters how many corners survive: `0` keeps only hairpins at wide
@@ -168,6 +171,8 @@ function createSpeechVoice(source?: SpeechSynthesisLike | null, opts?: VoiceOpti
 - Degenerate spline / no corners ⇒ no notes (`hasNotes === false`).
 - Two corners closer than `minSpacing` ⇒ merged; the more severe survives.
 - Car distance beyond the last note ⇒ `next === null`, `current` is the last corner.
+- Density/lead changed at runtime after an announcement ⇒ re-filtered visible list;
+  `pollAnnouncement` stays idempotent (no duplicate call, no skipped nearer note).
 - Negative / non-finite distance or options ⇒ clamped to sane defaults, never throws.
 - `speechSynthesis` present but `SpeechSynthesisUtterance` absent ⇒ still no-op safe.
 

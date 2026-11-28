@@ -175,6 +175,40 @@ describe("PaceNoteTracker — announcements (AC3)", () => {
     t.setDistance(notes[1]!.distance - 5);
     expect(t.pollAnnouncement()).toBe(notes[1]);
   });
+
+  it("stays idempotent when density changes at runtime (APEX-33 regression)", () => {
+    /** A hand-built note; distance doubles as the stable identity. */
+    const note = (index: number, distance: number, severity: number): PaceNote => ({
+      index,
+      distance,
+      t: distance / 300,
+      direction: "left",
+      severity,
+      angleDeg: -30,
+      label: null,
+      call: `Left ${severity}`,
+      gap: index ? 0 : distance,
+    });
+    const notes = [note(0, 60, 2), note(1, 130, 2), note(2, 254, 5)];
+
+    // Sparse first: only the hairpin survives; it is announced once.
+    const t = new PaceNoteTracker(notes, { leadDistance: 320, density: 0.6 });
+    t.setDistance(0);
+    expect(t.pollAnnouncement()?.call).toBe("Left 5");
+    // Raising density must not re-call the note already announced.
+    t.setDensity(1);
+    t.setDistance(200);
+    expect(t.pollAnnouncement()).toBeNull();
+
+    // Dense first: the nearest note is announced, then lowering density must not
+    // skip the hairpin that the re-filtered list now points at.
+    const t2 = new PaceNoteTracker(notes, { leadDistance: 320, density: 1 });
+    t2.setDistance(0);
+    expect(t2.pollAnnouncement()?.call).toBe("Left 2");
+    t2.setDensity(0.6);
+    t2.setDistance(200);
+    expect(t2.pollAnnouncement()?.call).toBe("Left 5");
+  });
 });
 
 describe("graceful degradation (AC5)", () => {

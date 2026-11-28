@@ -332,7 +332,13 @@ export class PaceNoteTracker {
   private density: number;
   private distance = 0;
   private visible: PaceNote[] = [];
-  private announcedThrough = 0;
+  /**
+   * Notes already voiced, keyed by their stable arc-distance. A positional
+   * cursor cannot survive `setDensity`/`setLeadDistance` re-filtering the
+   * visible list (a note already called gets re-called, or a nearer note the
+   * filter just revealed gets skipped); identity is invariant across rebuilds.
+   */
+  private readonly announced = new Set<number>();
 
   constructor(notes: readonly PaceNote[], options: PaceNoteTrackerOptions = {}) {
     this.allNotes = [...notes];
@@ -406,15 +412,15 @@ export class PaceNoteTracker {
     const note = this.visible[nextIndex];
     if (!note) return null;
     if (note.distance - this.distance > this.leadDistance) return null;
-    if (nextIndex < this.announcedThrough) return null;
-    this.announcedThrough = nextIndex + 1;
+    if (this.announced.has(note.distance)) return null;
+    this.announced.add(note.distance);
     return note;
   }
 
   /** Clear announcement state (e.g. on restart) without changing the notes. */
   reset(): void {
     this.distance = 0;
-    this.announcedThrough = 0;
+    this.announced.clear();
   }
 
   private rebuildVisible(): void {
@@ -429,7 +435,8 @@ export class PaceNoteTracker {
       lastDistance = note.distance;
     }
     this.visible = visible;
-    // Notes may have appeared/vanished; re-derive announcement state safely.
-    this.announcedThrough = Math.min(this.announcedThrough, visible.length);
+    // Announcement state is keyed by note identity, so it needs no re-derivation
+    // when the filter changes: notes already called stay called, and newly
+    // revealed notes are not marked as if they had been.
   }
 }
