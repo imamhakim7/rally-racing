@@ -225,7 +225,9 @@ cannot disagree with the file. (#APEX-4, epic `2026-Q4-APEX-RALLY-APEX-02`.)
 | `validate.ts` | Schema walk + semantic checks (unique ids, ordering, surface coverage); collects **all** issues. |
 | `spline.ts` | Catmull-Rom centreline, **arc-length** sampling, tangents/normals, corner detection, minimap projection. |
 | `road.ts` | Road ribbon geometry (positions/normals/uvs/colour) from the spline; surface-span resolution. |
-| `world.ts` | `buildStageWorld` — road, checkpoint/finish gantries, start line, bounds, minimap. |
+| `world.ts` | `buildStageWorld` — terrain, road, checkpoint/finish gantries, start line, bounds, minimap. |
+| `terrain.ts` | `buildTerrain` — deterministic per-biome heightfield, material, draw/triangle budget, lighting seam. |
+| `containment.ts` | `createContainment` — soft roadside barrier that keeps a car on the road corridor. |
 | `loader.ts` / `library.ts` | `loadStage`/`parseStage`; `StageLibrary` reads the generated `data/index.ts` listing every stage JSON. |
 | `scene.ts` / `select.ts` | `SceneHandle` adapter that swaps stages live; the small stage-select control. |
 | `race-adapter.ts` | `toRaceStage` — the ordered gate shape the race loop (#APEX-3) consumes. |
@@ -243,12 +245,15 @@ cannot disagree with the file. (#APEX-4, epic `2026-Q4-APEX-RALLY-APEX-02`.)
   "road":   { "width": 9, "sampleStep": 2, "surface": "gravel", "bankingDeg": 0 },
   "checkpoints": [{ "id": "cp-crest", "name": "Forest Crest", "t": 0.2, "width": 11, "height": 6 }],
   "surfaces":    [{ "id": "sz-start", "surface": "tarmac", "from": 0.0, "to": 0.12, "grip": 1.0 }],
+  "terrain":     { "seed": 1337, "relief": 7, "resolution": 15, "surface": "grass", "corridorWidth": 36 },
   "minimap":     { "color": "#5fbf7f", "path": "auto" }
 }
 ```
 
 - `t` is an **arc-length fraction** in `[0,1]`; equal steps are equal distances.
 - Surface zones are half-open `[from, to)` spans that must tile `[0,1]` exactly.
+- `terrain` (optional, #APEX-28) seeds the deterministic heightfield around the road; when
+  omitted it is defaulted from the stage id, so every stage still renders ground.
 - `minimap.path: "auto"` projects the centreline; an explicit `points` list overrides it.
 
 ### Add a stage (no code change)
@@ -293,6 +298,30 @@ first.
   normals (regression guard for the flat-stage normal defect).
 - `bun scripts/screenshot-stage.mjs` — renders two stages through the real stage select in
   headless Chromium and writes `docs/evidence/APEX-4-stage-*.png`.
+
+### Terrain & roadside containment (#APEX-28)
+
+`buildStageWorld` also builds a **terrain ribbon** from the same sampled spline, using the
+`terrain` block plus the `BIOME_TERRAIN` lookup table (no per-biome code branch): a
+deterministic value-noise heightfield banks up to the corridor edge, painted with the biome's
+ground→ridge colours. Inside the road half-width the ground sits just below the ribbon, so it
+never pokes through. Each stage is checked against `TERRAIN_BUDGET` (triangles/draw calls) for
+both `midday` and `dusk`; geometry is time-of-day invariant, and `terrainLighting(timeOfDay)`
+is the seam #APEX-29's sky/weather will drive.
+
+A **soft containment barrier** (`StageWorld.containment`) projects a car onto the corridor
+(`road.width/2 + 4 m` shoulder) when it runs wide, zeroes its lateral velocity and bleeds off
+speed — used by the visible CPU race (#APEX-7) and reusable for any player `Vehicle` (#APEX-2).
+
+```bash
+bun scripts/screenshot-terrain.mjs   # per-stage terrain stats + screenshots, headless Chromium
+```
+
+- `tests/stage-terrain.test.ts` — all six stages build distinct, biome-specific terrain; the
+  heightfield is deterministic per seed; budget passes at midday and dusk.
+- `tests/stage-containment.test.ts` — an off-corridor car is pulled back and damped, an
+  on-road car is untouched, application is idempotent and safe on non-finite state.
+- `tests/stage-surface-grip.test.ts` — every shipped zone's grip reaches the vehicle model.
 
 ## Stage race loop
 

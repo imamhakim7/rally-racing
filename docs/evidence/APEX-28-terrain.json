@@ -1,0 +1,132 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:39955",
+  "stages": [
+    {
+      "id": "alpine-forest",
+      "stats": {
+        "vertices": 3585,
+        "triangles": 6664,
+        "drawCalls": 1,
+        "corridorWidth": 72
+      },
+      "surface": "grass",
+      "ground": 3362858,
+      "ridge": 7308370,
+      "halfWidth": 8.5,
+      "signature": 3794430139,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 8.5
+      }
+    },
+    {
+      "id": "desert-dunes",
+      "stats": {
+        "vertices": 2145,
+        "triangles": 3976,
+        "drawCalls": 1,
+        "corridorWidth": 88
+      },
+      "surface": "sand",
+      "ground": 13215850,
+      "ridge": 15126422,
+      "halfWidth": 9.5,
+      "signature": 2800608907,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 9.5
+      }
+    },
+    {
+      "id": "coastal-cliffs",
+      "stats": {
+        "vertices": 3270,
+        "triangles": 6076,
+        "drawCalls": 1,
+        "corridorWidth": 68
+      },
+      "surface": "sand",
+      "ground": 10129258,
+      "ridge": 13485732,
+      "halfWidth": 9,
+      "signature": 539106793,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 9
+      }
+    },
+    {
+      "id": "mountain-pass",
+      "stats": {
+        "vertices": 3060,
+        "triangles": 5684,
+        "drawCalls": 1,
+        "corridorWidth": 76
+      },
+      "surface": "snow",
+      "ground": 5333099,
+      "ridge": 15002865,
+      "halfWidth": 8,
+      "signature": 3026626347,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 8
+      }
+    },
+    {
+      "id": "valley-rally",
+      "stats": {
+        "vertices": 1905,
+        "triangles": 3528,
+        "drawCalls": 1,
+        "corridorWidth": 72
+      },
+      "surface": "grass",
+      "ground": 5008186,
+      "ridge": 9415267,
+      "halfWidth": 9,
+      "signature": 1743608022,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 9
+      }
+    },
+    {
+      "id": "canyon-sprint",
+      "stats": {
+        "vertices": 2355,
+        "triangles": 4368,
+        "drawCalls": 1,
+        "corridorWidth": 80
+      },
+      "surface": "dirt",
+      "ground": 9067068,
+      "ridge": 13668448,
+      "halfWidth": 8,
+      "signature": 1666374486,
+      "carCount": 4,
+      "onRoad": true,
+      "containment": {
+        "contained": true,
+        "limit": 8
+      }
+    }
+  ],
+  "determinism": {
+    "stage": "alpine-forest",
+    "first": 3794430139,
+    "reloaded": 3794430139
+  },
+  "problems": []
+}

@@ -1,0 +1,54 @@
+# APEX-28 independent security audit (seat-security)
+# 2026-11-28T02:01:53Z
+
+## 1. Dangerous browser sinks in changed source (expect none)
+
+## 2. Runtime dependency delta vs main (expect script only)
+diff --git a/package.json b/package.json
+index 4f32ed4..36ae0f5 100644
+--- a/package.json
++++ b/package.json
+@@ -20,6 +20,7 @@
+     "assets:check": "bun src/assets/cli.ts check",
+     "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
+     "screenshot:race": "bun run build && bun scripts/screenshot-race.mjs",
++    "screenshot:terrain": "bun run build && bun scripts/screenshot-terrain.mjs",
+     "validate:stage": "bun scripts/validate-stage.ts",
+     "check:normals": "bun scripts/check-normals.ts",
+     "smoke:browsers": "bun scripts/smoke-browsers.mjs"
+
+## 3. Secret/PII scan of the diff (expect none)
+(no matches)
+
+## 4. New-code network/egress calls (expect none)
+(no matches)
+
+## 5. Dependency vulnerability scan
+bun audit v1.4.4 (38afee6c8)
+
+No vulnerabilities found (checked 144 packages) [445.00ms]
+
+## 6. Fail-closed input validation of the new terrain block
+rejected: negative seed -> terrain.seed
+rejected: huge resolution (DoS cap) -> terrain.resolution
+rejected: unknown surface -> terrain.surface
+rejected: relief over cap -> terrain.relief
+rejected: corridor over cap -> terrain.corridorWidth
+rejected: non-integer seed -> terrain.seed
+default terrain: {"seed":3692759909,"relief":6,"resolution":15,"surface":"gravel","corridorWidth":34} deterministic: true
+SEC_INPUT_VALIDATION: PASS (fail-closed)
+
+## 7. Security-relevant tests + typecheck
+
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  02:01:54
+   Duration  213ms (transform 37%, tests 35%, import 24%, worker 4%)
+
+$ tsc --noEmit
+
+## 8. DoS bound (terrain ribbon)
+max along sections=240, max columns=32, max vertices=7680, max triangles=14818
+noise: 4 fixed octaves; per-cell O(1)
+containment project: O(spline.count) per call, called per car per frame

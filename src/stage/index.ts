@@ -8,6 +8,10 @@
 export type {
   Biome,
   CheckpointSpec,
+  ContainableVehicle,
+  Containment,
+  ContainmentDef,
+  ContainmentResult,
   GateSpec,
   MinimapSpec,
   RaceStageShape,
@@ -21,6 +25,10 @@ export type {
   StartSpec,
   SurfaceSpec,
   SurfaceType,
+  TerrainAppearance,
+  TerrainBuild,
+  TerrainDef,
+  TerrainStats,
   Vec2,
   Vec3,
 } from "./types";
@@ -45,6 +53,20 @@ export {
   type SampledSpline,
 } from "./spline";
 export { buildRoadGeometry, resolveSurfaceSpans, surfaceAt, SURFACE_COLORS } from "./road";
+export {
+  BIOME_TERRAIN,
+  TERRAIN_BUDGET,
+  buildTerrain,
+  checkTerrainBudget,
+  terrainGrid,
+  terrainLighting,
+  terrainSections,
+  terrainStats,
+  type TerrainBudgetReport,
+  type TerrainLighting,
+  type TimeOfDay,
+} from "./terrain";
+export { createContainment, DEFAULT_CONTAINMENT_SHOULDER } from "./containment";
 export { resolveMinimapPath, toSvgPath, type MinimapPath } from "./minimap";
 export { buildStageWorld, disposeStageWorld } from "./world";
 export { toRaceStage } from "./race-adapter";

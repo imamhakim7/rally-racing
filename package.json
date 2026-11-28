@@ -20,6 +20,7 @@
     "assets:check": "bun src/assets/cli.ts check",
     "screenshot:stage": "bun run build && bun scripts/screenshot-stage.mjs",
     "screenshot:race": "bun run build && bun scripts/screenshot-race.mjs",
+    "screenshot:terrain": "bun run build && bun scripts/screenshot-terrain.mjs",
     "validate:stage": "bun scripts/validate-stage.ts",
     "check:normals": "bun scripts/check-normals.ts",
     "smoke:browsers": "bun scripts/smoke-browsers.mjs"

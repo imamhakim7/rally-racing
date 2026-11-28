@@ -129,6 +129,18 @@ export const StageSchema: Schema = {
         path: { kind: "oneOf", options: [{ kind: "string", enum: ["auto"] }, { kind: "vec2array" }] },
       },
     },
+    // #APEX-28 terrain layer; optional, defaulted deterministically from the id.
+    terrain: {
+      kind: "object",
+      fields: {
+        seed: { kind: "number", integer: true, min: 0 },
+        relief: { kind: "number", min: 0, max: 60 },
+        // Capped at 32 so the ribbon always stays inside TERRAIN_BUDGET.
+        resolution: { kind: "number", integer: true, min: 5, max: 32 },
+        surface: { kind: "string", enum: SURFACE_TYPES },
+        corridorWidth: { kind: "number", min: 4, max: 400 },
+      },
+    },
   },
   required: ["schemaVersion", "id", "name", "biome", "spline", "road", "start", "checkpoints", "surfaces"],
 };

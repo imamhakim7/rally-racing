@@ -10,6 +10,7 @@ import * as THREE from "three";
 import type { SceneHandle } from "../engine/scene";
 import { clamp } from "../physics/util";
 import { buildStageWorld, disposeStageWorld } from "../stage/world";
+import { sampleSpline } from "../stage/spline";
 import type { StageCircuit, StageWorld } from "../stage/types";
 import { createRaceField, parkOffLineCar } from "../ai/race";
 import type { CpuDriver } from "../ai/driver";
@@ -80,12 +81,15 @@ export function createAiRaceScene(
   const world = buildStageWorld(circuit);
   scene.add(world.group);
 
+  const spline = sampleSpline(circuit.spline, circuit.road.sampleStep);
+  const roadYAt = (t: number): number => spline.sampleAtT(clamp(t, 0, 1)).position.y;
+
   const { line, drivers } = createRaceField(circuit, { seed: options.seed ?? 7 });
 
   const carMeshes = drivers.map((driver, i) => {
     const car = buildCarMesh(COLORS[i % COLORS.length]!);
     const state = driver.vehicle.getState();
-    car.position.set(state.x, 0, state.z);
+    car.position.set(state.x, roadYAt(clamp(driver.distance / Math.max(line.length, 1), 0, 1)), state.z);
     car.rotation.y = state.yaw;
     scene.add(car);
     return car;
@@ -93,7 +97,7 @@ export function createAiRaceScene(
 
   let previous = drivers.map((d) => {
     const s = d.vehicle.getState();
-    return { x: s.x, z: s.z, yaw: s.yaw };
+    return { x: s.x, z: s.z, y: roadYAt(clamp(d.distance / Math.max(line.length, 1), 0, 1)), yaw: s.yaw };
   });
   let current = previous.map((p) => ({ ...p }));
   let simulationTime = 0;
@@ -245,8 +249,12 @@ export function createAiRaceScene(
         const t = clamp(driver.distance / Math.max(line.length, 1), 0, 1);
         const surface = physicsSurfaceAt(circuit, t);
         driver.vehicle.step(inputs[i]!, step, surface);
+        // Soft roadside barrier: a car that runs wide is pulled back onto the
+        // corridor and damped instead of driving on air (#APEX-28). Finished
+        // cars are parked off the line on purpose, so they are exempt.
+        if (!driver.finished) world.containment.apply(driver.vehicle);
         const s = driver.vehicle.getState();
-        return { x: s.x, z: s.z, yaw: s.yaw };
+        return { x: s.x, z: s.z, y: roadYAt(t), yaw: s.yaw };
       });
     },
     interpolate(alpha) {
@@ -257,7 +265,7 @@ export function createAiRaceScene(
         const b = current[i]!;
         carMeshes[i]!.position.set(
           a.x + (b.x - a.x) * t,
-          0,
+          a.y + (b.y - a.y) * t,
           a.z + (b.z - a.z) * t,
         );
         carMeshes[i]!.rotation.y = a.yaw + (b.yaw - a.yaw) * t;

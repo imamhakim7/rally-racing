@@ -135,8 +135,101 @@ export interface StageCircuit {
   checkpoints: CheckpointSpec[];
   surfaces: SurfaceSpec[];
   minimap: MinimapSpec;
+  /** Terrain layer definition (#APEX-28); always present after validation. */
+  terrain: TerrainDef;
   /** Where the circuit came from (file name / URL) — used in error messages. */
   source: string;
+}
+
+/**
+ * Terrain layer definition (#APEX-28). Optional in the file; the validator
+ * defaults it deterministically from the stage id so every stage renders ground.
+ */
+export interface TerrainDef {
+  /** Deterministic heightfield seed. */
+  seed: number;
+  /** Vertical relief amplitude in metres (scaled by the biome style). */
+  relief: number;
+  /** Lateral columns sampled across the corridor. */
+  resolution: number;
+  /** Ground surface outside the road (grip is still resolved through surface zones). */
+  surface: SurfaceType;
+  /** Metres of terrain generated each side of the centreline. */
+  corridorWidth: number;
+}
+
+/** Per-stage draw/triangle cost of the terrain layer. */
+export interface TerrainStats {
+  vertices: number;
+  triangles: number;
+  drawCalls: number;
+  /** Full corridor span in metres (`2 × corridorWidth`). */
+  corridorWidth: number;
+}
+
+/** Biome-driven look for the terrain (a lookup table, never a code branch). */
+export interface TerrainAppearance {
+  /** Low-ground vertex colour. */
+  ground: number;
+  /** High-ground / ridge vertex colour. */
+  ridge: number;
+  roughness: number;
+  /** Multiplier applied to `TerrainDef.relief`. */
+  reliefScale: number;
+  /** Bank height in metres at the corridor edge. */
+  ridgeHeight: number;
+}
+
+/** A terrain ribbon built from a circuit; carried on `StageWorld`. */
+export interface TerrainBuild {
+  readonly mesh: THREE.Mesh;
+  readonly stats: TerrainStats;
+  readonly appearance: TerrainAppearance;
+  readonly surface: SurfaceType;
+  /** Height (m) at arc-length fraction `t` and signed lateral offset (m). */
+  sampleHeight(t: number, lateral: number): number;
+}
+
+/** Corridor containment config resolved onto a world (#APEX-28). */
+export interface ContainmentDef {
+  /** Half-width of the drivable corridor in metres (road half + shoulder). */
+  halfWidth: number;
+  /** Extra shoulder each side beyond the road edge. */
+  shoulder: number;
+}
+
+/** Minimal vehicle surface containment needs (structurally `Vehicle`). */
+export interface ContainableVehicle {
+  getState(): { x: number; z: number; yaw: number; vLong: number; vLat: number };
+  setState(partial: { x?: number; z?: number; yaw?: number; vLong?: number; vLat?: number }): void;
+}
+
+/** The outcome of projecting a car against the corridor. */
+export interface ContainmentResult {
+  /** True when the car was outside the corridor and got pulled back. */
+  contained: boolean;
+  /** Signed lateral offset from the centreline (m), before correction. */
+  lateral: number;
+  /** Corridor half-width (m). */
+  limit: number;
+  /** Fraction of speed retained after the barrier (1 = no contact). */
+  impact: number;
+  /** Corrected position (unchanged when already inside). */
+  position: Vec3;
+  /** Arc-length fraction of the projection. */
+  t: number;
+}
+
+/** Soft roadside barrier that keeps a car on the road corridor. */
+export interface Containment {
+  readonly halfWidth: number;
+  readonly shoulder: number;
+  /** Nearest projection of a world point onto the centreline. */
+  project(x: number, z: number): { t: number; lateral: number; position: Vec3; normal: Vec3; heading: number };
+  /** Resolve a point/heading against the corridor without mutating anything. */
+  resolve(x: number, z: number, yaw: number): ContainmentResult;
+  /** Pull a vehicle back inside the corridor, damping it on contact. */
+  apply(vehicle: ContainableVehicle): ContainmentResult;
 }
 
 /** A checkpoint (or the finish) resolved to a world transform. */
@@ -177,6 +270,10 @@ export interface StageWorld {
   readonly gates: ResolvedGate[];
   readonly surfaces: ResolvedSurfaceSpan[];
   readonly road: THREE.Mesh;
+  /** Data-driven terrain ribbon (#APEX-28). */
+  readonly terrain: TerrainBuild;
+  /** Corridor containment resolved for this circuit (#APEX-28). */
+  readonly containment: Containment;
   /** Axis-aligned bounds of the road + gates. */
   readonly bounds: THREE.Box3;
   /** Normalised minimap path + an SVG `d` string for the HUD. */
