@@ -17,7 +17,13 @@ export {
   type DriverTuning,
 } from "./driver";
 export { physicsSurfaceAt, type PhysicsSurface } from "./surface";
-export { simulateRace, createRaceField, parkOffLineCar, type RaceField } from "./race";
+export {
+  simulateRace,
+  createRaceField,
+  parkOffLineCar,
+  playerIdFor,
+  type RaceField,
+} from "./race";
 export { mulberry32 } from "./rng";
 export { GhostOverlay } from "./ghost";
 export {
@@ -29,6 +35,21 @@ export {
   type TracePose,
   type TraceSplit,
 } from "./trace";
+export {
+  DIFFICULTY_TIERS,
+  COMPETENT_HUMAN_SKILL,
+  MAX_SPEED_DELTA,
+  MAX_STEP_DISPLACEMENT,
+  boundedCatchUp,
+  coerceDifficultyTier,
+  difficultyTuning,
+  isDifficultyTier,
+  scaleDriverTuning,
+  type CatchUpConfig,
+  type CatchUpState,
+  type DifficultyTier,
+  type DifficultyTuning,
+} from "./difficulty";
 export type {
   CarResult,
   CpuCarSpec,

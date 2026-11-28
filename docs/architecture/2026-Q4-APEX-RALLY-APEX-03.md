@@ -60,11 +60,15 @@ reproducible in CI without a GPU.
 ## Interfaces owned by this epic
 
 ```ts
-// src/ai/types.ts — result + options (owned by #APEX-7, extended by #APEX-9)
+// src/ai/types.ts — result + options (owned by #APEX-7, extended by #APEX-8/#APEX-9)
 interface RaceResult {
   stageId: string; seed: number; dt: number
   cars: CarResult[]; finishOrder: string[]; minSeparation: number
   referenceTime: number; window: [number, number]; complete: boolean
+  /** #APEX-8 telemetry. */
+  tier: DifficultyTier | null; playerId: string | null; reference: CarResult | null
+  maxSpeedDelta: number
+  catchUp: { minRatio: number; maxRatio: number; cappedSteps: number } | null
 }
 interface RaceOptions {
   cars?: CpuCarSpec[]; driverTuning?: Partial<DriverTuning>
@@ -72,6 +76,10 @@ interface RaceOptions {
   windowLowFactor?: number; windowHighFactor?: number
   /** #APEX-9: capture a per-step replay frame (pure callback, no I/O). */
   onStep?: (frame: TraceFrame) => void
+  /** #APEX-8: difficulty tier for the CPU field (omit = #APEX-7 default). */
+  tier?: DifficultyTier
+  /** #APEX-8: enter a solo reference "competent human" pace car + bounded catch-up. */
+  player?: { id?: string; skill?: number }
 }
 
 // src/ai/replay.ts — replay format (#APEX-9)
@@ -116,6 +124,30 @@ function runHeadlessRaceFromLibrary(library, stageId, opts?): HeadlessRace
    code+input is a CI failure, not a warning.
 5. Splits are recorded when a car's arc progress first crosses a checkpoint's `t`
    (half-open `[t, next)`), in a deterministic per-car then checkpoint order.
+
+## Difficulty tiers & bounded catch-up (#APEX-8) — design owned by this ticket
+
+`src/ai/difficulty.ts` is the single source of truth. Tiers are a lookup table
+(no per-tier branching); each row tunes **corner speed** (`skill`, the dominant pace
+axis), **reaction** (`kHeading`/`kCross`) and **aggression** (`overtakeGain`, following
+gap):
+
+| Tier | `skill` | `reaction` | `aggression` | `maxBoost` | `maxSlow` | `fullGapRange` | `skillCap` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `easy` | 0.80 | 0.90 | 0.70 | 0.04 | 0.020 | 60 m | 0.830 |
+| `normal` | 0.92 | 1.00 | 1.00 | 0.04 | 0.020 | 50 m | 0.955 |
+| `hard` | 1.02 | 1.04 | 1.10 | 0.03 | 0.015 | 45 m | 1.050 |
+| `rally-legend` | 1.06 | 1.08 | 1.15 | 0.03 | 0.015 | 35 m | 1.090 |
+
+`boundedCatchUp(baseSkill, gap, cfg)` maps a CPU's gap to the solo reference pace car
+to a **target-speed ratio** bounded to `[1−maxSlow, 1+maxBoost]` and clamped so the
+effective skill never exceeds `skillCap`. It writes only `CpuDriver.setCatchUp` — never
+a position or velocity — so it can never teleport a car; `maxStepDisplacement` and
+`maxSpeedDelta` (per `RaceResult`) prove it. The reference is a solo ghost (skill 1.0,
+default tuning), so a tier cannot perturb the #APEX-7 pack, and the tiered field runs
+the same soft roadside barrier as the visible race so a faster tier cannot leave the
+ribbon. Balance gate: `scripts/ai-difficulty-report.ts`; player gate:
+`scripts/playtest-difficulty.mjs`.
 
 ## Ticket map
 

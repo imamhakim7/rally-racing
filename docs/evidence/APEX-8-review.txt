@@ -1,0 +1,114 @@
+APEX-8 — code review (reviewer gate)
+====================================
+
+Scope: difficulty tiers + bounded catch-up over #APEX-7's CPU driver/race.
+
+Diff surface
+- src/ai/difficulty.ts (new): tier table, difficultyTuning, coerce/isDifficultyTier,
+  scaleDriverTuning, boundedCatchUp, COMPETENT_HUMAN_SKILL, MAX_SPEED_DELTA,
+  MAX_STEP_DISPLACEMENT.
+- src/ai/driver.ts: bounded catchUpFactor + setCatchUp/refreshProgress; applied to
+  the target speed only.
+- src/ai/race.ts: RaceOptions.tier/player; solo reference pace car; per-step bounded
+  catch-up; structural ribbon containment; telemetry; deterministic.
+- src/ai/types.ts: RaceOptions/RaceResult/CarResult telemetry fields; CpuCarSpec.tuning.
+- src/ai/index.ts: barrel exports.
+- src/scenes/aiRaceScene.ts + src/main.ts: ?difficulty= wiring (type-guarded).
+- tests/difficulty.test.ts, scripts/ai-difficulty-report.ts, scripts/screenshot-difficulty.mjs.
+- docs/openspecs/APEX-8.md, docs/architecture/2026-Q4-APEX-RALLY-APEX-03.md (DoR), README.
+
+Findings
+1. [resolved] Naively scaling #APEX-7 tuning (kHeading/kCross/lookahead/overtakeGain/
+   minGap) for aggressive tiers pushed high-skill cars off the ribbon and below the
+   2 m separation floor. Fixed by (a) making reaction/aggression deliberately mild so
+   `skill` stays the dominant pace axis, and (b) enforcing the same soft roadside
+   barrier as the visible race inside `simulateRace` (shoulder 0). Verified by
+   tests/difficulty.test.ts AC4 + the report (off=0, minSep>2.35 on every tier).
+2. [resolved] `reaction` was first mapped to a longer lookahead for low tiers, which
+   made "easy" cars *faster* than the reference. Fixed: reaction only tightens
+   kHeading/kCross (never shortens/lengthens the lookahead).
+3. [resolved] `boundedCatchUp` originally only guarded a non-finite gap; a non-finite
+   base skill still produced a non-1 ratio. Fixed to return ratio 1 (unassisted).
+4. [resolved] An in-field reference got stuck behind slower cars, making the balance
+   signal traffic-bound. Fixed: the reference is a solo ghost pace car outside the
+   collision field, so it measures pace and cannot perturb the pack.
+5. [checked] Determinism: no Math.random/Date.now; rng consumed only when a random
+   skill is needed; tiered race reproduced bit-for-bit (tests AC7).
+6. [checked] Back-compat: omitting tier/player reproduces the #APEX-7 result exactly
+   (tests AC7); the soft barrier is a no-op for the compliant default field.
+
+Verification (reproducible)
+- bun run typecheck                              -> clean
+- bunx vitest run                                -> 355 passed (51 files)
+- bun scripts/ai-difficulty-report.ts --seeds=20 -> ALL OK: true
+- bun scripts/screenshot-difficulty.mjs          -> ok: true (4 cars, WebGL2, no errors)
+
+Verdict: APPROVE. No blocking issues.
+
+================================================================
+INDEPENDENT REVIEW — @reviewer seat (PR #27, commit 3d3831d)
+================================================================
+
+Reviewed the squashed diff vs origin/main (15a258f). Read tests first
+(tests/difficulty.test.ts), then the implementation (src/ai/difficulty.ts,
+driver.ts, race.ts, types.ts, index.ts, main.ts, aiRaceScene.ts).
+
+Independently reproduced (not trusting the shipped evidence):
+- `bun run typecheck`                                   -> clean
+- `bunx vitest run`                                     -> 365 passed / 52 files
+- `bunx vitest run tests/difficulty.test.ts`            -> 17 passed
+- `bun scripts/ai-difficulty-report.ts --seeds=25`      -> ALL OK (different seeds
+  than the committed --seeds=20, so the bands are not seed-cherry-picked):
+  easy refWin=1.00, hard=0.433, legend=0.333; corner 13.03<15.41<17.05<17.59;
+  off=0; minSep 2.29-2.38 (>2.0); maxStep<=0.597 (<1.0)
+- `bun scripts/headless-race.ts` x2 + diff              -> identical, VERDICT: PASS
+  (the #APEX-9 determinism/balance gate still passes on the integrated tree)
+
+Findings
+--------
+Critical: none.
+Required: none.
+
+Optional:
+1. `CpuCarSpec.tuning` (src/ai/types.ts) is new public API with no caller and its
+   doc comment is stale — it says "the reference pace car passes `{}`", but the
+   shipped reference is a solo ghost built directly in simulateRace and never
+   passes tuning. Either add a test/caller or drop the field to avoid untested,
+   misleading surface.
+2. Ghost/tier coherence (src/main.ts): `?race=X&ghost=<seed>` records the ghost
+   via `captureRace(..., { seed })` with no `tier`, while the live scene runs at
+   `tier: aiTier` (defaults to `normal`). The ghost is therefore a default-field
+   pace overlaid on a normal-tier pack. Harmless as a reference lap, but pass the
+   same tier to `captureRace` if a matching ghost is intended.
+3. `MAX_SPEED_DELTA = 25` is a loose ceiling (near the full speed range), so AC6's
+   "bounded" is weak on its own; the real fairness control is the catch-up ratio
+   band, which is tight and asserted. Consider tightening or documenting it as a
+   sanity ceiling.
+
+Nit:
+4. Stale module header in src/ai/difficulty.ts: still says reaction scales "steer
+   gains up, lookahead shorter", but lookahead is no longer scaled (removed during
+   tuning).
+5. src/main.ts re-parses the query string (`new URLSearchParams(...).get("difficulty")`)
+   instead of reusing the `params` variable parsed a few lines above.
+
+Architecture / security / performance
+-------------------------------------
+- Clean layered design: pure `difficulty.ts` table + bounded scalar; the race sim
+  gains an isolated solo reference; the visible scene reuses createRaceField. No
+  `three.js`/DOM in src/ai. Dependency direction is sane (types -> difficulty typed
+  only; difficulty -> driver value import; no runtime cycle).
+- Security: `?difficulty=` is allow-listed via `coerceDifficultyTier` (fail-safe to
+  normal); every numeric entry point is finite-guarded; `setCatchUp` clamps to
+  [0.5,2]; no new sink, no secrets, no deps.
+- Performance: `stepAndMeasure` adds one extra `project` per car per step
+  (refreshProgress); containment is O(spline) but runs only on ribbon overflow. The
+  full 25-seed x 6-stage x 4-tier report runs in seconds; acceptable.
+
+Tests exercise the change (not just smoke): tier table ordering (AC1),
+boundedCatchUp band/NaN/cap (AC3), corner-speed ordering (AC2), reference win-rate
+bands (AC5), telemetry bounds (AC6), ribbon/no-teleport (AC4), back-compat +
+determinism (AC7). AC5 also holds under a different seed set.
+
+VERDICT: APPROVE. Optional/Nit items 1-5 are non-blocking cleanups; none affects
+the acceptance criteria or the epic intent (races stay close but fair).

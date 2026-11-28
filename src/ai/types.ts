@@ -7,6 +7,7 @@
  */
 import type { Vec3 } from "../stage/types";
 import type { TraceFrame } from "./trace";
+import type { DifficultyTier } from "./difficulty";
 
 /** One point on the derived racing line, with the speed the car should hold. */
 export interface RacingLinePoint {
@@ -68,6 +69,12 @@ export interface CpuCarSpec {
   skill?: number;
   /** Preferred lateral offset bias in metres (grid position / lane). Default 0. */
   lineOffset?: number;
+  /**
+   * #APEX-8: explicit `DriverTuning` overrides for this car, which win over the
+   * tier's tuning. The reference pace car passes `{}` so a tier's reaction/
+   * aggression never changes the human baseline it is graded against.
+   */
+  tuning?: Partial<import("./driver").DriverTuning>;
 }
 
 /** Result for a single car after a simulated race. */
@@ -86,6 +93,16 @@ export interface CarResult {
   cornerMeanSpeed: number;
   /** Final progress as an arc-length fraction in [0,1]. */
   progress: number;
+  /**
+   * #APEX-8: largest `|carSpeed − referenceSpeed|` seen while racing (m/s).
+   * `0` when the race has no reference player. The bounded-delta telemetry.
+   */
+  maxSpeedDeltaFromReference: number;
+  /**
+   * #APEX-8: largest per-step ground displacement (m). The no-teleport evidence:
+   * catch-up only shapes commands, so this stays below `vMax·dt` (plus margin).
+   */
+  maxStepDisplacement: number;
 }
 
 /** The full result of a headless race. */
@@ -105,6 +122,26 @@ export interface RaceResult {
   window: [number, number];
   /** `true` when every car finished. */
   complete: boolean;
+  /** #APEX-8: the difficulty tier the CPU field was tuned to, or `null`. */
+  tier: DifficultyTier | null;
+  /** #APEX-8: id of the reference player car, or `null` when none raced. */
+  playerId: string | null;
+  /**
+   * #APEX-8: the reference "competent human" pace car's own result (it races the
+   * line as a ghost, outside the collision field), or `null` when none raced.
+   * Compare its `finishTime` to the pack to grade a tier's win rate.
+   */
+  reference: CarResult | null;
+  /**
+   * #APEX-8: largest player↔pack `|Δspeed|` over every racing step (m/s), or `0`
+   * when no reference player raced. Bounded by `MAX_SPEED_DELTA` in practice.
+   */
+  maxSpeedDelta: number;
+  /**
+   * #APEX-8: catch-up ratio range actually applied (and how many car-steps the
+   * skill cap clamped), or `null` when no catch-up ran.
+   */
+  catchUp: { minRatio: number; maxRatio: number; cappedSteps: number } | null;
 }
 
 /** Tunables for {@link simulateRace}. */
@@ -130,4 +167,15 @@ export interface RaceOptions {
   onStep?: (frame: TraceFrame) => void;
   /** #APEX-9: capture one frame every this many fixed steps. Default 1. */
   sampleEvery?: number;
+  /**
+   * #APEX-8: difficulty tier for the CPU field. When set, every CPU's skill is
+   * scaled by the tier and its `DriverTuning` comes from the tier's
+   * reaction/aggression. Omit to reproduce the #APEX-7 field exactly.
+   */
+  tier?: DifficultyTier;
+  /**
+   * #APEX-8: enter a deterministic reference "competent human" pace car and apply
+   * bounded catch-up against it. Used to grade tier balance headlessly.
+   */
+  player?: { id?: string; skill?: number };
 }

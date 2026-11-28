@@ -34,6 +34,7 @@ import { TutorialModel } from "./ui/tutorial";
 import { mountTutorialOverlay, type TutorialOverlayHandle } from "./ui/tutorialOverlay";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
 import { captureRace } from "./ai/capture";
+import { coerceDifficultyTier } from "./ai/difficulty";
 import {
   createInputManager,
   createLocalStorageStore,
@@ -163,6 +164,9 @@ function bootGame(assessment: SupportAssessment): void {
   const params = new URLSearchParams(window.location.search);
   const raceParam = params.get("race");
   const aiRaceId = raceParam && library.has(raceParam) ? raceParam : null;
+  // #APEX-8: `?difficulty=<tier>` tunes the visible CPU field; unknown ⇒ normal.
+  const difficultyParam = new URLSearchParams(window.location.search).get("difficulty");
+  const aiTier = coerceDifficultyTier(difficultyParam);
   // Camera motion policy (#APEX-12): reduced motion zeroes shake/blur in the scene.
   const motion = motionPolicy(
     resolveMotionState(settings.accessibility.reducedMotion, systemReducedMotion),
@@ -178,7 +182,7 @@ function bootGame(assessment: SupportAssessment): void {
     ghost = captureRace(library.load(aiRaceId!), { seed: ghostSeed }).trace;
   }
   const aiRace: AiRaceScene | null = aiRaceId
-    ? createAiRaceScene(library.load(aiRaceId), { motion, ghost })
+    ? createAiRaceScene(library.load(aiRaceId), { motion, ghost, tier: aiTier })
     : null;
   const motionBlur = aiRace ? mountMotionBlur(document.body, document) : null;
   const stageScene: StageSceneHandle | null = aiRace ? null : createStageScene(library);
