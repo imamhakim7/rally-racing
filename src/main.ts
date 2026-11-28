@@ -33,6 +33,7 @@ import { nextStageId } from "./ui/menu-model";
 import { TutorialModel } from "./ui/tutorial";
 import { mountTutorialOverlay, type TutorialOverlayHandle } from "./ui/tutorialOverlay";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
+import { captureRace } from "./ai/capture";
 import {
   createInputManager,
   createLocalStorageStore,
@@ -159,14 +160,25 @@ function bootGame(assessment: SupportAssessment): void {
   // #APEX-7: the two scenes have different shapes (stage select vs. race field);
   // they only share the engine's `SceneHandle` contract, so keep each narrow type
   // separately. `bootRace()` is skipped when the AI scene owns the clock.
-  const raceParam = new URLSearchParams(window.location.search).get("race");
+  const params = new URLSearchParams(window.location.search);
+  const raceParam = params.get("race");
   const aiRaceId = raceParam && library.has(raceParam) ? raceParam : null;
   // Camera motion policy (#APEX-12): reduced motion zeroes shake/blur in the scene.
   const motion = motionPolicy(
     resolveMotionState(settings.accessibility.reducedMotion, systemReducedMotion),
   );
+  // #APEX-9: `?race=<stage>&ghost=<seed>` records a deterministic reference run
+  // in-process and replays it as a semi-transparent ghost over the live race, so a
+  // recorded run can be raced against. `ghost=on`/`ghost=1` uses the default seed.
+  const ghostParam = aiRaceId ? params.get("ghost") : null;
+  let ghost: ReturnType<typeof captureRace>["trace"] | undefined;
+  if (ghostParam && ghostParam !== "0") {
+    const parsed = Number.parseInt(ghostParam, 10);
+    const ghostSeed = Number.isFinite(parsed) ? parsed : 7;
+    ghost = captureRace(library.load(aiRaceId!), { seed: ghostSeed }).trace;
+  }
   const aiRace: AiRaceScene | null = aiRaceId
-    ? createAiRaceScene(library.load(aiRaceId), { motion })
+    ? createAiRaceScene(library.load(aiRaceId), { motion, ghost })
     : null;
   const motionBlur = aiRace ? mountMotionBlur(document.body, document) : null;
   const stageScene: StageSceneHandle | null = aiRace ? null : createStageScene(library);

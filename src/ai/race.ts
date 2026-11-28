@@ -122,6 +122,8 @@ export function simulateRace(circuit: StageCircuit, options: RaceOptions = {}): 
   const maxSeconds = options.maxSeconds ?? DEFAULT_MAX_SECONDS;
   const windowLowFactor = options.windowLowFactor ?? 0.75;
   const windowHighFactor = options.windowHighFactor ?? 1.6;
+  const onStep = options.onStep;
+  const sampleEvery = options.sampleEvery && options.sampleEvery > 0 ? Math.floor(options.sampleEvery) : 1;
 
   const { line, drivers, halfWidth } = createRaceField(circuit, options);
 
@@ -198,6 +200,25 @@ export function simulateRace(circuit: StageCircuit, options: RaceOptions = {}): 
         const d = Math.hypot(a.x - b.x, a.z - b.z);
         if (d < minSeparation) minSeparation = d;
       }
+    }
+
+    // #APEX-9: observation only — capture a replay frame for the state at `time`.
+    // Fired after this step's vehicle updates so it exactly describes step `n`.
+    if (onStep && step % sampleEvery === 0) {
+      onStep({
+        step,
+        time,
+        cars: drivers.map((driver) => {
+          const s = driver.vehicle.getState();
+          return {
+            x: s.x,
+            z: s.z,
+            yaw: s.yaw,
+            speed: driver.speed(),
+            progress: clamp(driver.distance / Math.max(line.length, 1), 0, 1),
+          };
+        }),
+      });
     }
 
     time += dt;

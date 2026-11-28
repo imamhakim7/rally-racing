@@ -1,0 +1,31 @@
+APEX-9 security review — deterministic headless harness and ghost replays
+Reviewer: seat-orchestrator (acting security)   Verdict: PASS
+
+Threat surface reviewed
+- New code is simulation/bookkeeping; the only externally-reachable additions are the
+  `?ghost=<seed>` query parameter in src/main.ts and the evidence/CI scripts.
+
+Checks
+1. [PASS] No new network I/O. `ghost` is recorded in-process; nothing is fetched. The
+   CI/evidence scripts read local stage JSON only.
+2. [PASS] Query-parameter handling (`?ghost=`): the stage is validated against the
+   in-memory StageLibrary (`library.has(raceParam)`), and the seed is `parseInt` with a
+   finite-check fallback to 7. A non-numeric or hostile value cannot select an arbitrary
+   stage, path or file. Worst case is a bounded (~<=240 s simulated) headless race.
+3. [PASS] Untrusted parsing. `parseTrace` (the only JSON validator) is used by the
+   node-only CLI, not by the browser boot path, so no untrusted document is parsed at
+   runtime in the shipped game. It validates structure and finite numbers and throws a
+   typed error rather than proceeding on bad input.
+4. [PASS] No secret material. SHA-256 (`node:crypto`) is used purely as a deterministic
+   integrity/determinism digest; no keys, tokens or credentials are read, stored or
+   logged. No custom cryptography.
+5. [PASS] No injection sinks. No `eval`, no `Function`, no `innerHTML`/`document.write`
+   in the new code. Ghost rendering uses the existing three.js scene graph.
+6. [PASS] Resource bounds. Frame capture is bounded by the race's `maxSeconds` (default
+   240 s) and `sampleEvery`; traces are plain numbers. The in-page recorder runs once at
+   boot for a bounded race.
+7. [PASS] Dependency surface unchanged — no new runtime dependencies added. `node:crypto`
+   is a Node standard module; the browser bundle does not include it (clean vite build).
+
+Residual risk: none identified for this scope. Evidence: APEX-9-tests.txt (replay +
+determinism suite incl. malformed-document cases), APEX-9-determinism*.{json,txt}.

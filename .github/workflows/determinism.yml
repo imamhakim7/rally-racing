@@ -1,0 +1,53 @@
+# #APEX-9: the deterministic headless harness gate.
+#
+# AI tuning and regression protection need races that are reproducible in CI with
+# no GPU. This job runs the seeded headless harness on every shipped stage TWICE
+# in independent processes and fails when the two runs differ in any byte — which
+# would mean the simulation is no longer a pure function of (circuit, seed) — or
+# when the #APEX-7 balance contract (all cars finish, on-surface, separated,
+# in-window) regresses.
+name: determinism
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Replay + determinism unit tests
+        run: bunx vitest run tests/ai-replay.test.ts tests/ai-race.test.ts
+
+      - name: Seeded headless race gate
+        run: bun scripts/headless-race.ts --out=docs/evidence/APEX-9-determinism
+
+      - name: Cross-process determinism (two independent runs must be identical)
+        run: |
+          bun scripts/headless-race.ts --out=/tmp/apex9-run-b
+          diff docs/evidence/APEX-9-determinism.json /tmp/apex9-run-b.json
+          diff docs/evidence/APEX-9-determinism.txt /tmp/apex9-run-b.txt
+          echo "determinism: two independent runs produced identical traces"
+
+      - name: Upload harness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex9-determinism
+          path: |
+            docs/evidence/APEX-9-determinism.json
+            docs/evidence/APEX-9-determinism.txt

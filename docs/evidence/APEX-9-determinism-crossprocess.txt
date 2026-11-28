@@ -1,0 +1,15 @@
+# APEX-9 cross-process determinism evidence
+# Two independent processes, same seed set, JSON + TXT must be byte-identical
+
+$ bun scripts/headless-race.ts --out=/tmp/apex9-run-a
+$ bun scripts/headless-race.ts --out=/tmp/apex9-run-b
+
+$ diff /tmp/apex9-run-a.json /tmp/apex9-run-b.json
+  (no output = identical)
+$ diff /tmp/apex9-run-a.txt /tmp/apex9-run-b.txt
+  (no output = identical)
+
+RESULT: PASS — two independent processes produced byte-identical traces
+
+sha256 of the canonical result JSON:
+3f145740a9686c096d342ed98ae9d6f1dc5638eec30930ebb016f53c733c9f7c  /tmp/apex9-run-a.json

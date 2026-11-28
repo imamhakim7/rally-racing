@@ -1,0 +1,96 @@
+APEX-9 deterministic headless harness report
+seeds: 1,7,42  stages: 6
+
+PASS alpine-forest seed=1 det=true roundtrip=true hash=a97f89a5e42a… order=cpu-1>cpu-2>cpu-4>cpu-3
+    cpu-1 skill=0.9502 finish=24.5 off=0 maxX=1.8724 splits=[cp-crest@0.200=5.600, cp-hairpin@0.450=10.533, cp-ford@0.700=17.700, cp-runout@0.900=22.283, finish@1.000=24.500]
+    cpu-2 skill=0.9002 finish=24.8333 off=0 maxX=1.9076 splits=[cp-crest@0.200=5.583, cp-hairpin@0.450=10.467, cp-ford@0.700=17.567, cp-runout@0.900=22.467, finish@1.000=24.833]
+    cpu-3 skill=0.9422 finish=25.6833 off=0 maxX=1.854 splits=[cp-crest@0.200=6.483, cp-hairpin@0.450=11.400, cp-ford@0.700=18.700, cp-runout@0.900=23.417, finish@1.000=25.683]
+    cpu-4 skill=0.9785 finish=25.35 off=0 maxX=1.926 splits=[cp-crest@0.200=6.467, cp-hairpin@0.450=11.083, cp-ford@0.700=18.183, cp-runout@0.900=22.983, finish@1.000=25.350]
+PASS alpine-forest seed=7 det=true roundtrip=true hash=f4582d096009… order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.9009 finish=25.4667 off=0 maxX=1.8724 splits=[cp-crest@0.200=5.600, cp-hairpin@0.450=10.717, cp-ford@0.700=18.300, cp-runout@0.900=23.133, finish@1.000=25.467]
+    cpu-2 skill=0.905 finish=25 off=0 maxX=1.9076 splits=[cp-crest@0.200=5.583, cp-hairpin@0.450=10.450, cp-ford@0.700=17.617, cp-runout@0.900=22.583, finish@1.000=25.000]
+    cpu-3 skill=0.9782 finish=25.9333 off=0 maxX=2.1805 splits=[cp-crest@0.200=6.483, cp-hairpin@0.450=11.317, cp-ford@0.700=18.850, cp-runout@0.900=23.567, finish@1.000=25.933]
+    cpu-4 skill=0.9559 finish=25.5 off=0 maxX=1.926 splits=[cp-crest@0.200=6.467, cp-hairpin@0.450=11.150, cp-ford@0.700=18.617, cp-runout@0.900=23.233, finish@1.000=25.500]
+PASS alpine-forest seed=42 det=true roundtrip=true hash=124e8b8187e2… order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.9481 finish=24.5667 off=0 maxX=1.8724 splits=[cp-crest@0.200=5.600, cp-hairpin@0.450=10.533, cp-ford@0.700=17.750, cp-runout@0.900=22.350, finish@1.000=24.567]
+    cpu-2 skill=0.9359 finish=24.4 off=0 maxX=1.9076 splits=[cp-crest@0.200=5.583, cp-hairpin@0.450=10.350, cp-ford@0.700=17.283, cp-runout@0.900=22.083, finish@1.000=24.400]
+    cpu-3 skill=0.9682 finish=25.05 off=0 maxX=2.1562 splits=[cp-crest@0.200=6.483, cp-hairpin@0.450=11.317, cp-ford@0.700=18.283, cp-runout@0.900=22.800, finish@1.000=25.050]
+    cpu-4 skill=0.9536 finish=24.8833 off=0 maxX=1.9455 splits=[cp-crest@0.200=6.467, cp-hairpin@0.450=11.150, cp-ford@0.700=18.000, cp-runout@0.900=22.600, finish@1.000=24.883]
+PASS canyon-sprint seed=1 det=true roundtrip=true hash=ca6f7ba3d92e… order=cpu-1>cpu-2>cpu-4>cpu-3
+    cpu-1 skill=0.9502 finish=20.0167 off=0 maxX=1.7229 splits=[cp-mouth@0.250=6.883, cp-narrows@0.500=10.767, cp-overhang@0.700=13.817, cp-riverbed@0.900=18.067, finish@1.000=20.017]
+    cpu-2 skill=0.9002 finish=22.0667 off=0 maxX=1.6371 splits=[cp-mouth@0.250=7.317, cp-narrows@0.500=11.600, cp-overhang@0.700=14.950, cp-riverbed@0.900=20.000, finish@1.000=22.067]
+    cpu-3 skill=0.9422 finish=23.0333 off=0 maxX=1.7977 splits=[cp-mouth@0.250=8.100, cp-narrows@0.500=11.967, cp-overhang@0.700=15.167, cp-riverbed@0.900=20.783, finish@1.000=23.033]
+    cpu-4 skill=0.9785 finish=22.6833 off=0 maxX=1.635 splits=[cp-mouth@0.250=8.517, cp-narrows@0.500=12.467, cp-overhang@0.700=15.550, cp-riverbed@0.900=20.717, finish@1.000=22.683]
+PASS canyon-sprint seed=7 det=true roundtrip=true hash=8c67b43cf817… order=cpu-1>cpu-2>cpu-4>cpu-3
+    cpu-1 skill=0.9009 finish=20.7 off=0 maxX=1.7229 splits=[cp-mouth@0.250=6.933, cp-narrows@0.500=11.000, cp-overhang@0.700=14.200, cp-riverbed@0.900=18.667, finish@1.000=20.700]
+    cpu-2 skill=0.905 finish=21.9667 off=0 maxX=1.6371 splits=[cp-mouth@0.250=7.317, cp-narrows@0.500=11.567, cp-overhang@0.700=14.883, cp-riverbed@0.900=19.917, finish@1.000=21.967]
+    cpu-3 skill=0.9782 finish=22.8833 off=0 maxX=1.8344 splits=[cp-mouth@0.250=8.067, cp-narrows@0.500=11.900, cp-overhang@0.700=15.083, cp-riverbed@0.900=20.700, finish@1.000=22.883]
+    cpu-4 skill=0.9559 finish=22.5833 off=0 maxX=1.5813 splits=[cp-mouth@0.250=8.533, cp-narrows@0.500=12.567, cp-overhang@0.700=15.733, cp-riverbed@0.900=20.617, finish@1.000=22.583]
+PASS canyon-sprint seed=42 det=true roundtrip=true hash=fe92cb64d41c… order=cpu-1>cpu-2>cpu-3>cpu-4
+    cpu-1 skill=0.9481 finish=20.0333 off=0 maxX=1.7229 splits=[cp-mouth@0.250=6.883, cp-narrows@0.500=10.767, cp-overhang@0.700=13.817, cp-riverbed@0.900=18.083, finish@1.000=20.033]
+    cpu-2 skill=0.9359 finish=21.5 off=0 maxX=1.6371 splits=[cp-mouth@0.250=7.283, cp-narrows@0.500=11.417, cp-overhang@0.700=14.633, cp-riverbed@0.900=19.500, finish@1.000=21.500]
+    cpu-3 skill=0.9682 finish=22.1333 off=0 maxX=2.1312 splits=[cp-mouth@0.250=8.083, cp-narrows@0.500=11.867, cp-overhang@0.700=14.917, cp-riverbed@0.900=20.233, finish@1.000=22.133]
+    cpu-4 skill=0.9536 finish=22.6 off=0 maxX=1.5813 splits=[cp-mouth@0.250=8.533, cp-narrows@0.500=12.583, cp-overhang@0.700=15.750, cp-riverbed@0.900=20.600, finish@1.000=22.600]
+PASS coastal-cliffs seed=1 det=true roundtrip=true hash=1c7085f4576f… order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.9502 finish=20.85 off=0 maxX=2.0614 splits=[cp-headland@0.250=7.117, cp-seafront@0.500=11.400, cp-lighthouse@0.750=14.883, finish@1.000=20.850]
+    cpu-2 skill=0.9002 finish=20.6667 off=0 maxX=2.209 splits=[cp-headland@0.250=6.833, cp-seafront@0.500=11.167, cp-lighthouse@0.750=14.783, finish@1.000=20.667]
+    cpu-3 skill=0.9422 finish=22.1333 off=0 maxX=2.009 splits=[cp-headland@0.250=8.000, cp-seafront@0.500=12.383, cp-lighthouse@0.750=15.950, finish@1.000=22.133]
+    cpu-4 skill=0.9785 finish=21.3333 off=0 maxX=2.191 splits=[cp-headland@0.250=7.433, cp-seafront@0.500=11.567, cp-lighthouse@0.750=15.133, finish@1.000=21.333]
+PASS coastal-cliffs seed=7 det=true roundtrip=true hash=369493482bdb… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9009 finish=22.0833 off=0 maxX=2.0614 splits=[cp-headland@0.250=7.300, cp-seafront@0.500=11.833, cp-lighthouse@0.750=15.533, finish@1.000=22.083]
+    cpu-2 skill=0.905 finish=20.8333 off=0 maxX=2.2124 splits=[cp-headland@0.250=6.817, cp-seafront@0.500=11.167, cp-lighthouse@0.750=14.800, finish@1.000=20.833]
+    cpu-3 skill=0.9782 finish=22.9167 off=0 maxX=3.4944 splits=[cp-headland@0.250=7.867, cp-seafront@0.500=12.200, cp-lighthouse@0.750=15.850, finish@1.000=22.917]
+    cpu-4 skill=0.9559 finish=21.4667 off=0 maxX=3.6742 splits=[cp-headland@0.250=7.550, cp-seafront@0.500=11.650, cp-lighthouse@0.750=15.117, finish@1.000=21.467]
+PASS coastal-cliffs seed=42 det=true roundtrip=true hash=aadeb9db3a3f… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9481 finish=20.9667 off=0 maxX=2.0614 splits=[cp-headland@0.250=7.133, cp-seafront@0.500=11.467, cp-lighthouse@0.750=14.983, finish@1.000=20.967]
+    cpu-2 skill=0.9359 finish=20.2 off=0 maxX=2.2179 splits=[cp-headland@0.250=6.717, cp-seafront@0.500=10.933, cp-lighthouse@0.750=14.467, finish@1.000=20.200]
+    cpu-3 skill=0.9682 finish=21.5 off=0 maxX=2.009 splits=[cp-headland@0.250=7.883, cp-seafront@0.500=12.167, cp-lighthouse@0.750=15.650, finish@1.000=21.500]
+    cpu-4 skill=0.9536 finish=20.8 off=0 maxX=2.2363 splits=[cp-headland@0.250=7.467, cp-seafront@0.500=11.583, cp-lighthouse@0.750=15.017, finish@1.000=20.800]
+PASS desert-dunes seed=1 det=true roundtrip=true hash=0dc9450d88d2… order=cpu-1>cpu-3>cpu-2>cpu-4
+    cpu-1 skill=0.9502 finish=27.35 off=0 maxX=2.1925 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.033, cp-oasis@0.800=21.817, finish@1.000=27.350]
+    cpu-2 skill=0.9002 finish=28.6167 off=0 maxX=2.2075 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.233, cp-oasis@0.800=22.633, finish@1.000=28.617]
+    cpu-3 skill=0.9422 finish=28.4333 off=0 maxX=2.1902 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=17.050, cp-oasis@0.800=22.950, finish@1.000=28.433]
+    cpu-4 skill=0.9785 finish=29.1 off=0 maxX=2.2098 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=16.883, cp-oasis@0.800=23.133, finish@1.000=29.100]
+PASS desert-dunes seed=7 det=true roundtrip=true hash=8ac17b641c8f… order=cpu-1>cpu-2>cpu-3>cpu-4
+    cpu-1 skill=0.9009 finish=28.0833 off=0 maxX=2.1925 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.267, cp-oasis@0.800=22.333, finish@1.000=28.083]
+    cpu-2 skill=0.905 finish=28.4 off=0 maxX=2.2075 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.217, cp-oasis@0.800=22.533, finish@1.000=28.400]
+    cpu-3 skill=0.9782 finish=28.5667 off=0 maxX=2.1902 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=16.917, cp-oasis@0.800=22.850, finish@1.000=28.567]
+    cpu-4 skill=0.9559 finish=28.8833 off=0 maxX=2.2243 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=16.950, cp-oasis@0.800=23.000, finish@1.000=28.883]
+PASS desert-dunes seed=42 det=true roundtrip=true hash=3bbd46dac15d… order=cpu-1>cpu-2>cpu-3>cpu-4
+    cpu-1 skill=0.9481 finish=27.3667 off=0 maxX=2.1925 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.050, cp-oasis@0.800=21.850, finish@1.000=27.367]
+    cpu-2 skill=0.9359 finish=27.95 off=0 maxX=2.2075 splits=[cp-dune1@0.300=9.917, cp-dune2@0.600=16.067, cp-oasis@0.800=22.167, finish@1.000=27.950]
+    cpu-3 skill=0.9682 finish=27.9833 off=0 maxX=2.1902 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=16.950, cp-oasis@0.800=22.650, finish@1.000=27.983]
+    cpu-4 skill=0.9536 finish=28.55 off=0 maxX=2.2098 splits=[cp-dune1@0.300=10.883, cp-dune2@0.600=16.950, cp-oasis@0.800=22.917, finish@1.000=28.550]
+PASS mountain-pass seed=1 det=true roundtrip=true hash=c3c10e2aa430… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9502 finish=28.85 off=0 maxX=1.769 splits=[cp-lower@0.200=7.333, cp-switch@0.400=12.200, cp-summit@0.600=18.333, cp-descent@0.800=22.667, finish@1.000=28.850]
+    cpu-2 skill=0.9002 finish=27.9333 off=0 maxX=1.6906 splits=[cp-lower@0.200=7.250, cp-switch@0.400=11.917, cp-summit@0.600=17.650, cp-descent@0.800=22.400, finish@1.000=27.933]
+    cpu-3 skill=0.9422 finish=29.55 off=0 maxX=1.7878 splits=[cp-lower@0.200=8.617, cp-switch@0.400=13.233, cp-summit@0.600=19.233, cp-descent@0.800=23.650, finish@1.000=29.550]
+    cpu-4 skill=0.9785 finish=28.5333 off=0 maxX=1.7173 splits=[cp-lower@0.200=8.533, cp-switch@0.400=12.883, cp-summit@0.600=18.317, cp-descent@0.800=22.933, finish@1.000=28.533]
+PASS mountain-pass seed=7 det=true roundtrip=true hash=2dd4cd10b89a… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9009 finish=28.5333 off=0 maxX=1.8984 splits=[cp-lower@0.200=7.333, cp-switch@0.400=12.217, cp-summit@0.600=18.317, cp-descent@0.800=22.783, finish@1.000=28.533]
+    cpu-2 skill=0.905 finish=27.8667 off=0 maxX=1.6906 splits=[cp-lower@0.200=7.250, cp-switch@0.400=11.900, cp-summit@0.600=17.617, cp-descent@0.800=22.333, finish@1.000=27.867]
+    cpu-3 skill=0.9782 finish=29.2167 off=0 maxX=1.7878 splits=[cp-lower@0.200=8.617, cp-switch@0.400=13.233, cp-summit@0.600=19.150, cp-descent@0.800=23.417, finish@1.000=29.217]
+    cpu-4 skill=0.9559 finish=28.4833 off=0 maxX=1.7005 splits=[cp-lower@0.200=8.533, cp-switch@0.400=12.950, cp-summit@0.600=18.433, cp-descent@0.800=22.900, finish@1.000=28.483]
+PASS mountain-pass seed=42 det=true roundtrip=true hash=045052faeb89… order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.9481 finish=27.9167 off=0 maxX=1.8894 splits=[cp-lower@0.200=7.333, cp-switch@0.400=12.083, cp-summit@0.600=18.050, cp-descent@0.800=22.367, finish@1.000=27.917]
+    cpu-2 skill=0.9359 finish=27.2667 off=0 maxX=1.6906 splits=[cp-lower@0.200=7.250, cp-switch@0.400=11.800, cp-summit@0.600=17.350, cp-descent@0.800=21.917, finish@1.000=27.267]
+    cpu-3 skill=0.9682 finish=29 off=0 maxX=1.8301 splits=[cp-lower@0.200=8.617, cp-switch@0.400=13.217, cp-summit@0.600=19.150, cp-descent@0.800=23.400, finish@1.000=29.000]
+    cpu-4 skill=0.9536 finish=28.3 off=0 maxX=1.7005 splits=[cp-lower@0.200=8.533, cp-switch@0.400=12.967, cp-summit@0.600=18.533, cp-descent@0.800=23.050, finish@1.000=28.300]
+PASS valley-rally seed=1 det=true roundtrip=true hash=2200ae5c844c… order=cpu-2>cpu-1>cpu-4>cpu-3
+    cpu-1 skill=0.9502 finish=26.0833 off=0 maxX=2.0776 splits=[cp-entry@0.300=7.433, cp-rapids@0.600=15.650, cp-exit@0.850=22.200, finish@1.000=26.083]
+    cpu-2 skill=0.9002 finish=25.8167 off=0 maxX=2.1224 splits=[cp-entry@0.300=7.400, cp-rapids@0.600=15.233, cp-exit@0.850=21.767, finish@1.000=25.817]
+    cpu-3 skill=0.9422 finish=27.0833 off=0 maxX=2.0604 splits=[cp-entry@0.300=8.233, cp-rapids@0.600=16.417, cp-exit@0.850=23.050, finish@1.000=27.083]
+    cpu-4 skill=0.9785 finish=26.3167 off=0 maxX=2.1396 splits=[cp-entry@0.300=8.150, cp-rapids@0.600=16.067, cp-exit@0.850=22.283, finish@1.000=26.317]
+PASS valley-rally seed=7 det=true roundtrip=true hash=8564fd4f5a7b… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9009 finish=27.2 off=0 maxX=2.0776 splits=[cp-entry@0.300=7.450, cp-rapids@0.600=16.100, cp-exit@0.850=22.983, finish@1.000=27.200]
+    cpu-2 skill=0.905 finish=25.7667 off=0 maxX=2.1224 splits=[cp-entry@0.300=7.400, cp-rapids@0.600=15.233, cp-exit@0.850=21.733, finish@1.000=25.767]
+    cpu-3 skill=0.9782 finish=27.7167 off=0 maxX=2.0604 splits=[cp-entry@0.300=8.233, cp-rapids@0.600=16.667, cp-exit@0.850=23.517, finish@1.000=27.717]
+    cpu-4 skill=0.9559 finish=26.3667 off=0 maxX=2.1396 splits=[cp-entry@0.300=8.150, cp-rapids@0.600=16.217, cp-exit@0.850=22.350, finish@1.000=26.367]
+PASS valley-rally seed=42 det=true roundtrip=true hash=c1e83153038d… order=cpu-2>cpu-4>cpu-1>cpu-3
+    cpu-1 skill=0.9481 finish=26.2 off=0 maxX=2.0776 splits=[cp-entry@0.300=7.433, cp-rapids@0.600=15.683, cp-exit@0.850=22.250, finish@1.000=26.200]
+    cpu-2 skill=0.9359 finish=25.2 off=0 maxX=2.1224 splits=[cp-entry@0.300=7.400, cp-rapids@0.600=15.000, cp-exit@0.850=21.300, finish@1.000=25.200]
+    cpu-3 skill=0.9682 finish=26.7 off=0 maxX=2.0623 splits=[cp-entry@0.300=8.233, cp-rapids@0.600=16.250, cp-exit@0.850=22.767, finish@1.000=26.700]
+    cpu-4 skill=0.9536 finish=25.85 off=0 maxX=2.1396 splits=[cp-entry@0.300=8.150, cp-rapids@0.600=16.000, cp-exit@0.850=22.083, finish@1.000=25.850]
+
+ALL OK: true
+VERDICT: PASS

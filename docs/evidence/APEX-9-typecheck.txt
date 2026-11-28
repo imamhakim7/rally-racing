@@ -1,0 +1,4 @@
+# APEX-9 typecheck evidence
+$ tsc --noEmit
+$ tsc --noEmit
+exit=0

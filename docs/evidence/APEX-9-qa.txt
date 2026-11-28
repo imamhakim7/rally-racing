@@ -1,0 +1,47 @@
+APEX-9 QA — deterministic headless harness and ghost replays
+QA: seat-orchestrator (acting QA)   Verdict: PASS
+
+Acceptance criteria (Given/When/Then) — verified
+AC1 Identical results across runs ......... PASS
+    Two runs in-process and two independent processes produce byte-identical JSON/TXT
+    (finishOrder, finish times, splits and traceHash). Evidence:
+    APEX-9-determinism.json/.txt (per-stage det=true, hashA==hashB) and
+    APEX-9-determinism-crossprocess.txt (diff clean, sha256 recorded).
+    Unit coverage: tests/ai-replay.test.ts "produces an identical trace and hash",
+    "holds determinism on every shipped stage".
+AC2 Replay trace captured ................ PASS
+    Trace frames are captured every traceEvery steps with a pose per car in stable id
+    order, plus finishOrder and checkpoint splits; frames steps strictly increasing.
+    Tested ("captures one frame per sample interval with a pose per car").
+AC3 Trace round-trips ..................... PASS
+    parseTrace(serializeTrace(t)) deep-equals t and re-serialises to the same hash;
+    malformed/unsupported documents are rejected. Tested.
+AC4 Ghost raced against a recorded run ..... PASS
+    GhostOverlay.poseAt(t) / the scene overlay sample the recording (clamped at the
+    ends, interpolated inside), and the overlay's finishOrder matches the recording.
+    Proven end-to-end in the real build: APEX-9-ghost.png with
+    ghostFinishOrder=[cpu-2,cpu-1,cpu-4,cpu-3] while the live race runs. Tested.
+AC5 CI determinism gate ................... PASS
+    .github/workflows/determinism.yml runs typecheck, the replay/determinism tests, the
+    seeded harness gate on every shipped stage, then runs it a second time in a fresh
+    process and `diff`s JSON+TXT. No GPU/network. `bun run harness:check` passes locally
+    (ALL OK: true, VERDICT: PASS).
+AC6 Nothing regressed ..................... PASS
+    `bun run typecheck` clean; `bunx vitest run` 51 files / 348 tests green;
+    `bun run build` succeeds (77 modules) and the visible race scene boots with the ghost
+    overlay in headless Chromium (webgl2:true, carCount:4).
+
+Notes / limitations (honest)
+- Splits use a car's racing-line progress fraction against checkpoint arc fractions;
+  the finish split uses the exact CarResult.finishTime so it cannot disagree with the
+  result. Line vs centreline length differ slightly, so a checkpoint split time can be
+  a frame or two from a centreline projection — immaterial for tuning/regression use.
+- The shipped browser ghost records the reference run in-process (?ghost=<seed>); it does
+  not fetch external traces (out of scope per the openspec non-goals).
+- The visible ghost capture uses SwiftShader WebGL2 (no GPU), as with existing evidence.
+
+Evidence
+- APEX-9-typecheck.txt, APEX-9-tests.txt
+- APEX-9-determinism.json / .txt (seeds 1,7,42 x 6 stages x 2 runs)
+- APEX-9-determinism-crossprocess.txt
+- APEX-9-ghost.png

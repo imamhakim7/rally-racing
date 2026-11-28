@@ -6,6 +6,7 @@
  * no DOM.
  */
 import type { Vec3 } from "../stage/types";
+import type { TraceFrame } from "./trace";
 
 /** One point on the derived racing line, with the speed the car should hold. */
 export interface RacingLinePoint {
@@ -121,4 +122,12 @@ export interface RaceOptions {
   windowLowFactor?: number;
   /** Upper window factor applied to `referenceTime`. Default 1.6. */
   windowHighFactor?: number;
+  /**
+   * #APEX-9: capture an observation frame every `sampleEvery` steps. The callback
+   * is purely observational — it never mutates race state, so passing it does not
+   * change the `RaceResult`. Defaults to no capture.
+   */
+  onStep?: (frame: TraceFrame) => void;
+  /** #APEX-9: capture one frame every this many fixed steps. Default 1. */
+  sampleEvery?: number;
 }
