@@ -1,0 +1,11 @@
+# APEX-9 test evidence (vitest run)
+
+ RUN  v5.1.2 /root/sarawedi-worktrees/wt/APEX-9
+
+
+ Test Files  51 passed (51)
+      Tests  348 passed (348)
+   Start at  13:32:43
+   Duration  6.00s (tests 86%, import 9%, transform 3%, worker 2%)
+
+exit=0

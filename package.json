@@ -23,7 +23,9 @@
     "screenshot:terrain": "bun run build && bun scripts/screenshot-terrain.mjs",
     "validate:stage": "bun scripts/validate-stage.ts",
     "check:normals": "bun scripts/check-normals.ts",
-    "smoke:browsers": "bun scripts/smoke-browsers.mjs"
+    "smoke:browsers": "bun scripts/smoke-browsers.mjs",
+    "harness:check": "bun scripts/headless-race.ts",
+    "screenshot:ghost": "bun run build && bun scripts/screenshot-ghost.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",

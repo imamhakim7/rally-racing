@@ -1,0 +1,47 @@
+APEX-9 code review — deterministic headless harness and ghost replays
+Reviewer: seat-orchestrator (acting reviewer)   Verdict: APPROVE (with notes)
+
+Scope reviewed
+- src/ai/trace.ts         trace format, recordTrace, parseTrace, sampleGhost, tracesEqual (browser-safe)
+- src/ai/replay.ts        canonical serialization + sha-256 traceHash (node-only)
+- src/ai/capture.ts       captureRace: simulateRace + recorder + checkpoint splits (browser-safe)
+- src/ai/harness.ts       runHeadlessRace: capture + hash (node-only wrapper)
+- src/ai/ghost.ts         GhostOverlay sampling facade (browser-safe)
+- src/ai/race.ts          optional onStep observation callback
+- src/scenes/aiRaceScene.ts  optional `ghost` trace -> semi-transparent ghost cars
+- src/main.ts             ?race=<stage>&ghost=<seed> records an in-process reference run
+- src/ai/index.ts         barrel exports (browser-safe subset only)
+- scripts/headless-race.ts, scripts/screenshot-ghost.mjs, .github/workflows/determinism.yml
+- tests/ai-replay.test.ts
+
+Findings
+1. [OK] Separation of concerns. The node-only crypto dependency is isolated in
+   replay.ts; trace.ts/capture.ts/ghost.ts have no node/DOM/three imports, so the
+   browser bundle (main.ts -> capture.ts) never references node:crypto. Confirmed by
+   a clean `vite build` (77 modules) with no externalized node builtins.
+2. [OK] Determinism by construction. `onStep` is purely observational (fires after the
+   step's vehicle updates, before `time += dt`); a test asserts the RaceResult is
+   identical with and without the callback. Cars iterate in input order; the only
+   randomness is the seeded mulberry32 from #APEX-7.
+3. [OK] Canonical trace encoding. Fixed key order + ECMAScript shortest round-trip
+   numbers; the round-trip test asserts parse(serialize(t)) re-hashes to the same digest.
+4. [OK] Trace validation. parseTrace rejects non-object/JSON, wrong version, wrong
+   generator and non-finite numerics with a typed TraceParseError; tested.
+5. [OK] Ghost overlay is additive. It renders extra meshes and disposes them; the
+   authoritative race and RaceResult are untouched. Ghost meshes are transparent with
+   depthWrite=false so they never occlude the live cars.
+6. [OK] Splits semantics. Checkpoint crossings are detected per car in ascending gate
+   order at full step resolution; the finish split uses CarResult.finishTime so it can
+   never disagree with the result. Tested for monotonic times and gate order.
+7. [NOTE] `captureRace` requests every step (sampleEvery: 1) from the simulator and
+   downsamples stored frames itself. This costs a per-step callback but keeps splits
+   exact and trace size small; measured at ~0.46 s for 6 stages x 3 seeds x 2 runs.
+8. [NOTE] The browser ghost is recorded in-process at boot (`?ghost=<seed>`) rather
+   than fetched; this needs no node runtime and no network, and still exercises the
+   exact record -> sample -> render path. An external trace URL loader is a possible
+   follow-up but out of scope here (non-goal: network replay sharing).
+9. [NIT] FINISH_SPLIT_ID is exported from capture.ts and re-exported by harness.ts;
+   fine for now, could live in trace.ts if a browser caller needs it.
+
+No blocking issues. Evidence: APEX-9-typecheck.txt, APEX-9-tests.txt,
+APEX-9-determinism.json/.txt, APEX-9-determinism-crossprocess.txt, APEX-9-ghost.png.

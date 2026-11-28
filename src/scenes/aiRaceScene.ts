@@ -22,6 +22,8 @@ import type { StageCircuit, StageWorld } from "../stage/types";
 import { createRaceField, parkOffLineCar } from "../ai/race";
 import type { CpuDriver } from "../ai/driver";
 import { physicsSurfaceAt } from "../ai/surface";
+import { GhostOverlay } from "../ai/ghost";
+import type { RaceTrace } from "../ai/trace";
 import { buildCarMesh } from "./carMesh";
 
 export interface AiRaceSceneOptions {
@@ -29,6 +31,8 @@ export interface AiRaceSceneOptions {
   seed?: number;
   /** Camera motion policy (#APEX-12); reduced motion disables shake/blur. */
   motion?: MotionPolicy;
+  /** #APEX-9: a recorded trace to replay as a ghost alongside the live race. */
+  ghost?: RaceTrace;
 }
 
 /** Per-car telemetry sample for playtest/QA tooling. */
@@ -68,6 +72,8 @@ export interface AiRaceScene extends SceneHandle {
   snapshot(): RaceSnapshot;
   /** Current camera shake/blur under the active motion policy (#APEX-12). */
   cameraEffects(): CameraMotion;
+  /** #APEX-9: recorded finishing order of the ghost, or `null` when none. */
+  ghostFinishOrder(): string[] | null;
 }
 
 const COLORS = [0xd23c3c, 0x38bdf8, 0xf2c94c, 0x5fbf7f, 0xc084fc, 0xfb923c];
@@ -106,6 +112,37 @@ export function createAiRaceScene(
     scene.add(car);
     return car;
   });
+
+  // #APEX-9: semi-transparent ghost cars replayed from a recorded trace. They
+  // are purely visual — the authoritative race is the live `drivers` field.
+  const ghost = options.ghost ? new GhostOverlay(options.ghost) : null;
+  const ghostMeshes = ghost
+    ? Array.from({ length: ghost.carCount }, () => {
+        const car = buildCarMesh(0xf5f5f5);
+        car.traverse((object) => {
+          const material = (object as { material?: THREE.Material }).material;
+          if (material) {
+            material.transparent = true;
+            material.opacity = 0.32;
+            material.depthWrite = false;
+          }
+        });
+        scene.add(car);
+        return car;
+      })
+    : [];
+
+  function placeGhost(): void {
+    if (!ghost) return;
+    const frame = ghost.poseAt(simulationTime);
+    if (!frame) return;
+    const count = Math.min(ghostMeshes.length, frame.cars.length);
+    for (let i = 0; i < count; i += 1) {
+      const pose = frame.cars[i]!;
+      ghostMeshes[i]!.position.set(pose.x, roadYAt(clamp(pose.progress, 0, 1)), pose.z);
+      ghostMeshes[i]!.rotation.y = pose.yaw;
+    }
+  }
 
   let previous = drivers.map((d) => {
     const s = d.vehicle.getState();
@@ -210,6 +247,7 @@ export function createAiRaceScene(
   }
 
   applyCamera(1);
+  placeGhost();
 
   return {
     scene,
@@ -217,6 +255,9 @@ export function createAiRaceScene(
     circuitId: circuit.id,
     carCount: drivers.length,
     world,
+    ghostFinishOrder() {
+      return ghost ? ghost.finishOrder : null;
+    },
     get simulationTime() {
       return simulationTime;
     },
@@ -280,6 +321,7 @@ export function createAiRaceScene(
         const s = driver.vehicle.getState();
         return { x: s.x, z: s.z, y: roadYAt(t), yaw: s.yaw };
       });
+      placeGhost();
     },
     interpolate(alpha) {
       if (disposed) return;
@@ -306,7 +348,7 @@ export function createAiRaceScene(
       if (disposed) return;
       disposed = true;
       disposeStageWorld(world);
-      for (const car of carMeshes) {
+      for (const car of [...carMeshes, ...ghostMeshes]) {
         car.traverse((object) => {
           const mesh = object as THREE.Mesh;
           mesh.geometry?.dispose();
