@@ -69,9 +69,29 @@ interface Containment { halfWidth: number; resolve(x,z,yaw): ContainmentResult;
                         apply(vehicle: Vehicle): ContainmentResult }
 function createContainment(circuit: StageCircuit, spline: SampledSpline): Containment
 
-// #APEX-29 — consumes the printed seam (not implemented here)
+// #APEX-28 — printed seam, consumed by #APEX-29
 interface TerrainLighting { sunColor: number; sunIntensity: number; … }
 function terrainLighting(timeOfDay: TimeOfDay): TerrainLighting
+
+// #APEX-29 — foliage / sky / weather layers (implemented here)
+interface FoliageDef { seed: number; density: number }
+interface FoliageBuild { group: THREE.Group; stats: FoliageStats }
+function buildFoliage(circuit, spline, terrain): FoliageBuild
+function checkFoliageBudget(circuit, spline, timeOfDay?): FoliageBudgetReport
+
+type WeatherPreset = "clear" | "rain" | "fog" | "dusk"
+function weatherGripMultiplier(preset: WeatherPreset): number  // clear = 1, rain < 1
+function physicsSurfaceAt(circuit, t, weather?: WeatherPreset): PhysicsSurface
+
+interface SkyRig {
+  setTimeOfDay(t: TimeOfDay | number): void   // named or day fraction [0,1)
+  setWeather(preset: WeatherPreset): void
+  readonly timeOfDay: TimeOfDay
+  readonly weather: WeatherPreset
+  dispose(): void
+}
+function createSkyRig(scene: THREE.Scene, opts?): SkyRig
+function skyState(timeOfDay: TimeOfDay | number, weather: WeatherPreset): SkyState
 ```
 
 ## Invariants
@@ -91,6 +111,15 @@ function terrainLighting(timeOfDay: TimeOfDay): TerrainLighting
    velocity zeroed and speed penalised. `apply` never throws on a finite state.
 6. **Lifecycle.** Terrain geometry/materials are disposed exactly once by
    `disposeStageWorld`, like every other mesh in the world.
+7. **Foliage is instanced and baked.** `BIOME_FOLIAGE` + `FOLIAGE_GEOMETRY` are
+   lookup tables (never `switch` on `biome`); a stage's vegetation is a handful of
+   `InstancedMesh` batches, so draw calls scale with *species*, not tree count.
+   Scatter is a pure function of `(foliage.seed, spline, terrain)` and each
+   instance sits on `terrain.sampleHeight`.
+8. **Sky and weather are one seam.** `terrainLighting` and `createSkyRig` both read
+   `skyState(timeOfDay, weather)`; time-of-day and weather can be toggled at runtime
+   and weather scales the authored zone grip through `physicsSurfaceAt`. Weather
+   adds no geometry, so it cannot blow the draw-call/triangle budget.
 
 ## Epic acceptance (inherited by tickets)
 
@@ -108,6 +137,6 @@ function terrainLighting(timeOfDay: TimeOfDay): TerrainLighting
 | --- | --- |
 | #APEX-4 | Data-driven stage circuit format, loader, six stage JSONs (deployed) |
 | #APEX-6 | glTF/KTX2 asset pipeline with load budgets (deployed) |
-| **#APEX-28** | **Terrain foundation: heightfield, biome surfaces, containment** |
-| #APEX-29 | Foliage, dynamic sky and weather layers on the terrain foundation |
+| #APEX-28 | Terrain foundation: heightfield, biome surfaces, containment (deployed) |
+| **#APEX-29** | **Foliage, dynamic sky and weather layers on the terrain foundation** |
 | #APEX-5 | *(cancelled)* superseded by the #APEX-28/#APEX-29 split |

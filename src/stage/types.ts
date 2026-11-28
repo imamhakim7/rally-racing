@@ -52,6 +52,23 @@ export const BIOMES = [
 
 export type Biome = (typeof BIOMES)[number];
 
+/**
+ * Weather presets (#APEX-29). `clear` is the reference; `rain` is the strongest
+ * grip penalty, `fog` trades visibility for grip, `dusk` also moves the time of
+ * day. Kept as a closed union so a typo in a JSON file is caught by the validator.
+ */
+export const WEATHER_PRESETS = ["clear", "rain", "fog", "dusk"] as const;
+
+export type WeatherPreset = (typeof WEATHER_PRESETS)[number];
+
+/**
+ * The low-poly primitive a foliage species is drawn with. The builder resolves
+ * this through `FOLIAGE_GEOMETRY` (a lookup table), never a `biome` branch.
+ */
+export const FOLIAGE_KINDS = ["conifer", "broadleaf", "shrub", "rock"] as const;
+
+export type FoliageKind = (typeof FOLIAGE_KINDS)[number];
+
 /** One control point of the centreline. Only x/z are layout-significant; y is height. */
 export interface SplinePoint {
   x: number;
@@ -137,6 +154,10 @@ export interface StageCircuit {
   minimap: MinimapSpec;
   /** Terrain layer definition (#APEX-28); always present after validation. */
   terrain: TerrainDef;
+  /** Foliage layer definition (#APEX-29); always present after validation. */
+  foliage: FoliageDef;
+  /** Default weather preset (#APEX-29); always present after validation. */
+  weather: WeatherPreset;
   /** Where the circuit came from (file name / URL) — used in error messages. */
   source: string;
 }
@@ -156,6 +177,57 @@ export interface TerrainDef {
   surface: SurfaceType;
   /** Metres of terrain generated each side of the centreline. */
   corridorWidth: number;
+}
+
+/**
+ * Foliage layer definition (#APEX-29). Optional in the file; the validator
+ * defaults the seed from the terrain seed and density to 1 so every stage is
+ * dressed with vegetation.
+ */
+export interface FoliageDef {
+  /** Deterministic scatter seed. */
+  seed: number;
+  /** Scatter density multiplier (0 = bare, 1 = default, up to 2). */
+  density: number;
+}
+
+/** One vegetation primitive a biome scatters (lookup-table data, not code). */
+export interface FoliageSpecies {
+  /** Geometry kind resolved via `FOLIAGE_GEOMETRY`. */
+  kind: FoliageKind;
+  /** Instance colour. */
+  color: number;
+  /** Base instance height in metres (jittered per instance). */
+  height: number;
+  /** Base instance radius in metres. */
+  radius: number;
+  /** Expected instances per 100 m of corridor edge, scaled by `density`. */
+  per100m: number;
+  roughness: number;
+}
+
+/** The vegetation a biome scatters (a lookup table, never a code branch). */
+export interface FoliageStyle {
+  /** 1–3 species; each becomes one `InstancedMesh` (one draw call). */
+  species: FoliageSpecies[];
+  /** Fraction of the corridor band (from road edge to corridor edge) used. */
+  band: number;
+}
+
+/** Per-stage draw/triangle/instance cost of the foliage layer. */
+export interface FoliageStats {
+  instances: number;
+  triangles: number;
+  drawCalls: number;
+  species: number;
+}
+
+/** A foliage layer built from a circuit; carried on `StageWorld`. */
+export interface FoliageBuild {
+  readonly group: THREE.Group;
+  readonly stats: FoliageStats;
+  /** Instance capacity per species, in style order (deterministic). */
+  readonly capacities: number[];
 }
 
 /** Per-stage draw/triangle cost of the terrain layer. */
@@ -272,6 +344,8 @@ export interface StageWorld {
   readonly road: THREE.Mesh;
   /** Data-driven terrain ribbon (#APEX-28). */
   readonly terrain: TerrainBuild;
+  /** Instanced biome foliage (#APEX-29). */
+  readonly foliage: FoliageBuild;
   /** Corridor containment resolved for this circuit (#APEX-28). */
   readonly containment: Containment;
   /** Axis-aligned bounds of the road + gates. */
