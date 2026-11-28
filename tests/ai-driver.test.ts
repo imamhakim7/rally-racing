@@ -114,3 +114,41 @@ describe("CpuDriver — control law", () => {
     expect(maxThrottle).toBeGreaterThan(0.8);
   });
 });
+
+// #APEX-27 / #APEX-31: containment must hold with the away-from-a-car steer
+// suppressed at the edge. Two cars side by side near the ribbon edge is the
+// exact situation that pushed `coastal-cliffs` seed 6186 over the line.
+describe("CpuDriver — ribbon containment (#APEX-27)", () => {
+  it("does not steer toward the edge to avoid a car on the other side", () => {
+    const c = circuit();
+    const raceLine = line(c);
+    const halfWidth = c.road.width / 2;
+    const frame = raceLine.sampleAtDistance(20);
+
+    const me = new CpuDriver({ id: "cpu-2", skill: 1 });
+    me.setSampleStep(c.road.sampleStep);
+    me.placeOnLine(raceLine, 20, 0);
+    const mine = me.vehicle.getState();
+    // 0.4 m inside the right-hand ribbon edge, rolling forward.
+    me.vehicle.setState({
+      x: mine.x + frame.normal.x * (halfWidth - 0.4),
+      z: mine.z + frame.normal.z * (halfWidth - 0.4),
+      vLong: 12,
+    });
+
+    const other = new CpuDriver({ id: "cpu-1", skill: 1 });
+    other.setSampleStep(c.road.sampleStep);
+    other.placeOnLine(raceLine, 19, 0);
+    const theirs = other.vehicle.getState();
+    // Alongside and 2.2 m to the left: the avoidance rule wants to steer right.
+    other.vehicle.setState({
+      x: theirs.x + frame.normal.x * (halfWidth - 2.6),
+      z: theirs.z + frame.normal.z * (halfWidth - 2.6),
+      vLong: 12,
+    });
+
+    const input = me.control(raceLine, physicsSurfaceAt(c, 0.2), [me, other]);
+    // Positive steer is to the right = outward. Containment wins.
+    expect(input.steer).toBeLessThanOrEqual(0);
+  });
+});

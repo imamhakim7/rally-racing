@@ -101,7 +101,7 @@ export function createRaceField(circuit: StageCircuit, options: RaceOptions = {}
     const skill = spec.skill ?? 0.9 + 0.08 * rng();
     const slot = slots[i]!;
     const lineOffset = spec.lineOffset ?? slot.lineOffset;
-    const driver = new CpuDriver({ id: spec.id, skill, lineOffset });
+    const driver = new CpuDriver({ id: spec.id, skill, lineOffset, tuning: options.driverTuning });
     driver.setSampleStep(sampleStep);
     driver.placeOnLine(line, slot.distance, lineOffset);
     return driver;

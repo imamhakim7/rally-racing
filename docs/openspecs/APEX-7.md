@@ -172,6 +172,10 @@ function simulateRace(circuit: StageCircuit, opts?: RaceOptions): RaceResult;
 - `bun run test` — `tests/ai-racing-line.test.ts`, `tests/ai-driver.test.ts`,
   `tests/ai-race.test.ts` (four-car race over all six shipped stages: finish, on-surface,
   separation, corner-vs-straight, window, determinism).
+- `bun scripts/qa-apex7-verify.ts` — swept gate: every shipped stage × seeds
+  `[0, 10000)` × four cars, enforcing AC1–AC4 (containment, corner speed,
+  `minSeparation > 2.0 m`, finish window) and printing `VERDICT: PASS|FAIL`.
+  `--seeds=<n>` / `--stage=<id>` give a quick run; the full sweep is the gate.
 - `bun run typecheck` — clean.
 - `bun run build && bun scripts/screenshot-ai-race.mjs` — renders the visible race in headless
   Chromium (SwiftShader WebGL2) and writes `docs/evidence/APEX-7-race.png`.
