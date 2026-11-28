@@ -39,9 +39,13 @@ function expectContained(stageId: string, seed: number): void {
       result.window[0],
     );
   }
+  // AC3: containment must not be bought by gluing the pack together. Braking
+  // both cars through a bend left them side by side at 1.891 m (alpine-forest
+  // seed 269), so spacing is asserted in the same sweep, not a separate ticket.
+  expect(result.minSeparation, `${stageId} seed ${seed} cars too close`).toBeGreaterThan(2.0);
 }
 
-describe("CPU opponents — edge containment regression (#APEX-27)", () => {
+describe("CPU opponents — edge containment + spacing regression (#APEX-27, #APEX-31)", () => {
   for (const [stageId, seeds] of REPORTED) {
     it(`${stageId}: every reported seed stays on the ribbon and in window`, () => {
       for (const seed of seeds) expectContained(stageId, seed);

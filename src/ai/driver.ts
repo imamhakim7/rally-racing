@@ -53,6 +53,10 @@ export interface DriverTuning {
    * a car pushed over the edge fails the stage contract for every car behind it.
    */
   edgeGuardBand: number;
+  /** Depth of the corner-edge speed easing (fraction of the target speed). */
+  edgeEaseDepth: number;
+  /** Speed penalty per metre the car is off its line. */
+  widenGain: number;
   /** Centreline fraction from which a *drifting* car starts shedding speed. */
   recoveryEdgeStart: number;
   /** Heading (rad) off the road tangent that counts as drifting toward the edge. */
@@ -61,7 +65,22 @@ export interface DriverTuning {
   recoverySteerStart: number;
   /** Brake command applied while recovering toward the ribbon edge. */
   recoveryBrake: number;
+  /** Largest temporary lane shift (m) pure pursuit uses to open a gap to a car beside us. */
+  separationAim: number;
+  /** Lateral band (m) inside which the separation aim is active. Wider than the brake band. */
+  aimLateral: number;
+  /** Lateral band (m) inside which the emergency separation rule applies. */
+  emergencyLateral: number;
+  /** Speed target (as a factor of the other car) inside the emergency band. */
+  emergencyBrake: number;
 }
+
+/**
+ * #APEX-31: clearance (m) a separation aim keeps from the ribbon edge. The aim
+ * point may never be placed closer than this, so opening a gap can never point
+ * the car off the road.
+ */
+const EDGE_MARGIN = 0.4;
 
 export const DEFAULT_DRIVER_TUNING: DriverTuning = {
   lookaheadBase: 7,
@@ -77,12 +96,18 @@ export const DEFAULT_DRIVER_TUNING: DriverTuning = {
   blockLateral: 1.8,
   minGap: 8,
   overtakeGain: 0.4,
-  edgeEaseStart: 0.78,
+  edgeEaseStart: 0.7,
+  edgeEaseDepth: 0.65,
+  widenGain: 0.1,
   edgeGuardBand: 2.5,
   recoveryEdgeStart: 0.4,
   recoveryHeading: 0.08,
   recoverySteerStart: 0.8,
   recoveryBrake: 1,
+  separationAim: 1.6,
+  aimLateral: 3.5,
+  emergencyLateral: 2.52,
+  emergencyBrake: 0.5,
 };
 
 export interface CpuDriverOptions {
@@ -241,9 +266,56 @@ export class CpuDriver {
       this.tuning.lookaheadMin,
       this.tuning.lookaheadMax,
     );
+    const halfWidthForAim = line.halfWidth > 0 ? line.halfWidth : Infinity;
+    // #APEX-31: a car beside us gets a temporary shift of the *aim point* away
+    // from it. A steering nudge alone cannot open the gap when both cars are at
+    // the grip limit in a bend — the away component saturates against the corner
+    // demand — and braking both cars keeps them glued together. Moving what the
+    // car pursues lets it find the room over a second or two instead.
+    let separationAim = 0;
+    for (const other of opponents) {
+      if (other === this || other.finished) continue;
+      const opos = other.position();
+      const relX = opos.x - state.x;
+      const relZ = opos.z - state.z;
+      const along = relX * forward.x + relZ * forward.z;
+      const lateral = relX * right.x + relZ * right.z;
+      const absLateral = Math.abs(lateral);
+      if (
+        absLateral >= this.tuning.aimLateral ||
+        Math.abs(along) >= this.tuning.minGap * 0.85
+      ) {
+        continue;
+      }
+      const room = this.tuning.aimLateral - absLateral;
+      const dir = lateral >= 0 ? -1 : 1;
+      // An aim pointing at the near ribbon edge has nowhere to go: cap it by the
+      // room left beyond the edge guard band. A partial aim still walks the car
+      // outward on every step and ends 0.3 m past the ribbon at 7 m/s
+      // (coastal-cliffs seed 1003), so the band is a hard floor, not a taper.
+      const spaceToEdge =
+        halfWidthForAim === Infinity
+          ? Infinity
+          : halfWidthForAim - Math.abs(this.lastCenterOffset);
+      const towardEdge = dir * Math.sign(this.lastCenterOffset || 1) > 0;
+      const allowed = towardEdge
+        ? Math.max(0, spaceToEdge - this.tuning.edgeGuardBand)
+        : Infinity;
+      separationAim += dir * Math.min(this.tuning.separationAim, room, allowed);
+    }
+    separationAim = clamp(separationAim, -this.tuning.separationAim, this.tuning.separationAim);
+
+    // Shift the pursuit target by the aim, clamped so the requested point always
+    // sits inside the ribbon (belt and braces next to the edge-guard cap above).
     const target = line.sampleAtDistance(this.progressDistance + lookahead);
-    const toX = target.position.x - state.x;
-    const toZ = target.position.z - state.z;
+    const laneTarget = clamp(
+      target.offset + separationAim,
+      -(halfWidthForAim - EDGE_MARGIN),
+      halfWidthForAim - EDGE_MARGIN,
+    );
+    const laneShift = laneTarget - target.offset;
+    const toX = target.position.x + target.normal.x * laneShift - state.x;
+    const toZ = target.position.z + target.normal.z * laneShift - state.z;
     const desiredYaw = Math.atan2(toX, toZ);
     const headingError = wrapAngle(desiredYaw - state.yaw);
     // Cross-track is measured from the racing line; the lane offset is where we
@@ -266,7 +338,7 @@ export class CpuDriver {
 
     // 2. Speed target: the line's feasible speed, scaled by skill. If the car
     //    is running wide of the line, ease off so it does not outrun its grip.
-    const widen = clamp(1 - 0.07 * Math.abs(lineError), 0.5, 1);
+    const widen = clamp(1 - this.tuning.widenGain * Math.abs(lineError), 0.4, 1);
     // #APEX-27: |lineError| only grows after the car has already left the ideal
     // line, so it reacts too late at the ribbon edge. Ease the target by the
     // car's distance from the CENTRELINE (not just the error to the desired
@@ -276,7 +348,11 @@ export class CpuDriver {
     // window (#APEX-31).
     const edge = halfWidth === Infinity ? 0 : Math.abs(this.lastCenterOffset) / halfWidth;
     const edgeWindow = Math.max(1 - this.tuning.edgeEaseStart, 1e-6);
-    const edgeEase = clamp(1 - 0.5 * clamp01((edge - this.tuning.edgeEaseStart) / edgeWindow), 0.5, 1);
+    const edgeEase = clamp(
+      1 - this.tuning.edgeEaseDepth * clamp01((edge - this.tuning.edgeEaseStart) / edgeWindow),
+      1 - this.tuning.edgeEaseDepth,
+      1,
+    );
     let vTarget = point.targetSpeed * this.skill * widen * edgeEase;
     // Bound the command by what the tyres can actually turn: following the
     // line's curvature PLUS recovering the current cross-track error needs
@@ -323,8 +399,8 @@ export class CpuDriver {
       // Yielding asymmetrically (only the car behind brakes) looked plausible
       // but measured worse: 39/1800 races under 2 m instead of 26, because the
       // leader's extra speed is what drags the pair together through the bend.
-      if (absLateral < 2.3 && Math.abs(along) < this.tuning.minGap * 0.85) {
-        vTarget = Math.min(vTarget, other.speed() * 0.5);
+      if (absLateral < this.tuning.emergencyLateral && Math.abs(along) < this.tuning.minGap * 0.85) {
+        vTarget = Math.min(vTarget, other.speed() * this.tuning.emergencyBrake);
         const dir = lateral >= 0 ? -1 : 1;
         steer += edgeGuard(dir * 1.0);
       }

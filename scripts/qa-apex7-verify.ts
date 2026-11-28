@@ -3,20 +3,18 @@
 //   bun scripts/qa-apex7-verify.ts                    # every stage, seeds [0, 10000)
 //   bun scripts/qa-apex7-verify.ts --seeds=500        # quick check
 //   bun scripts/qa-apex7-verify.ts --stage=mountain-pass --seeds=2000
-//   bun scripts/qa-apex7-verify.ts --strict           # also fail on AC3 separation
 //
 // Runs the headless four-car race on every shipped stage over a seed *range*
 // (not a handful of hand-picked seeds — the original #APEX-27 fix passed its
-// own 8-seed test and still leaked on `coastal-cliffs` seed 6186) and checks:
+// own 8-seed test and still leaked on `coastal-cliffs` seed 6186) and checks
+// the whole #APEX-7 contract:
 //
 //   AC1 containment     offSurfaceSamples == 0 and maxCrossTrack <= halfWidth
 //   AC2 corner braking  cornerMeanSpeed < straightMeanSpeed
+//   AC3 separation      min pairwise centre distance > 2.0 m
 //   AC4 finish window   window[0] <= finishTime <= window[1]
 //
-// AC3 (min pairwise centre distance > 2.0 m) is measured and reported but is a
-// *known pre-existing gap* on main: ~1.4 % of races bring two cars inside 2.0 m
-// through a bend, before and after #APEX-27 (tracked separately; `--strict`
-// fails on it so the full #APEX-7 contract can be gated once it is fixed).
+// Every check is a hard gate: a single violating car or race fails the run.
 //
 // Prints one line per stage plus a per-AC summary and `VERDICT: PASS|FAIL`.
 // Exits non-zero on FAIL so CI/a reviewer can gate on it.
@@ -43,7 +41,6 @@ function arg(name: string, fallback: string): string {
 
 const seedCount = Math.max(1, Number(arg("seeds", "10000")) || 10_000);
 const onlyStage = arg("stage", "");
-const strict = process.argv.includes("--strict");
 
 const library = new StageLibrary();
 const stageIds = library
@@ -120,7 +117,7 @@ lines.push(
   "",
 );
 for (const t of rows) {
-  const ok = t.leaks === 0 && t.windows === 0 && t.corner === 0;
+  const ok = t.leaks === 0 && t.windows === 0 && t.corner === 0 && t.separation === 0;
   lines.push(
     `${ok ? "PASS" : "FAIL"} ${t.stage}: leaks=${t.leaks} window=${t.windows} cornerSpeed=${t.corner} ` +
       `worstCross=${t.worstCross.toFixed(4)} (${t.worstCrossAt}) ` +
@@ -130,15 +127,10 @@ for (const t of rows) {
 lines.push("");
 lines.push(`AC1 containment (no off-surface, maxCrossTrack <= halfWidth): ${leaks === 0 ? "PASS" : `FAIL (${leaks})`}`);
 lines.push(`AC2 corner speed below straight speed: ${corner === 0 ? "PASS" : `FAIL (${corner})`}`);
-lines.push(
-  `AC3 separation (min centre distance > 2.0 m): ` +
-    (separation === 0
-      ? "PASS"
-      : `KNOWN GAP (${separation} race(s); pre-existing on main, tracked separately)`),
-);
+lines.push(`AC3 separation (min centre distance > 2.0 m): ${separation === 0 ? "PASS" : `FAIL (${separation})`}`);
 lines.push(`AC4 finish inside the per-stage window: ${windows === 0 ? "PASS" : `FAIL (${windows})`}`);
 lines.push("");
-const failed = leaks > 0 || windows > 0 || corner > 0 || (strict && separation > 0);
+const failed = leaks > 0 || windows > 0 || corner > 0 || separation > 0;
 lines.push(`VERDICT: ${failed ? "FAIL" : "PASS"}`);
 lines.push(`(${((Date.now() - started) / 1000).toFixed(1)} s)`);
 

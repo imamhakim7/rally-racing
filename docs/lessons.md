@@ -23,4 +23,23 @@ bands; blending an away-steer in at close range) measured *worse* for containmen
 either (26 → 39 races under 2 m).
 
 **Rule:** the ribbon is the hard constraint. Never trade a stage contract for
-closer racing; tune pack spacing on its own ticket with the same sweep.
+closer racing. Tune pack spacing with the same sweep as containment and the
+finish window (L3), and keep the pre-existing gap visible on its own ticket
+(#APEX-32) while it is fixed.
+
+## L3 — Open a gap at the aim point, not with more steer or brake (#APEX-31)
+
+Cars glued together in a bend cannot be separated from the command side. An
+added away-steer saturates against the corner demand, and braking both cars (or
+only the rear one) keeps them side by side: they slow together and stay 1.9 m
+apart. Widening the emergency band on its own *did* recover the gap but cost the
+finish window — `emergencyLateral: 3.0` gave 1574 window violations over 1800
+races — and `emergencyLateral: 2.5` leaked 144 times. What works is a temporary
+lateral shift of the pure-pursuit **aim point** away from the other car (≤1.6 m,
+activation band 3.5 m), clamped so `edgeGuardBand` always remains between the
+aim and the ribbon edge, with the emergency brake band at 2.52 m.
+
+**Rule:** when the controller cannot satisfy a lateral constraint with steer or
+brake, move the point it is pursuing. Never tune one of containment / finish
+window / separation alone — measure all three over the same seed sweep, because
+each knob trades directly against the other two.
