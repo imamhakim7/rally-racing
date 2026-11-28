@@ -1,0 +1,9 @@
+APEX-8 difficulty & fair catch-up report (30 seeds × 6 stages × 4 tiers)
+
+PASS easy          refWin=1 corner=13.03 straight=18.3 maxΔv=15.14 maxStep=0.494 minSep=2.379 off=0 catchUp=[0.997,1.04] capped=254853
+PASS normal        refWin=1 corner=15.41 straight=20.25 maxΔv=12.34 maxStep=0.552 minSep=2.294 off=0 catchUp=[0.997,1.04] capped=105753
+PASS hard          refWin=0.433 corner=17.05 straight=21.59 maxΔv=9.42 maxStep=0.586 minSep=2.305 off=0 catchUp=[0.994,1.03] capped=28148
+PASS rally-legend  refWin=0.333 corner=17.59 straight=21.95 maxΔv=10.46 maxStep=0.597 minSep=2.356 off=0 catchUp=[0.989,1.03] capped=64072
+
+bands: easyWins=true hardCanLose=true legendCanLose=true cornerOrdered=true telemetryBounded=true
+ALL OK: true
