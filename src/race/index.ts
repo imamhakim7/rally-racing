@@ -3,12 +3,34 @@ export { StageSession, type RaceListener } from "./session";
 export { RaceHud, type RaceHudHandlers, type HudMinimap } from "./hud";
 export {
   buildHudState,
+  buildPaceNoteHud,
   minimapDot,
+  type HudPaceNotes,
   type HudState,
   type HudSplit,
   type HudTelemetry,
   type SplitDirection,
 } from "./hud-model";
+export {
+  PaceNoteTracker,
+  buildPaceNotes,
+  nearestDistanceOnSpline,
+  noteCall,
+  severityForAngle,
+  type NoteDirection,
+  type PaceNote,
+  type PaceNoteOptions,
+  type PaceNoteTrackerOptions,
+  type PaceNoteView,
+} from "./pace-notes";
+export {
+  createSpeechVoice,
+  type SpeechSource,
+  type SpeechSynthesisLike,
+  type SpeechSynthesisUtteranceLike,
+  type Voice,
+  type VoiceOptions,
+} from "./voice";
 export { createTelemetryHarness, type TelemetryFeed, type TelemetryHarnessOptions } from "./telemetry";
 export { createDemoStage, defineStage } from "./stage";
 export {

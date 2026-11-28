@@ -21,6 +21,11 @@ export interface TelemetryFeed {
   update(dt: number): void;
   /** Release listeners. Idempotent. */
   dispose(): void;
+  /**
+   * Optional world position in the x/z plane, for consumers that need arc-length
+   * (the pace-note scheduler, #APEX-18). Absent when the source has no position.
+   */
+  position?(): { x: number; z: number };
 }
 
 export interface TelemetryHarnessOptions {
@@ -58,6 +63,10 @@ export function createTelemetryHarness(options: TelemetryHarnessOptions = {}): T
     update: (dt) => {
       if (!readInput) return;
       vehicle.step(readInput(), dt, surface);
+    },
+    position: () => {
+      const state = vehicle.getState();
+      return { x: state.x, z: state.z };
     },
     dispose: () => {
       keyboard?.dispose();

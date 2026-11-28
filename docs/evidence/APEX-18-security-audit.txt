@@ -1,0 +1,24 @@
+APEX-18 pre-merge security audit (2026-11-28T03:30:35Z)
+Diff: origin/main...HEAD = a10d3bb...f77ef66
+
+1) Dependency manifest changes (expect none):
+   none
+
+2) Risky sink scan (changed .ts/.mjs/.html only):
+   no matches
+
+3) Secret-like tokens in the whole diff:
+366:+None handled. `bun run test` / `build` output contains no secrets.
+
+4) DOM sinks in src/race/hud.ts (all writes):
+   no innerHTML; all note text via textContent
+
+5) Speech API usage (data source is synthesized call only):
+src/main.ts:178:            if (note) voice.speak(note.call);
+src/race/voice.ts:70:  if (!synth || typeof synth.speak !== "function" || typeof synth.cancel !== "function") {
+src/race/voice.ts:95:        synth.speak(build(text));
+
+6) Dev-only static server binds/sandbox:
+31:    if (filePath !== distRoot && !filePath.startsWith(distRoot + sep)) {
+45:await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
+47:const origin = `http://127.0.0.1:${port}`;

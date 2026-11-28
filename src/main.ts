@@ -13,9 +13,19 @@ import {
   StageLibrary,
   createStageScene,
   mountStageSelect,
+  sampleSpline,
   type StageSceneHandle,
 } from "./stage";
-import { bootRace, createTelemetryHarness } from "./race";
+import {
+  PaceNoteTracker,
+  bootRace,
+  buildPaceNotes,
+  createSpeechVoice,
+  createTelemetryHarness,
+  nearestDistanceOnSpline,
+  type SpeechSource,
+  type Voice,
+} from "./race";
 import { mountSupportScreen } from "./ui/supportScreen";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
 
@@ -110,12 +120,38 @@ function bootGame(assessment: SupportAssessment): void {
   const telemetry = createTelemetryHarness();
   const race = aiRace ? null : bootRace({ telemetry, minimap: stageScene!.world.minimap });
 
-  // Keep the minimap in sync when the stage select swaps the circuit.
-  let minimapCircuitId = stageScene?.current.id ?? "";
+  // Co-driver pace notes (#APEX-18): derive once per stage from the sampled
+  // centreline and advance the scheduler from the car harness position. The
+  // optional voice reads the next note as it enters the lead window.
+  const splineFor = (scene: StageSceneHandle) =>
+    sampleSpline(scene.current.spline, scene.current.road.sampleStep);
+  const notesFor = (scene: StageSceneHandle) =>
+    buildPaceNotes(splineFor(scene), { checkpoints: scene.current.checkpoints });
+  let paceSpline = stageScene ? splineFor(stageScene) : null;
+  let paceTracker = stageScene ? new PaceNoteTracker(notesFor(stageScene)) : null;
+  const voice = createSpeechVoice(window as unknown as SpeechSource);
+  let voiceEnabled = voice.available;
+
+  if (race && paceTracker) {
+    race.hud.setPaceNotes(() => paceTracker!.view());
+    race.hud.setVoice({
+      available: voice.available,
+      enabled: voiceEnabled,
+      onToggle: (enabled) => {
+        voiceEnabled = enabled;
+        if (!enabled) voice.cancel();
+      },
+    });
+  }
+
+  // Keep the minimap and pace notes in sync when the stage select swaps circuit.
+  let currentCircuitId = stageScene?.current.id ?? "";
   const syncMinimap = (): void => {
     if (!race || !stageScene) return;
-    if (stageScene.current.id !== minimapCircuitId) {
-      minimapCircuitId = stageScene.current.id;
+    if (stageScene.current.id !== currentCircuitId) {
+      currentCircuitId = stageScene.current.id;
+      paceSpline = splineFor(stageScene);
+      paceTracker = new PaceNoteTracker(notesFor(stageScene));
       race.hud.setMinimap(stageScene.world.minimap);
     }
   };
@@ -123,11 +159,24 @@ function bootGame(assessment: SupportAssessment): void {
   const app: EngineApp = createEngine(canvas, {
     sceneHandle,
     renderer: { quality, maxPixelRatio: quality.maxPixelRatio },
-    onUpdate: race ? (dt) => race.update(dt) : undefined,
+    onUpdate: race
+      ? (dt) => {
+          race.update(dt);
+          if (paceTracker && race.session.phase === "countdown") paceTracker.reset();
+          if (paceTracker && paceSpline && telemetry.position) {
+            const position = telemetry.position();
+            paceTracker.setDistance(nearestDistanceOnSpline(paceSpline, position.x, position.z));
+          }
+        }
+      : undefined,
     onRender: race
       ? () => {
           syncMinimap();
           race.render();
+          if (voiceEnabled && race.session.phase === "racing") {
+            const note = paceTracker?.pollAnnouncement();
+            if (note) voice.speak(note.call);
+          }
         }
       : undefined,
   });
@@ -138,7 +187,15 @@ function bootGame(assessment: SupportAssessment): void {
     if (selectHost) {
       mountStageSelect(selectHost, library, stageScene!);
     }
-    window.apexStage = { library, scene: stageScene!, app, race: race!, support: assessment, quality };
+    window.apexStage = {
+      library,
+      scene: stageScene!,
+      app,
+      race: race!,
+      support: assessment,
+      quality,
+      pace: { get tracker() { return paceTracker; }, voice },
+    };
   } else {
     window.apexRace = { library, scene: aiRace, app };
   }
@@ -146,6 +203,7 @@ function bootGame(assessment: SupportAssessment): void {
   // Vite HMR: release GPU + overlay resources before the module is replaced.
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
+      voice.cancel();
       race?.dispose();
       app.dispose();
     });
@@ -178,6 +236,8 @@ declare global {
       race?: ReturnType<typeof bootRace>;
       support: SupportAssessment;
       quality?: ReturnType<typeof resolveQualityPreset>;
+      /** Co-driver pace-note state (#APEX-18), exposed for tooling + evidence. */
+      pace?: { tracker: PaceNoteTracker | null; voice: Voice };
     };
     /** Exposed when running the visible CPU race (`?race=<id>`). */
     apexRace?: { library: StageLibrary; scene: AiRaceScene; app: EngineApp } | null;

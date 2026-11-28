@@ -1,5 +1,6 @@
-import { buildHudState, type HudTelemetry } from "./hud-model";
+import { buildHudState, buildPaceNoteHud, type HudTelemetry } from "./hud-model";
 import { formatTime } from "./results";
+import type { PaceNoteView } from "./pace-notes";
 import type { RaceController } from "./race";
 
 export interface RaceHudHandlers {
@@ -83,6 +84,31 @@ const STYLE = `
 .apex-speed .apex-speed-value { font-size: clamp(28px, 3.4vw, 84px); font-weight: 800; line-height: 1; letter-spacing: .01em; }
 .apex-speed .apex-speed-unit { color: var(--apex-muted); font-size: .5em; letter-spacing: .18em; text-transform: uppercase; }
 
+/* Pace notes (#APEX-18): bottom-left, bounded, clear of the centre band. */
+.apex-notes {
+  left: var(--apex-safe); bottom: var(--apex-safe);
+  min-width: clamp(140px, 18vw, 260px); max-width: 40vw;
+}
+.apex-notes .apex-notes-caption {
+  color: var(--apex-muted); font-size: .62em; letter-spacing: .18em; text-transform: uppercase;
+}
+.apex-notes .apex-notes-call {
+  font-size: clamp(22px, 2.6vw, 52px); font-weight: 800; line-height: 1.1;
+  letter-spacing: .02em; color: var(--apex-accent);
+}
+.apex-notes .apex-notes-distance { color: var(--apex-muted); font-size: .8em; }
+.apex-notes .apex-notes-following {
+  margin-top: 4px; color: var(--apex-muted); font-size: .74em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.apex-notes .apex-notes-voice {
+  pointer-events: auto; cursor: pointer; font: inherit; margin-top: 6px;
+  color: #cfe4ff; background: transparent; border: 1px solid rgba(150,196,255,.4);
+  border-radius: 6px; padding: 3px 9px; font-size: .7em;
+}
+.apex-notes .apex-notes-voice[aria-pressed="true"] { color: #06121f; background: var(--apex-good); border-color: transparent; }
+.apex-notes .apex-notes-voice:focus-visible { outline: 3px solid var(--apex-good); outline-offset: 2px; }
+
 .apex-results { left: 50%; top: 46%; transform: translate(-50%,-50%); width: min(92vw, 480px); max-height: 88vh; overflow: auto; }
 .apex-results h2 { margin: 0 0 2px; font-size: 1.5em; }
 .apex-pos { font-size: 1.15em; margin: 0 0 12px; color: var(--apex-good); }
@@ -152,6 +178,12 @@ export class RaceHud {
   private readonly livePanel: HTMLDivElement;
   private readonly minimapPanel: HTMLDivElement;
   private readonly speedPanel: HTMLDivElement;
+  private readonly pacePanel: HTMLDivElement;
+  private readonly paceCallNode: HTMLDivElement;
+  private readonly paceDistanceNode: HTMLDivElement;
+  private readonly paceFollowingNode: HTMLDivElement;
+  private readonly paceVoiceButton: HTMLButtonElement;
+  private readonly paceSrNode: HTMLDivElement;
   private readonly resultsPanel: HTMLDivElement;
   private readonly timeNode: HTMLDivElement;
   private readonly livePosNode: HTMLDivElement;
@@ -169,6 +201,11 @@ export class RaceHud {
   private finishId = "finish";
   private minimap: HudMinimap | null = null;
   private telemetry: (() => HudTelemetry | null) | null = null;
+  private paceSource: (() => PaceNoteView | null) | null = null;
+  private voiceAvailable = false;
+  private voiceEnabled = false;
+  private voiceToggle: ((enabled: boolean) => void) | null = null;
+  private lastPaceSr = "";
   private lastSrKey = "";
   private lastSplitIndex = -1;
 
@@ -220,6 +257,24 @@ export class RaceHud {
     const speedUnit = el("div", "apex-speed-unit", "km/h");
     this.speedPanel.append(this.speedNode, speedUnit);
 
+    // Pace notes (bottom-left, #APEX-18).
+    this.pacePanel = el("div", "apex-panel apex-notes apex-hide");
+    const paceCaption = el("div", "apex-notes-caption", "Pace notes");
+    this.paceCallNode = el("div", "apex-notes-call", "");
+    this.paceDistanceNode = el("div", "apex-notes-distance", "");
+    this.paceFollowingNode = el("div", "apex-notes-following", "");
+    this.paceVoiceButton = el("button", "apex-notes-voice", "Voice: off");
+    this.paceVoiceButton.setAttribute("type", "button");
+    this.paceVoiceButton.setAttribute("aria-pressed", "false");
+    this.paceVoiceButton.addEventListener("click", () => this.toggleVoice());
+    this.pacePanel.append(
+      paceCaption,
+      this.paceCallNode,
+      this.paceDistanceNode,
+      this.paceFollowingNode,
+      this.paceVoiceButton,
+    );
+
     // Results
     this.resultsPanel = el("div", "apex-panel apex-results");
     const resultsTitle = el("h2", undefined, "Stage result");
@@ -242,7 +297,7 @@ export class RaceHud {
     const help = el(
       "div",
       "apex-help",
-      "keys: W/A/S/D or arrows drive · 1..9 cross checkpoint · F finish · R restart · Q quit",
+      "keys: W/A/S/D or arrows drive · 1..9 cross checkpoint · F finish · R restart · Q quit · V voice",
     );
     this.resultsPanel.append(resultsTitle, this.posNode, table, restart, quit, help);
 
@@ -252,6 +307,12 @@ export class RaceHud {
     this.srNode.setAttribute("aria-live", "polite");
     this.srNode.setAttribute("aria-atomic", "true");
 
+    // Polite live region for the co-driver call (#APEX-18).
+    this.paceSrNode = el("div", "apex-sr");
+    this.paceSrNode.setAttribute("role", "status");
+    this.paceSrNode.setAttribute("aria-live", "polite");
+    this.paceSrNode.setAttribute("aria-atomic", "true");
+
     this.root.append(
       style,
       this.selectPanel,
@@ -259,8 +320,10 @@ export class RaceHud {
       this.livePanel,
       this.minimapPanel,
       this.speedPanel,
+      this.pacePanel,
       this.resultsPanel,
       this.srNode,
+      this.paceSrNode,
     );
 
     this.keyListener = (event) => this.onKey(event);
@@ -289,6 +352,41 @@ export class RaceHud {
     if (visible) this.mapPath.setAttribute("d", minimap!.d);
   }
 
+  /** Wire the co-driver note source (#APEX-18); `null` hides the panel. */
+  setPaceNotes(source: (() => PaceNoteView | null) | null): void {
+    this.paceSource = source;
+    if (source === null) {
+      this.pacePanel.classList.add("apex-hide");
+      this.paceSrNode.textContent = "";
+      this.lastPaceSr = "";
+    }
+  }
+
+  /**
+   * Configure the optional voice toggle. `available` false hides the button
+   * (the platform has no speech); otherwise it reflects `enabled` and asks
+   * `onToggle` when clicked (or when `V` is pressed).
+   */
+  setVoice(options: { available: boolean; enabled: boolean; onToggle: (enabled: boolean) => void } | null): void {
+    this.voiceAvailable = options?.available ?? false;
+    this.voiceEnabled = options?.enabled ?? false;
+    this.voiceToggle = options?.onToggle ?? null;
+    this.paceVoiceButton.classList.toggle("apex-hide", !this.voiceAvailable);
+    this.syncVoiceButton();
+  }
+
+  private syncVoiceButton(): void {
+    this.paceVoiceButton.textContent = this.voiceEnabled ? "Voice: on" : "Voice: off";
+    this.paceVoiceButton.setAttribute("aria-pressed", this.voiceEnabled ? "true" : "false");
+  }
+
+  private toggleVoice(): void {
+    if (!this.voiceAvailable) return;
+    this.voiceEnabled = !this.voiceEnabled;
+    this.syncVoiceButton();
+    this.voiceToggle?.(this.voiceEnabled);
+  }
+
   /** Project the controller's current state onto the overlay. */
   render(controller: RaceController): void {
     const stage = controller.stage;
@@ -303,6 +401,7 @@ export class RaceHud {
     this.toggle(this.livePanel, phase === "racing");
     this.toggle(this.minimapPanel, phase === "racing" && this.minimap !== null);
     this.toggle(this.speedPanel, phase === "racing");
+    this.toggle(this.pacePanel, false);
     this.toggle(this.resultsPanel, phase === "finished" || phase === "invalidated");
 
     const state = buildHudState(
@@ -331,6 +430,22 @@ export class RaceHud {
         );
       }
       this.speedNode.textContent = state.speedText;
+
+      // Co-driver pace notes (#APEX-18): a pure view of the tracker.
+      const paceView = this.paceSource ? this.paceSource() : null;
+      const notes = buildPaceNoteHud(paceView);
+      this.toggle(this.pacePanel, notes.visible);
+      if (notes.visible) {
+        this.paceCallNode.textContent = notes.nextCall;
+        this.paceDistanceNode.textContent = notes.nextDistance;
+        this.paceFollowingNode.textContent = notes.following.length
+          ? `then ${notes.following.join(" · ")}`
+          : "";
+        if (notes.srText !== this.lastPaceSr) {
+          this.lastPaceSr = notes.srText;
+          this.paceSrNode.textContent = notes.srText;
+        }
+      }
 
       const splitIndex = controller.lastSplit?.index ?? -1;
       if (state.split) {
@@ -434,6 +549,10 @@ export class RaceHud {
     }
     if (key === "f") {
       this.handlers.onCrossGate(this.finishId);
+      return;
+    }
+    if (key === "v") {
+      this.toggleVoice();
       return;
     }
     if (key === "enter" || key === " ") {

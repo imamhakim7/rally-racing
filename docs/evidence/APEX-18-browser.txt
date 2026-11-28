@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "origin": "http://127.0.0.1:34833",
+  "screenshot": "/root/sarawedi-worktrees/wt/APEX-18/docs/evidence/APEX-18-pace-notes.png",
+  "setup": {
+    "noteCount": 2,
+    "first": "Right 4"
+  },
+  "first": {
+    "visible": true,
+    "call": "Right 4",
+    "distance": "218 m",
+    "following": "then Left 2",
+    "voiceButton": {
+      "label": "Voice: on",
+      "pressed": "true"
+    },
+    "notes": [
+      "Right 4",
+      "Left 2"
+    ]
+  },
+  "advanced": {
+    "nextCall": "Left 2",
+    "nextText": "Left 2 · 191 m",
+    "current": "Right 4"
+  },
+  "problems": []
+}

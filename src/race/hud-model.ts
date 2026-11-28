@@ -8,6 +8,7 @@
  */
 import type { RaceController } from "./race";
 import { formatDelta, formatSpeed, formatTime, splitDelta } from "./results";
+import type { PaceNoteView } from "./pace-notes";
 import type { RacePhase } from "./types";
 
 /** Per-frame telemetry the HUD needs from the vehicle (or a harness). */
@@ -187,4 +188,67 @@ function buildSrKey(
   const speed = telemetry && Number.isFinite(telemetry.speedKmh) ? telemetry.speedKmh : -1;
   const speedBucket = Math.round(speed / 20);
   return `${phase}|${splitIndex}|${positionText}|${timeBucket}|${speedBucket}`;
+}
+
+/**
+ * The HUD projection of the co-driver's pace notes (#APEX-18).
+ *
+ * Pure strings so the panel's semantics are unit-tested headlessly; the DOM
+ * overlay only paints. `visible` is false when the stage has no notes, so the
+ * panel hides rather than showing an empty call.
+ */
+export interface HudPaceNotes {
+  visible: boolean;
+  /** The next corner's phrase, e.g. `"Right 3"`. */
+  nextCall: string;
+  /** Distance to the next corner rounded to metres, e.g. `"240 m"`. */
+  nextDistance: string;
+  /** The following up to `maxFollowing` calls, e.g. `["Left 5", "Right 2"]`. */
+  following: string[];
+  /** Whether a note is actually ahead (vs. the stage merely having notes). */
+  hasNext: boolean;
+  /** Sentence for the polite live region / screen reader. */
+  srText: string;
+}
+
+export function buildPaceNoteHud(
+  view: PaceNoteView | null,
+  maxFollowing = 3,
+): HudPaceNotes {
+  if (!view || !view.hasNotes) {
+    return {
+      visible: false,
+      nextCall: "",
+      nextDistance: "",
+      following: [],
+      hasNext: false,
+      srText: "",
+    };
+  }
+
+  const next = view.next;
+  const following = view.upcoming
+    .slice(1, 1 + Math.max(0, maxFollowing))
+    .map((note) => note.call);
+
+  if (!next) {
+    return {
+      visible: true,
+      nextCall: "Clear",
+      nextDistance: "",
+      following,
+      hasNext: false,
+      srText: "No notes ahead.",
+    };
+  }
+
+  const metres = Math.max(0, Math.round(view.nextDistance ?? 0));
+  return {
+    visible: true,
+    nextCall: next.call,
+    nextDistance: `${metres} m`,
+    following,
+    hasNext: true,
+    srText: `Next note ${next.call} in ${metres} metres.`,
+  };
 }
