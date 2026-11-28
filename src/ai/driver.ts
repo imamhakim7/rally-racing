@@ -193,7 +193,7 @@ export class CpuDriver {
    * Compute the command for this step. Does **not** advance the vehicle — the
    * race loop owns stepping so it stays in lockstep with surface sampling.
    */
-  control(line: RacingLine, _surface: Surface, opponents: readonly CpuDriver[]): VehicleInput {
+  control(line: RacingLine, surface: Surface, opponents: readonly CpuDriver[]): VehicleInput {
     const state = this.vehicle.getState();
     const speed = this.speed();
 
@@ -227,7 +227,22 @@ export class CpuDriver {
     // 2. Speed target: the line's feasible speed, scaled by skill. If the car
     //    is running wide of the line, ease off so it does not outrun its grip.
     const widen = clamp(1 - 0.07 * Math.abs(lineError), 0.5, 1);
-    let vTarget = point.targetSpeed * this.skill * widen;
+    // #APEX-27: |lineError| only grows after the car has already left the ideal
+    // line, so it reacts too late at the ribbon edge. Ease the target by the
+    // car's distance from the CENTRELINE (not just the error to the desired
+    // lane) as |centerOffset| approaches half-width.
+    const halfWidth = line.halfWidth > 0 ? line.halfWidth : Infinity;
+    const edge = halfWidth === Infinity ? 0 : Math.abs(this.lastCenterOffset) / halfWidth;
+    const edgeEase = clamp(1 - 0.9 * clamp01((edge - 0.55) / 0.45), 0.25, 1);
+    let vTarget = point.targetSpeed * this.skill * widen * edgeEase;
+    // Bound the command by what the tyres can actually turn: following the
+    // line's curvature PLUS recovering the current cross-track error needs
+    // v²·k lateral acceleration. Cap v so that demand stays within grip.
+    const grip = Math.max(0.05, surface.lateralGrip);
+    const latAccel = grip * 9.81;
+    const kReq = Math.abs(point.curvature) + (2 * Math.abs(lineError)) / Math.max(lookahead * lookahead, 1);
+    const turnCap = Math.sqrt(latAccel / Math.max(kReq, 1e-4));
+    vTarget = Math.min(vTarget, turnCap);
 
     // 3. Separation / overtake. Iterate a stable order for determinism.
     const opponentsInOrder = [...opponents]

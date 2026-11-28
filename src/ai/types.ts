@@ -32,6 +32,8 @@ export interface RacingLine {
   points: RacingLinePoint[];
   /** Total length in metres. */
   length: number;
+  /** Road half-width in metres, so the driver knows where the ribbon ends. */
+  halfWidth: number;
   /** Ideal lap time in seconds from the feasible speed profile. */
   referenceTime: number;
   /** Interpolated line point at an arc distance (clamped to the line). */
