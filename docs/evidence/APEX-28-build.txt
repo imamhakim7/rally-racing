@@ -1,0 +1,17 @@
+$ bun run gen:stages
+$ bun scripts/generate-stage-index.ts
+stage index: 6 stage(s) -> src/stage/data/index.ts
+$ tsc --noEmit && vite build
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 56 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  2.74 kB │ gzip:   1.01 kB
+dist/assets/index-Cni4yyua.js  604.95 kB │ gzip: 159.90 kB │ map: 3,186.89 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 810ms

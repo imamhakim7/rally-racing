@@ -30,5 +30,6 @@
     { "id": "sz-dunes", "surface": "sand", "from": 0.25, "to": 0.75, "grip": 0.55 },
     { "id": "sz-oasis", "surface": "gravel", "from": 0.75, "to": 1.0, "grip": 0.7 }
   ],
+  "terrain": { "seed": 4693, "relief": 8, "resolution": 15, "surface": "sand", "corridorWidth": 44 },
   "minimap": { "color": "#e6c15a", "path": "auto" }
 }

@@ -32,5 +32,6 @@
     { "id": "sz-snowline", "surface": "snow", "from": 0.35, "to": 0.7, "grip": 0.5, "depth": 0.05 },
     { "id": "sz-descent", "surface": "dirt", "from": 0.7, "to": 1.0, "grip": 0.65 }
   ],
+  "terrain": { "seed": 5827, "relief": 10, "resolution": 15, "surface": "snow", "corridorWidth": 38 },
   "minimap": { "color": "#cfe3f2", "path": "auto" }
 }

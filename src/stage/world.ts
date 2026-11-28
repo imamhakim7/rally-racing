@@ -17,6 +17,8 @@ import type {
 import { sampleSpline, type SampledSpline } from "./spline";
 import { buildRoadGeometry, resolveSurfaceSpans, surfaceAt } from "./road";
 import { resolveMinimapPath } from "./minimap";
+import { buildTerrain } from "./terrain";
+import { createContainment } from "./containment";
 
 const CHECKPOINT_COLOR = 0x38bdf8;
 const FINISH_COLOR = 0xf2c94c;
@@ -89,6 +91,10 @@ export function buildStageWorld(circuit: StageCircuit): StageWorld {
   const group = new THREE.Group();
   group.name = `stage:${circuit.id}`;
 
+  // Terrain first so the road ribbon renders on top of the ground (#APEX-28).
+  const terrain = buildTerrain(circuit, spline);
+  group.add(terrain.mesh);
+
   const road = new THREE.Mesh(
     roadBuild.geometry,
     new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }),
@@ -133,8 +139,9 @@ export function buildStageWorld(circuit: StageCircuit): StageWorld {
   group.updateMatrixWorld(true);
   const bounds = new THREE.Box3().setFromObject(group);
   const minimap = resolveMinimapPath(circuit.minimap, spline);
+  const containment = createContainment(circuit, spline);
 
-  return { circuit, group, gates, surfaces: spans, road, bounds, minimap };
+  return { circuit, group, gates, surfaces: spans, road, terrain, containment, bounds, minimap };
 }
 
 /** Release every geometry/material the world created. Idempotent. */

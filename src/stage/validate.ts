@@ -21,6 +21,7 @@ import {
   type StageCircuit,
   type SurfaceSpec,
   type SurfaceType,
+  type TerrainDef,
   type Vec2,
 } from "./types";
 
@@ -38,6 +39,7 @@ interface RawStage {
   checkpoints?: CheckpointSpec[];
   surfaces: SurfaceSpec[];
   minimap?: { color?: string; path?: "auto" | Vec2[] };
+  terrain?: Partial<TerrainDef>;
 }
 
 const COVERAGE_EPSILON = 1e-6;
@@ -252,6 +254,28 @@ function semanticIssues(stage: RawStage): StageIssue[] {
 /** The default minimap when a stage omits it. */
 export const DEFAULT_MINIMAP_COLOR = "#e8c547";
 
+/** Stable 32-bit string hash, so a stage without a terrain seed is still deterministic. */
+function hashId(id: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < id.length; i += 1) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/** Fill in the terrain layer, defaulting every omitted field (#APEX-28). */
+function normaliseTerrain(stage: RawStage): TerrainDef {
+  const terrain = stage.terrain ?? {};
+  return {
+    seed: terrain.seed ?? hashId(stage.id),
+    relief: terrain.relief ?? 6,
+    resolution: terrain.resolution ?? 15,
+    surface: terrain.surface ?? stage.road.surface,
+    corridorWidth: terrain.corridorWidth ?? 34,
+  };
+}
+
 function normalise(stage: RawStage, source: string): StageCircuit {
   const minimap: MinimapSpec = {
     color: stage.minimap?.color ?? DEFAULT_MINIMAP_COLOR,
@@ -285,6 +309,7 @@ function normalise(stage: RawStage, source: string): StageCircuit {
     checkpoints: stage.checkpoints ?? [],
     surfaces: [...stage.surfaces].sort((a, b) => a.from - b.from),
     minimap,
+    terrain: normaliseTerrain(stage),
     source,
   };
 }

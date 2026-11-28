@@ -33,5 +33,6 @@
     { "id": "sz-ford", "surface": "water", "from": 0.55, "to": 0.6, "grip": 0.4, "depth": 0.35 },
     { "id": "sz-crest", "surface": "gravel", "from": 0.6, "to": 1.0, "grip": 0.72 }
   ],
+  "terrain": { "seed": 1337, "relief": 7, "resolution": 15, "surface": "grass", "corridorWidth": 36 },
   "minimap": { "color": "#5fbf7f", "path": "auto" }
 }

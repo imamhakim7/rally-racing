@@ -31,5 +31,6 @@
     { "id": "sz-track", "surface": "gravel", "from": 0.4, "to": 0.8, "grip": 0.72 },
     { "id": "sz-woods", "surface": "dirt", "from": 0.8, "to": 1.0, "grip": 0.66 }
   ],
+  "terrain": { "seed": 6911, "relief": 6, "resolution": 15, "surface": "grass", "corridorWidth": 36 },
   "minimap": { "color": "#e0a34a", "path": "auto" }
 }

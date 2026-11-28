@@ -29,5 +29,6 @@
     { "id": "sz-clifftop", "surface": "tarmac", "from": 0.0, "to": 0.7, "grip": 1.05 },
     { "id": "sz-descent", "surface": "gravel", "from": 0.7, "to": 1.0, "grip": 0.8 }
   ],
+  "terrain": { "seed": 3579, "relief": 6, "resolution": 15, "surface": "sand", "corridorWidth": 34 },
   "minimap": { "color": "#4aa3d8", "path": "auto" }
 }

@@ -31,5 +31,6 @@
     { "id": "sz-sand", "surface": "sand", "from": 0.3, "to": 0.65, "grip": 0.6 },
     { "id": "sz-exit", "surface": "gravel", "from": 0.65, "to": 1.0, "grip": 0.68 }
   ],
+  "terrain": { "seed": 2451, "relief": 9, "resolution": 15, "surface": "dirt", "corridorWidth": 40 },
   "minimap": { "color": "#d98c4a", "path": "auto" }
 }
