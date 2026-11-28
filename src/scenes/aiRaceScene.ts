@@ -8,6 +8,13 @@
  */
 import * as THREE from "three";
 import type { SceneHandle } from "../engine/scene";
+import {
+  cameraMotion,
+  shakeOffset,
+  FULL_MOTION,
+  type CameraMotion,
+  type MotionPolicy,
+} from "../engine/motion";
 import { clamp } from "../physics/util";
 import { buildStageWorld, disposeStageWorld } from "../stage/world";
 import { sampleSpline } from "../stage/spline";
@@ -20,6 +27,8 @@ import { buildCarMesh } from "./carMesh";
 export interface AiRaceSceneOptions {
   /** Deterministic skill seed (default 7). */
   seed?: number;
+  /** Camera motion policy (#APEX-12); reduced motion disables shake/blur. */
+  motion?: MotionPolicy;
 }
 
 /** Per-car telemetry sample for playtest/QA tooling. */
@@ -57,6 +66,8 @@ export interface AiRaceScene extends SceneHandle {
   readonly world: StageWorld;
   /** Sample every car plus camera visibility (used by the playtest harness). */
   snapshot(): RaceSnapshot;
+  /** Current camera shake/blur under the active motion policy (#APEX-12). */
+  cameraEffects(): CameraMotion;
 }
 
 const COLORS = [0xd23c3c, 0x38bdf8, 0xf2c94c, 0x5fbf7f, 0xc084fc, 0xfb923c];
@@ -78,6 +89,7 @@ export function createAiRaceScene(
   sun.shadow.mapSize.set(1024, 1024);
   scene.add(sun);
 
+  const policy = options.motion ?? FULL_MOTION;
   const world = buildStageWorld(circuit);
   scene.add(world.group);
 
@@ -102,6 +114,7 @@ export function createAiRaceScene(
   let current = previous.map((p) => ({ ...p }));
   let simulationTime = 0;
   let disposed = false;
+  let effects: CameraMotion = { shake: 0, blur: 0 };
 
   function leader(): CpuDriver {
     return drivers.reduce((best, d) => (d.distance > best.distance ? d : best), drivers[0]!);
@@ -164,6 +177,14 @@ export function createAiRaceScene(
     const height = clamp(6 + spread * 0.45, 6, 20);
     camera.position.set(cx - forwardX * distance, height, cz - forwardZ * distance);
     camera.lookAt(cx + forwardX * 6, 1.2, cz + forwardZ * 6);
+
+    // Motion effects (#APEX-12): a subtle speed-scaled camera shake, gated by the
+    // motion policy. `cameraMotion` returns zeros when reduced, so this is the
+    // single enforcement point for the region camera.
+    effects = cameraMotion(policy, clamp(leader().speed() / 45, 0, 1));
+    const offset = shakeOffset(simulationTime, effects.shake);
+    camera.position.x += offset.x;
+    camera.position.y += offset.y;
   }
 
   const projection = new THREE.Vector3();
@@ -204,6 +225,9 @@ export function createAiRaceScene(
     },
     get leaderProgress() {
       return clamp(leader().distance / Math.max(line.length, 1), 0, 1);
+    },
+    cameraEffects() {
+      return effects;
     },
     snapshot() {
       return {

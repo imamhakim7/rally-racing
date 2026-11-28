@@ -1,6 +1,8 @@
-/** Keyboard → `VehicleInput` mapping (WASD / arrows / space handbrake). */
+/** Keyboard → `VehicleInput` mapping, driven by the remappable binding table. */
 
 import { NEUTRAL_INPUT, type VehicleInput } from "../physics/vehicle";
+import { actionsToVehicleInput, neutralActions, type ActionValues } from "./actions";
+import { DEFAULT_BINDINGS, type Bindings, type BindingsLike } from "./bindings";
 
 /** Minimal event-target shape so tests can supply a fake without a DOM. */
 export interface KeyboardTarget {
@@ -14,23 +16,43 @@ export interface InputSource {
   dispose(): void;
 }
 
-/** Pure mapping from a set of pressed `KeyboardEvent.code`s to a command. */
-export function mapKeys(pressed: ReadonlySet<string>): VehicleInput {
-  const has = (...codes: string[]): boolean => codes.some((code) => pressed.has(code));
-  const steer = (has("KeyD", "ArrowRight") ? 1 : 0) - (has("KeyA", "ArrowLeft") ? 1 : 0);
-  return {
-    throttle: has("KeyW", "ArrowUp") ? 1 : 0,
-    brake: has("KeyS", "ArrowDown") ? 1 : 0,
-    steer,
-    handbrake: has("Space"),
-  };
+function resolveBindings(bindings: BindingsLike): Bindings {
+  return typeof bindings === "function" ? bindings() : bindings;
+}
+
+/** Pure mapping from a set of pressed `KeyboardEvent.code`s to action intensities. */
+export function mapKeysToActions(
+  pressed: ReadonlySet<string>,
+  bindings: BindingsLike = DEFAULT_BINDINGS,
+): ActionValues {
+  const table = resolveBindings(bindings);
+  const values = neutralActions();
+  for (const action of Object.keys(table) as (keyof Bindings)[]) {
+    for (const binding of table[action]) {
+      if (binding.device !== "keyboard" || !pressed.has(binding.code)) continue;
+      values[action] = 1;
+    }
+  }
+  return values;
+}
+
+/** Pure mapping from pressed keys to a vehicle command (default table preserves #APEX-10 keys). */
+export function mapKeys(
+  pressed: ReadonlySet<string>,
+  bindings: BindingsLike = DEFAULT_BINDINGS,
+): VehicleInput {
+  return actionsToVehicleInput(mapKeysToActions(pressed, bindings));
 }
 
 /**
- * Track held keys on `target` and expose them as a `VehicleInput`. Space and the
+ * Track held keys on `target` and expose them as a `VehicleInput`, resolved
+ * through `bindings` (a getter lets the manager swap bindings live). Space and the
  * arrow keys are `preventDefault`ed so the page does not scroll while driving.
  */
-export function createKeyboardInput(target: KeyboardTarget): InputSource {
+export function createKeyboardInput(
+  target: KeyboardTarget,
+  bindings: BindingsLike = DEFAULT_BINDINGS,
+): InputSource {
   const pressed = new Set<string>();
 
   const onDown = (event: KeyboardEvent): void => {
@@ -49,7 +71,7 @@ export function createKeyboardInput(target: KeyboardTarget): InputSource {
   target.addEventListener("blur", onBlur);
 
   return {
-    read: () => (pressed.size === 0 ? { ...NEUTRAL_INPUT } : mapKeys(pressed)),
+    read: () => (pressed.size === 0 ? { ...NEUTRAL_INPUT } : mapKeys(pressed, bindings)),
     dispose: () => {
       target.removeEventListener("keydown", onDown);
       target.removeEventListener("keyup", onUp);

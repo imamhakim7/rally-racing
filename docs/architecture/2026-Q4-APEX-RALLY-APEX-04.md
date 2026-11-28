@@ -83,10 +83,48 @@ interface HudState {                                         // pure, DOM-free
   default settings.
 - WCAG AA: contrast, non-colour-only signalling, reduced-motion, screen-reader summary.
 
+## Input & accessibility layer (owned by #APEX-12, consumed by #APEX-11)
+
+Following the same rules, input and accessibility are a **pure core with platform
+ports at the edge**: keyboard events, `navigator.getGamepads`, `pointer*`,
+`localStorage` and `matchMedia` are injected, so the logic is headless-testable.
+
+```ts
+// src/input — one command contract, many sources
+type InputAction = "throttle" | "brake" | "steerLeft" | "steerRight" | "handbrake"
+type ActionValues = Record<InputAction, number>          // 0..1
+interface ControlBinding { device: "keyboard" | "gamepad"; kind: "button" | "axis"; code: string }
+type Bindings = Record<InputAction, ControlBinding[]>
+function actionsToVehicleInput(values: ActionValues): VehicleInput
+function conflicts(bindings: Bindings): { binding: ControlBinding; actions: InputAction[] }[]
+function createInputManager(opts?): InputManager          // merges keyboard/gamepad/touch
+
+// src/input/settings.ts — the ONE shared settings module (epic-wide)
+interface GameSettings { version: number; input: InputSettings; accessibility: AccessibilitySettings }
+function normalizeSettings(raw: unknown): GameSettings    // never throws
+
+// src/ui/a11y.ts + src/ui/palette.ts + src/engine/motion.ts
+function resolveMotion(pref, systemReducedMotion): "full" | "reduced"
+function a11yAttributes(s: GameSettings, systemReducedMotion: boolean): { dataset; cssVars }
+function cameraMotion(policy: MotionPolicy, speedRatio: number): { shake: number; blur: number }
+```
+
+Binding decisions:
+
+1. `src/input/settings.ts` is the single settings/persistence module for the epic.
+   #APEX-11 consumes it; it does not create a parallel store.
+2. Input determinism is preserved: the abstraction resolves to the same `VehicleInput`
+   the physics model already consumes, so #APEX-2's fixed-step behaviour is unchanged.
+3. Reduced motion is a **policy** (`cameraMotion` returns zeros), not only a CSS media
+   query, so scene effects cannot ignore it.
+4. Palettes are CSS custom properties on one root; `#APEX-10`'s tokens are the base and
+   colour-blind variants swap the semantic `--apex-good/--apex-bad/--apex-accent` values
+   while keeping the non-colour glyphs.
+
 ## Ticket map
 
 | Ticket | Contributes |
 | --- | --- |
 | #APEX-10 | Race HUD (speed, time, splits, position, minimap) — this epic's first slice |
-| #APEX-11 | Menus, stage select, settings, first-run tutorial |
+| #APEX-11 | Menus, stage select, settings, first-run tutorial — consumes #APEX-12's settings module |
 | #APEX-12 | Input abstraction + accessibility (gamepad, touch, WCAG AA) |

@@ -1,0 +1,17 @@
+# APEX-12 input abstraction evidence
+bindings default conflicts: []
+settings version/deadzone:  1 / 0.15
+
+keyboard W+D                       {"throttle":1,"brake":0,"steer":1,"handbrake":false}
+keyboard space                     {"throttle":0,"brake":0,"steer":0,"handbrake":true}
+gamepad RT + stick right           {"throttle":1,"brake":0,"steer":0.6470588235294117,"handbrake":false}
+gamepad LT + stick left            {"throttle":0,"brake":1,"steer":-0.6470588235294117,"handbrake":false}
+gamepad stick deadzone             {"throttle":0,"brake":0,"steer":0,"handbrake":false}
+touch steer+throttle               {"throttle":1,"brake":0,"steer":-0.6,"handbrake":false}
+owners of KeyW (before)            ["throttle"]
+owners of KeyW (after)             ["brake"]
+conflicts after reassign           []
+brake keys now                     ["S","ArrowDown","LT / L2","B / Circle","W"]
+handbrake -> KeyR                  ["Space","X / Square","R"]
+
+All device mappings resolve to the same VehicleInput contract.

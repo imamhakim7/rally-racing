@@ -1,0 +1,136 @@
+{
+  "ok": true,
+  "settings": {
+    "pass": true,
+    "problems": [],
+    "initial": {
+      "palette": "default",
+      "motion": "full",
+      "textScale": "1"
+    },
+    "panelVisible": true,
+    "focusable": [
+      {
+        "tag": "select",
+        "name": "Reduced motion",
+        "index": 68
+      },
+      {
+        "tag": "select",
+        "name": "Colour vision",
+        "index": 74
+      },
+      {
+        "tag": "input",
+        "name": "Text size",
+        "index": 81
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Accelerate (currently W)",
+        "index": 88
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Accelerate (currently ArrowUp)",
+        "index": 89
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Brake / reverse (currently S)",
+        "index": 94
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Brake / reverse (currently ArrowDown)",
+        "index": 95
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Steer left (currently A)",
+        "index": 100
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Steer left (currently ArrowLeft)",
+        "index": 101
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Steer right (currently D)",
+        "index": 105
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Steer right (currently ArrowRight)",
+        "index": 106
+      },
+      {
+        "tag": "button",
+        "name": "Rebind Handbrake (currently Space)",
+        "index": 110
+      },
+      {
+        "tag": "button",
+        "name": "Reset controls",
+        "index": 114
+      },
+      {
+        "tag": "button",
+        "name": "Close",
+        "index": 115
+      }
+    ],
+    "tabOrder": [
+      "select",
+      "select",
+      "input",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button",
+      "button"
+    ],
+    "allNamed": true,
+    "afterPalette": {
+      "palette": "deuteranopia",
+      "good": "#56b4ff"
+    },
+    "scaled": {
+      "textScale": "2",
+      "panelFont": 30.08,
+      "controlCount": 14,
+      "horizontalOverflow": 0
+    }
+  },
+  "reduced": {
+    "pass": true,
+    "problems": [],
+    "motion": "reduced",
+    "hasRace": true,
+    "blurHidden": true,
+    "effects": {
+      "shake": 0,
+      "blur": 0
+    },
+    "reducedMotion": "reduce"
+  },
+  "full": {
+    "pass": true,
+    "problems": [],
+    "motion": "full",
+    "hasRace": true,
+    "blurHidden": false,
+    "effects": {
+      "shake": 0.016593193155620915,
+      "blur": 0.14222736990532212
+    },
+    "reducedMotion": "no-preference"
+  }
+}

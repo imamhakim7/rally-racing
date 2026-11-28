@@ -28,6 +28,17 @@ import {
 } from "./race";
 import { mountSupportScreen } from "./ui/supportScreen";
 import { createAiRaceScene, type AiRaceScene } from "./scenes/aiRaceScene";
+import {
+  createInputManager,
+  createLocalStorageStore,
+  type GameSettings,
+  type InputManager,
+} from "./input";
+import { applySettingsToDocument, systemPrefersReducedMotion } from "./ui/a11y";
+import { motionPolicy, resolveMotionState } from "./engine/motion";
+import { mountMotionBlur } from "./ui/motionBlur";
+import { createTouchControls } from "./ui/touchControls";
+import { mountSettingsPanel } from "./ui/settingsPanel";
 
 /**
  * Browser entry point. Boots the engine with the stage scene and wires the
@@ -97,10 +108,46 @@ function showUnsupported(assessment: SupportAssessment): void {
   window.apexStage = { support: assessment };
 }
 
+function safeLocalStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null; // private mode / storage disabled — the store falls back to memory
+  }
+}
+
 function bootGame(assessment: SupportAssessment): void {
   const quality = resolveQualityPreset(assessment);
   document.body.setAttribute("data-support", assessment.level);
   canvas.setAttribute("data-support", assessment.level);
+
+  // Input abstraction + accessibility (#APEX-12). Settings load first and are
+  // applied to the document root before anything paints; the input manager owns
+  // the live binding table and feeds the telemetry harness a single command.
+  const settingsStore = createLocalStorageStore(safeLocalStorage());
+  let settings: GameSettings = settingsStore.load();
+  const reducedMotionQuery = (): MediaQueryList | null =>
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : null;
+  const systemReducedMotion = systemPrefersReducedMotion(reducedMotionQuery);
+  const applySettings = (next: GameSettings): void => {
+    settings = next;
+    settingsStore.save(next);
+    applySettingsToDocument(document, next, systemReducedMotion);
+    input.setBindings(next.input.bindings);
+  };
+
+  const isTouch =
+    "ontouchstart" in window || (navigator.maxTouchPoints ?? 0) > 0;
+  const touch = isTouch ? createTouchControls(document.body, document) : null;
+  touch?.setVisible(true);
+  const input = createInputManager({
+    bindings: settings.input.bindings,
+    deadzone: settings.input.deadzone,
+    touch,
+  });
+  applySettingsToDocument(document, settings, systemReducedMotion);
 
   const library = new StageLibrary();
   // #APEX-7: the two scenes have different shapes (stage select vs. race field);
@@ -108,7 +155,14 @@ function bootGame(assessment: SupportAssessment): void {
   // separately. `bootRace()` is skipped when the AI scene owns the clock.
   const raceParam = new URLSearchParams(window.location.search).get("race");
   const aiRaceId = raceParam && library.has(raceParam) ? raceParam : null;
-  const aiRace: AiRaceScene | null = aiRaceId ? createAiRaceScene(library.load(aiRaceId)) : null;
+  // Camera motion policy (#APEX-12): reduced motion zeroes shake/blur in the scene.
+  const motion = motionPolicy(
+    resolveMotionState(settings.accessibility.reducedMotion, systemReducedMotion),
+  );
+  const aiRace: AiRaceScene | null = aiRaceId
+    ? createAiRaceScene(library.load(aiRaceId), { motion })
+    : null;
+  const motionBlur = aiRace ? mountMotionBlur(document.body, document) : null;
   const stageScene: StageSceneHandle | null = aiRace ? null : createStageScene(library);
   const sceneHandle: SceneHandle = aiRace ?? stageScene!;
 
@@ -117,7 +171,7 @@ function bootGame(assessment: SupportAssessment): void {
   // detection lands; the race clock rides the engine's fixed step. Speed comes
   // from a keyboard-driven vehicle harness (same interim pattern) and the
   // minimap from the resolved stage world.
-  const telemetry = createTelemetryHarness();
+  const telemetry = createTelemetryHarness({ input: () => input.read() });
   const race = aiRace ? null : bootRace({ telemetry, minimap: stageScene!.world.minimap });
 
   // Co-driver pace notes (#APEX-18): derive once per stage from the sampled
@@ -169,18 +223,27 @@ function bootGame(assessment: SupportAssessment): void {
           }
         }
       : undefined,
-    onRender: race
+    onRender: aiRace
       ? () => {
-          syncMinimap();
-          race.render();
-          if (voiceEnabled && race.session.phase === "racing") {
-            const note = paceTracker?.pollAnnouncement();
-            if (note) voice.speak(note.call);
-          }
+          // Speed motion blur (#APEX-12); hidden by CSS under reduced motion.
+          motionBlur?.setStrength(aiRace.cameraEffects().blur);
         }
-      : undefined,
+      : race
+        ? () => {
+            syncMinimap();
+            race.render();
+            if (voiceEnabled && race.session.phase === "racing") {
+              const note = paceTracker?.pollAnnouncement();
+              if (note) voice.speak(note.call);
+            }
+          }
+        : undefined,
   });
   app.start();
+
+  // Accessibility + controls settings surface (#APEX-12). Mounted on both paths;
+  // changes are persisted and applied live (palette, motion, text scale, bindings).
+  const settingsPanel = mountSettingsPanel(document.body, { settings, onChange: applySettings });
 
   if (!aiRace) {
     const selectHost = document.getElementById("stage-select");
@@ -194,6 +257,8 @@ function bootGame(assessment: SupportAssessment): void {
       race: race!,
       support: assessment,
       quality,
+      /** Input abstraction (#APEX-12), exposed for tooling + evidence. */
+      input,
       pace: { get tracker() { return paceTracker; }, voice },
     };
   } else {
@@ -205,6 +270,9 @@ function bootGame(assessment: SupportAssessment): void {
     import.meta.hot.dispose(() => {
       voice.cancel();
       race?.dispose();
+      settingsPanel.dispose();
+      motionBlur?.dispose();
+      input.dispose();
       app.dispose();
     });
   }
@@ -236,6 +304,8 @@ declare global {
       race?: ReturnType<typeof bootRace>;
       support: SupportAssessment;
       quality?: ReturnType<typeof resolveQualityPreset>;
+      /** Input abstraction (#APEX-12), exposed for tooling + evidence. */
+      input?: InputManager;
       /** Co-driver pace-note state (#APEX-18), exposed for tooling + evidence. */
       pace?: { tracker: PaceNoteTracker | null; voice: Voice };
     };

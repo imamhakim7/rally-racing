@@ -33,7 +33,10 @@ const STYLE = `
   --apex-safe: clamp(8px, 1.6vw, 28px);
   --apex-font: ui-monospace, SFMono-Regular, Menlo, monospace;
   position: fixed; inset: 0; pointer-events: none;
-  font: clamp(12px, 0.8vw + 6px, 28px)/1.4 var(--apex-font);
+  font-family: var(--apex-font);
+  line-height: 1.4;
+  /* Text scaling (#APEX-12): one root knob multiplies every relative HUD size. */
+  font-size: calc(clamp(12px, 0.8vw + 6px, 28px) * var(--apex-text-scale, 1));
   color: var(--apex-fg);
 }
 .apex-panel {
@@ -135,6 +138,9 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) {
   .apex-hud *, .apex-split { animation: none !important; transition: none !important; }
 }
+/* #APEX-12: the in-app reduced-motion setting (data-motion) also suppresses it. */
+html[data-motion="reduced"] .apex-hud *,
+html[data-motion="reduced"] .apex-split { animation: none !important; transition: none !important; }
 `;
 
 function el<K extends keyof HTMLElementTagNameMap>(
